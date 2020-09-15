@@ -1,0 +1,9 @@
+connectors:
+  -
+    name: drivermonitor Camera Runner
+    type: drivermonitor
+    configuration: drivermonitor.json
+  -
+    name: socialdistance Camera Runner
+    type: socialdistance
+    configuration: socialdistance.json
