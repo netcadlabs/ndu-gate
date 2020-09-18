@@ -4,6 +4,15 @@ from ndu_gate_camera.api.ndu_camera_runner import NDUCameraRunner
 
 
 class SocialDistanceRunner(NDUCameraRunner, Thread):
+    def __init__(self, camera_service, config, connector_type):
+        super().__init__()
+        self.__stopped = True
+        pass
+
+    def open(self):  # Function called by gateway on start
+        self.__stopped = False
+        self.start()
+
     def get_name(self):
         return "SocialDistanceRunner"
 
