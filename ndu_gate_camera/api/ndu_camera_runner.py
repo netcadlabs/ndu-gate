@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 
 import logging
 
-log = logging.getLogger("camera_runner")
+log = logging.getLogger("connector")
 
 
 class NDUCameraRunner(ABC):
