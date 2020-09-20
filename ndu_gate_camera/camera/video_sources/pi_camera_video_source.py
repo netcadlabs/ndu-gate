@@ -8,19 +8,20 @@ try:
     from picamera import PiCamera
 except ImportError:
     print("picamera library not found - installing...")
-    NDUUtility.install_package("picamera")
-    import picamera
+    if NDUUtility.install_package("picamera"):
+        import picamera
 
 try:
     from picamera.array import PiRGBArray
 except ImportError:
     print("picamera library not found - installing...")
-    NDUUtility.install_package("picamera[array]")
-    import picamera.array
+    if NDUUtility.install_package("picamera[array]"):
+        import picamera.array
 
 
 class PiCameraVideoSource(VideoSource):
     def __init__(self, frame_width=640, frame_height=480, framerate=32, rotation=180, show_preview=False):
+        super().__init__()
         self.__camera = None
         self.__frame_width = frame_width
         self.__frame_height = frame_height

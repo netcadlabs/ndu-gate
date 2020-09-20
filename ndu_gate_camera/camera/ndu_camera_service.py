@@ -51,7 +51,7 @@ class NDUCameraService:
         self._connect_with_connectors()
 
         self.video_source = None
-        self._set_camera()
+        self._set_video_source()
         self._start()
 
     def _load_runners(self):
@@ -99,7 +99,7 @@ class NDUCameraService:
                         if connector is not None and NDUUtility.has_method(connector, 'close'):
                             connector.close()
 
-    def _set_camera(self):
+    def _set_video_source(self):
         name = uname()
         if SOURCE_TYPE is VideoSourceType.VIDEO_FILE:
             video_path = path.dirname(path.dirname(path.abspath(__file__))) + '/data/duygu2.mp4'.replace('/', path.sep)
@@ -129,6 +129,14 @@ class NDUCameraService:
         for i, frame in self.video_source.get_frames():
             if i % 100 == 0:
                 log.debug("frame count %s ", i)
+
+            for current_connector in self.available_connectors:
+                try:
+                    result = self.available_connectors[current_connector].process_frame(frame=frame)
+                    log.debug("result : %s", result)
+                except Exception as e:
+                    log.exception(e)
+
             # TODO - check runner settings before send the frame to runner
 
             # print(frame)

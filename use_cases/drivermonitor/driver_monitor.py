@@ -1,8 +1,4 @@
 from threading import Thread
-import re
-import sched
-import time
-from copy import copy
 from random import choice
 from string import ascii_lowercase
 
@@ -15,27 +11,22 @@ class DriverMonitorRunner(Thread, NDUCameraRunner):
         self.statistics = {'MessagesReceived': 0,
                            'MessagesSent': 0}
         self.setName(config.get("name", 'DriverMonitorRunner' + ''.join(choice(ascii_lowercase) for _ in range(5))))
-        self.__gateway = camera_service
         self.__config = config
-        self.__gateway = camera_service
         self.__connector_type = connector_type
-        self.__connected = False
-        self.__stopped = True
-        self.daemon = True
 
-    def open(self):  # Function called by gateway on start
-        self.__stopped = False
-        self.start()
-
-    def run(self):  # Main loop of thread
-        try:
-            while True:
-                log.debug("test")
-                ts = time.time()
-                log.info("test %s", ts)
-                time.sleep(float(self.__config.get("interval", 3)))
-        except Exception as e:
-            log.exception(e)
+    # def open(self):
+    #     self.__stopped = False
+    #     self.start()
+    #
+    # def run(self):  # Main loop of thread
+    #     try:
+    #         while True:
+    #             log.debug("test")
+    #             ts = time.time()
+    #             log.info("test %s", ts)
+    #             time.sleep(float(self.__config.get("interval", 3)))
+    #     except Exception as e:
+    #         log.exception(e)
 
     def get_name(self):
         return "DriverMonitorRunner"
@@ -46,6 +37,7 @@ class DriverMonitorRunner(Thread, NDUCameraRunner):
         return settings
 
     def process_frame(self, frame):
+        super().process_frame(frame)
         result = {
             "time": 1224124124,
             "behav": "sleeping"

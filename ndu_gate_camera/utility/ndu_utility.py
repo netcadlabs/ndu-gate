@@ -76,18 +76,26 @@ class NDUUtility:
             try:
                 result = check_call([executable, "-m", "pip", "install", package, "--upgrade", "--user"])
             except CalledProcessError:
-                result = check_call([executable, "-m", "pip", "install", package, "--upgrade"])
+                try:
+                    result = check_call([executable, "-m", "pip", "install", package, "--upgrade"])
+                except Exception as e:
+                    log.error(e)
         else:
             from pkg_resources import get_distribution
             current_package_version = None
             try:
                 current_package_version = get_distribution(package)
-            except Exception:
+            except Exception as e:
+                log.error(e)
                 pass
             if current_package_version is None or current_package_version != version:
                 installation_sign = "==" if ">=" not in version else ""
                 try:
                     result = check_call([executable, "-m", "pip", "install", package + installation_sign + version, "--user"])
                 except CalledProcessError:
-                    result = check_call([executable, "-m", "pip", "install", package + installation_sign + version])
+                    try:
+                        result = check_call([executable, "-m", "pip", "install", package + installation_sign + version])
+                    except Exception as e:
+                        log.error(e)
+
         return result
