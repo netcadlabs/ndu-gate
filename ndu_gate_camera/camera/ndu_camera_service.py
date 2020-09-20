@@ -1,21 +1,17 @@
 from os import path, uname
-from time import sleep
 import logging
 import logging.config
 import logging.handlers
 
 from yaml import safe_load
-from simplejson import load, dumps, loads
-
-import cv2
+from simplejson import load
 
 from ndu_gate_camera.api.video_source import VideoSourceType
-from ndu_gate_camera.camera.file_video_source import FileVideoSource
+from ndu_gate_camera.camera.video_sources.camera_video_source import CameraVideoSource
+from ndu_gate_camera.camera.video_sources.file_video_source import FileVideoSource
 from ndu_gate_camera.utility.ndu_utility import NDUUtility
 
 name = uname()
-
-import numpy as np
 
 DEFAULT_RUNNERS = {
     "drivermonitor": "DriverMonitorRunner",
@@ -23,7 +19,7 @@ DEFAULT_RUNNERS = {
     "emotionanalysis": "EmotionAnalysisRunner",
 }
 
-SOURCE_TYPE = VideoSourceType.VIDEO_FILE
+SOURCE_TYPE = VideoSourceType.CAMERA
 
 
 class NDUCameraService:
@@ -112,6 +108,16 @@ class NDUCameraService:
             # TODO
             pass
         elif SOURCE_TYPE is VideoSourceType.VIDEO_URL:
+            # TODO
+            pass
+        elif SOURCE_TYPE is VideoSourceType.IP_CAMERA:
+            # TODO
+            pass
+        elif SOURCE_TYPE is VideoSourceType.CAMERA:
+            self.video_source = CameraVideoSource(show_preview=True)
+            pass
+        elif SOURCE_TYPE is VideoSourceType.YOUTUBE:
+            # TODO
             pass
         else:
             log.error("Video source type is not supported : %s ", SOURCE_TYPE.value)
@@ -122,8 +128,10 @@ class NDUCameraService:
             pass
 
         for i, frame in self.video_source.get_frames():
-            if i % 100 is 0:
+            if i % 100 == 0:
                 log.debug("frame count %s ", i)
+            # TODO - check runner settings before send the frame to runner
+
             # print(frame)
 
         frameWidth = 640
@@ -132,6 +140,7 @@ class NDUCameraService:
         is_rasp = False  # TODO dedect OS
 
         # TODO - set camera_perspective
+
         # if is_rasp:
         #     from picamera.array import PiRGBArray
         #     from picamera import PiCamera
@@ -150,24 +159,6 @@ class NDUCameraService:
         #         except KeyboardInterrupt:
         #             rawCapture.truncate(0)
         #             camera.close()
-        #             cv2.destroyAllWindows()
-        #             print("exit")
-        #             break
-        # else:
-        #     cap = cv2.VideoCapture(0)
-        #     while True:
-        #         try:
-        #             ret, frame = cap.read()
-        #             rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2BGRA)
-        #
-        #             cv2.imshow('macbook pro cam', rgb)
-        #             if cv2.waitKey(1) & 0xFF == ord('q'):
-        #                 out = cv2.imwrite('capture.jpg', frame)
-        #                 break
-        #
-        #             self._process_frame(frame)
-        #             sleep(1)
-        #         except:
         #             cv2.destroyAllWindows()
         #             print("exit")
         #             break

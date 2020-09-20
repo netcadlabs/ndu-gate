@@ -16,14 +16,14 @@ class FileVideoSource(VideoSource):
 
     def get_frames(self):
         log.debug("start video streaming..")
-        i = 0
+        count = 0
         while self.__capture.isOpened():
             ret, frame = self.__capture.read()
             if ret is False:
                 break
-            cv2.imwrite('files/FileVideoSource_' + str(i) + '.jpg', frame)
-            yield i, frame
-            i += 1
+            cv2.imwrite('files/FileVideoSource_' + str(count) + '.jpg', frame)
+            yield count, frame
+            count += 1
 
         log.debug("video finished..")
         self.__capture.release()
