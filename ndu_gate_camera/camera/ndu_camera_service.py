@@ -9,6 +9,7 @@ from simplejson import load
 from ndu_gate_camera.api.video_source import VideoSourceType
 from ndu_gate_camera.camera.video_sources.camera_video_source import CameraVideoSource
 from ndu_gate_camera.camera.video_sources.file_video_source import FileVideoSource
+from ndu_gate_camera.camera.video_sources.pi_camera_video_source import PiCameraVideoSource
 from ndu_gate_camera.utility.ndu_utility import NDUUtility
 
 name = uname()
@@ -105,8 +106,7 @@ class NDUCameraService:
             self.video_source = FileVideoSource(video_path)
             pass
         elif SOURCE_TYPE is VideoSourceType.PI_CAMERA:
-            # TODO
-            pass
+            self.video_source = PiCameraVideoSource(show_preview=True)
         elif SOURCE_TYPE is VideoSourceType.VIDEO_URL:
             # TODO
             pass
@@ -115,7 +115,6 @@ class NDUCameraService:
             pass
         elif SOURCE_TYPE is VideoSourceType.CAMERA:
             self.video_source = CameraVideoSource(show_preview=True)
-            pass
         elif SOURCE_TYPE is VideoSourceType.YOUTUBE:
             # TODO
             pass
@@ -134,34 +133,7 @@ class NDUCameraService:
 
             # print(frame)
 
-        frameWidth = 640
-        frameHeight = 480
-        frame_num = 0
-        is_rasp = False  # TODO dedect OS
-
         # TODO - set camera_perspective
-
-        # if is_rasp:
-        #     from picamera.array import PiRGBArray
-        #     from picamera import PiCamera
-        #     camera = PiCamera()
-        #     camera.resolution = (frameWidth, frameHeight)
-        #     camera.framerate = 32
-        #     camera.rotation = 180
-        #     rawCapture = PiRGBArray(camera, size=(frameWidth, frameHeight))
-        #     for frameFromCam in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
-        #         try:
-        #             frame = np.copy(frameFromCam.array)
-        #             frame_num += 1
-        #             frame_h = frame.shape[0]
-        #             frame_w = frame.shape[1]
-        #             self._process_frame(frame)
-        #         except KeyboardInterrupt:
-        #             rawCapture.truncate(0)
-        #             camera.close()
-        #             cv2.destroyAllWindows()
-        #             print("exit")
-        #             break
 
     def _process_frame(self, frame):
         self.frame_num += 1

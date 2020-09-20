@@ -14,7 +14,7 @@ class CameraVideoSource(VideoSource):
         pass
 
     def get_frames(self):
-        log.debug("start camera streaming..")
+        log.info("start camera streaming..")
         count = 0
 
         while True:
@@ -37,10 +37,9 @@ class CameraVideoSource(VideoSource):
             except Exception as e:
                 log.error(e)
                 cv2.destroyAllWindows()
-                print("exit")
                 break
 
-        log.debug("camera stream finished..")
+        log.info("camera stream finished..")
         self.__capture.release()
         cv2.destroyAllWindows()
         pass

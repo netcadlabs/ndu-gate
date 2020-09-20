@@ -9,10 +9,7 @@ class FileVideoSource(VideoSource):
     def __init__(self, video_path):
         super().__init__()
         self.__video_path = video_path
-        if isfile(video_path) is False:
-            raise ValueError("Video file is not exist")
-        self.__capture = cap = cv2.VideoCapture(video_path)
-        pass
+        self._set_capture()
 
     def get_frames(self):
         log.debug("start video streaming..")
@@ -21,6 +18,8 @@ class FileVideoSource(VideoSource):
             ret, frame = self.__capture.read()
             if ret is False:
                 break
+
+            # TODO - burayı kaldır ?
             cv2.imwrite('files/FileVideoSource_' + str(count) + '.jpg', frame)
             yield count, frame
             count += 1
@@ -31,7 +30,13 @@ class FileVideoSource(VideoSource):
         pass
 
     def reset(self):
-        pass
+        self._set_capture()
 
     def stop(self):
+        # TODO
         pass
+
+    def _set_capture(self):
+        if isfile(self.__video_path) is False:
+            raise ValueError("Video file is not exist")
+        self.__capture = cap = cv2.VideoCapture(self.__video_path)
