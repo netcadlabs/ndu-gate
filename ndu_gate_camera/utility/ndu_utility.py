@@ -29,7 +29,7 @@ class NDUUtility:
                 for extension_path in extensions_paths:
                     if path.exists(extension_path):
                         for file in listdir(extension_path):
-                            if not file.startswith('__') and file.endswith('.py'):
+                            if not file.startswith('__') and file.endswith('.py') and not file.endswith('_model.py'):
                                 try:
                                     module_spec = util.spec_from_file_location(module_name, extension_path + path.sep + file)
                                     log.debug(module_spec)

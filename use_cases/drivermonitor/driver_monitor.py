@@ -3,7 +3,7 @@ from random import choice
 from string import ascii_lowercase
 
 from ndu_gate_camera.api.ndu_camera_runner import NDUCameraRunner, log
-
+from ndu_gate_camera.utility.ndu_utility import NDUUtility
 
 class DriverMonitorRunner(Thread, NDUCameraRunner):
     def __init__(self, camera_service, config, connector_type):

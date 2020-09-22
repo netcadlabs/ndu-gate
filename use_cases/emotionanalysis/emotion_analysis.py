@@ -3,10 +3,23 @@ from threading import Thread
 from random import choice
 from string import ascii_lowercase
 
+from ndu_gate_camera.utility.ndu_utility import NDUUtility
+
+# try:
+#     import keras
+# except ImportError:
+#     if NDUUtility.install_package("keras") == 0:
+#         import keras
+
+try:
+    import tensorflow as tf;
+except ImportError:
+    if NDUUtility.install_package("tensorflow") == 0:
+        import tensorflow as tf;
+
 from cv2 import cv2
-from numpy import expand_dims, np
-# from tensorflow.python.keras.preprocessing.image import img_to_array
-from keras.preprocessing.image import img_to_array
+# from numpy import expand_dims, np
+import numpy as np
 
 from ndu_gate_camera.api.ndu_camera_runner import NDUCameraRunner, log
 from ndu_gate_camera.dedectors.face_dedector import FaceDedector
@@ -55,8 +68,9 @@ class EmotionAnalysisRunner(Thread, NDUCameraRunner):
         try:
             img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
             img = cv2.resize(img, (48, 48))
-            img_pixels = img_to_array(img)
-            img_pixels = expand_dims(img_pixels, axis=0)
+
+            img_pixels = tf.keras.preprocessing.image.img_to_array(img)
+            img_pixels = np.expand_dims(img_pixels, axis=0)
             img_pixels /= 255  # normalize input in [0, 1]
 
             emotion_predictions = self.__emotion_model.predict(img_pixels)[0, :]
