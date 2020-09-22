@@ -24,7 +24,8 @@ def set_model(model_name, label_name):
     path_to_ckpt = model_name + "/frozen_inference_graph.pb"
 
     # List of the strings that is used to add correct label for each box.
-    path_to_labels = os.path.join("data", label_name)
+
+    path_to_labels = os.path.dirname(os.path.abspath(__file__)) + ("/data/" + label_name).replace('/', os.path.sep);
 
     num_classes = 90
 

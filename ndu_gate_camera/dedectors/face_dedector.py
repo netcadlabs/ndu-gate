@@ -1,6 +1,5 @@
 import time
-from sys import path
-
+from os import path
 from cv2 import cv2
 
 from ndu_gate_camera.dedectors.vision.ssd.config.fd_config import define_img_size
@@ -8,8 +7,8 @@ from ndu_gate_camera.dedectors.vision.ssd.mb_tiny_RFB_fd import create_Mb_Tiny_R
 
 
 class FaceDedector:
-    label_path = path.dirname(path.dirname(path.abspath(__file__))) + "/data/voc-model-labels.txt"
-    faceModelPath = path.dirname(path.dirname(path.abspath(__file__))) + "/data/version-RFB-640.pth"
+    label_path = path.dirname(path.abspath(__file__)) + "/vision/data/voc-model-labels.txt"
+    faceModelPath = path.dirname(path.abspath(__file__)) + "/vision/data/version-RFB-640.pth"
 
     def __init__(self, threshold=0.8, candidate_size=1000):
         define_img_size(480)

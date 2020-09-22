@@ -1,6 +1,5 @@
 import os
 from pathlib import Path
-from sys import path
 
 import tensorflow as tf;
 
@@ -39,25 +38,23 @@ def loadModel():
 
     model.add(tf.keras.layers.Dense(num_classes, activation='softmax'))
 
-    # ----------------------------
+    local_facial_weights_file = os.path.dirname(os.path.abspath(__file__)) + "/data/deepface/facial_expression_model_weights.h5".replace("/", os.path.sep)
 
-    current_dir = path.dirname(path.dirname(path.abspath(__file__)))
+    facial_weights_file = os.path.abspath(os.path.abspath(__file__) + "/data/deepface/facial_expression_model_weights.h5".replace("/", os.path.sep))
 
-    facial_expression_model_weights = path.abspath(current_dir + "/data/deepface/facial_expression_model_weights.h5")
+    facial_weights_file_final = None
 
-    if os.path.isfile(facial_expression_model_weights) is False:
-
+    if os.path.isfile(local_facial_weights_file) is True:
+        facial_weights_file_final = local_facial_weights_file
+    elif os.path.isfile(facial_weights_file) is False:
         home = str(Path.home())
-
-        facial_expression_model_weights = home + '/.deepface/weights/facial_expression_model_weights.h5'
-        if os.path.isfile(facial_expression_model_weights) is False:
+        facial_weights_file = home + ('/.deepface/weights/facial_expression_model_weights.h5').replace("/", os.path.sep)
+        if os.path.isfile(facial_weights_file) is False:
             print("facial_expression_model_weights.h5 will be downloaded...")
-
-            # TO-DO: upload weights to google drive
 
             # zip
             url = 'https://drive.google.com/uc?id=13iUHHP3SlNg53qSuQZDdHDSDNdBP9nwy'
-            output = facial_expression_model_weights
+            output = facial_weights_file
 
             from gdown import download as download_g
             download_g(url, output, quiet=False)
@@ -66,7 +63,9 @@ def loadModel():
             with zipfile.ZipFile(output, 'r') as zip_ref:
                 zip_ref.extractall(home + '/.deepface/weights/')
 
-    model.load_weights(facial_expression_model_weights)
+        facial_weights_file_final = facial_weights_file
+
+    model.load_weights(facial_weights_file_final)
 
     return model
 
