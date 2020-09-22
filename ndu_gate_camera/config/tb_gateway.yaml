@@ -1,3 +1,9 @@
+
+video_source:
+  type: VIDEO_FILE
+  file_path: data/duygu2.mp4
+  url:
+
 connectors:
 #  -
 #    name: drivermonitor Camera Runner

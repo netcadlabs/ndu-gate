@@ -1,30 +1,22 @@
-import time
 from threading import Thread
 from random import choice
 from string import ascii_lowercase
 
 from ndu_gate_camera.utility.ndu_utility import NDUUtility
 
-# try:
-#     import keras
-# except ImportError:
-#     if NDUUtility.install_package("keras") == 0:
-#         import keras
-
 try:
-    import tensorflow as tf;
+    import tensorflow as tf
 except ImportError:
     if NDUUtility.install_package("tensorflow") == 0:
-        import tensorflow as tf;
+        import tensorflow as tf
 
 from cv2 import cv2
-# from numpy import expand_dims, np
 import numpy as np
 
 from ndu_gate_camera.api.ndu_camera_runner import NDUCameraRunner, log
 from ndu_gate_camera.dedectors.face_dedector import FaceDedector
 from ndu_gate_camera.dedectors.person_dedector import PersonDedector
-from use_cases.emotionanalysis.emotional_model import loadModel
+from use_cases.emotionanalysis.emotional_model import load_emotion_model
 
 
 class EmotionAnalysisRunner(Thread, NDUCameraRunner):
@@ -33,10 +25,10 @@ class EmotionAnalysisRunner(Thread, NDUCameraRunner):
         super().__init__()
         self.setName(config.get("name", 'EmotionAnalysisRunner' + ''.join(choice(ascii_lowercase) for _ in range(5))))
         self.__config = config
-        self.__personDedector = PersonDedector()
-        self.__faceDedector = FaceDedector()
+        self.__personDetector = PersonDedector()
+        self.__faceDetector = FaceDedector()
 
-        self.__emotion_model = loadModel()
+        self.__emotion_model = load_emotion_model()
         self.__emotion_labels = ['angry', 'disgust', 'fear', 'happy', 'sad', 'surprise', 'neutral']
 
     def get_name(self):
@@ -49,21 +41,20 @@ class EmotionAnalysisRunner(Thread, NDUCameraRunner):
     def process_frame(self, frame):
         super().process_frame(frame)
 
-        pedestrian_boxes, num_pedestrians, imageList = self.__personDedector.find_person(frame)
+        pedestrian_boxes, num_pedestrians, image_list = self.__personDetector.find_person(frame)
 
         result = {}
 
-        if len(imageList) > 0:
-            personCounter = 0
-            faceList = self.__faceDedector.face_detector3(frame, num_pedestrians)
-            for face in faceList:
-                res = self.getEmotionsAnalysis2(face)
-                # TODO - test et
+        if len(image_list) > 0:
+            person_counter = 0
+            face_list = self.__faceDetector.face_detector3(frame, num_pedestrians)
+            for face in face_list:
+                res = self._get_emotions_analysis(face)
                 log.debug(res)
 
         return result
 
-    def getEmotionsAnalysis2(self, img):
+    def _get_emotions_analysis(self, img):
         emotions_sum = [0, 0, 0, 0, 0, 0, 0]
         try:
             img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -81,10 +72,10 @@ class EmotionAnalysisRunner(Thread, NDUCameraRunner):
 
             color = (255, 0, 0)
             emotions_sum[np.argmax(emotion_predictions)] += 1
-            return self.__emotion_labels[np.argmax(emotion_predictions)] + " " + str(np.argmax(emotion_predictions)), color
+            res_label_predict = self.__emotion_labels[np.argmax(emotion_predictions)] + " " + str(np.argmax(emotion_predictions))
+            return res_label_predict, color
         except Exception as e:
-            print("EMOTION ERROR...  ")
-            print(e)
+            log.error(e)
             emotions_sum[6] += 1
             color = (255, 0, 255)
             return "Error", color

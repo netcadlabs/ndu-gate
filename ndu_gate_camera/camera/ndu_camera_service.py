@@ -11,6 +11,7 @@ from ndu_gate_camera.camera.frame_pre_processors import FramePreProcessors
 from ndu_gate_camera.camera.runner_result_handler import RunnerResultHandler
 from ndu_gate_camera.camera.video_sources.camera_video_source import CameraVideoSource
 from ndu_gate_camera.camera.video_sources.file_video_source import FileVideoSource
+from ndu_gate_camera.camera.video_sources.ip_camera_video_source import IPCameraVideoSource
 from ndu_gate_camera.camera.video_sources.pi_camera_video_source import PiCameraVideoSource
 from ndu_gate_camera.utility.ndu_utility import NDUUtility
 
@@ -22,8 +23,6 @@ DEFAULT_RUNNERS = {
     "emotionanalysis": "EmotionAnalysisRunner",
 }
 
-SOURCE_TYPE = VideoSourceType.CAMERA
-
 
 class NDUCameraService:
     def __init__(self, gateway_config_file=None):
@@ -34,9 +33,23 @@ class NDUCameraService:
             self.__config = safe_load(general_config)
         self._config_dir = path.dirname(path.abspath(gateway_config_file)) + path.sep
 
+        self.SOURCE_TYPE = VideoSourceType.CAMERA
+        self.SOURCE_CONFIG = None
+        if self.__config.get("video_source"):
+            self.SOURCE_CONFIG = self.__config.get("video_source")
+            type_str = self.SOURCE_CONFIG.get("type", "CAMERA")
+            if VideoSourceType[type_str]:
+                self.SOURCE_TYPE = VideoSourceType[type_str]
+            else:
+                self.SOURCE_TYPE = VideoSourceType.CAMERA
+
         logging_error = None
         try:
-            logging.config.fileConfig(self._config_dir + "logs.conf", disable_existing_loggers=False)
+            import platform
+            if platform.system() == "Darwin":
+                logging.config.fileConfig(self._config_dir + "logs_macosx.conf", disable_existing_loggers=False)
+            else:
+                logging.config.fileConfig(self._config_dir + "logs.conf", disable_existing_loggers=False)
         except Exception as e:
             logging_error = e
 
@@ -100,7 +113,6 @@ class NDUCameraService:
                                 if settings.get("find_person", False):
                                     self.PRE_FIND_PERSON = True
                             self.available_runners[runner.get_name()] = runner
-                            # connector.open()
                         else:
                             log.info("Config not found for %s", connector_type)
                     except Exception as e:
@@ -112,25 +124,25 @@ class NDUCameraService:
         """
         SOURCE_TYPE değerine göre video_source değişkenini oluşturur.
         """
-        if SOURCE_TYPE is VideoSourceType.VIDEO_FILE:
+        if self.SOURCE_TYPE is VideoSourceType.VIDEO_FILE:
             video_path = path.dirname(path.dirname(path.abspath(__file__))) + '/data/duygu2.mp4'.replace('/', path.sep)
-            self.video_source = FileVideoSource(video_path)
+            self.video_source = FileVideoSource(self.SOURCE_CONFIG)
             pass
-        elif SOURCE_TYPE is VideoSourceType.PI_CAMERA:
+        elif self.SOURCE_TYPE is VideoSourceType.PI_CAMERA:
             self.video_source = PiCameraVideoSource(show_preview=True)
-        elif SOURCE_TYPE is VideoSourceType.VIDEO_URL:
+        elif self.SOURCE_TYPE is VideoSourceType.VIDEO_URL:
             # TODO
             pass
-        elif SOURCE_TYPE is VideoSourceType.IP_CAMERA:
-            # TODO
+        elif self.SOURCE_TYPE is VideoSourceType.IP_CAMERA:
+            self.video_source = IPCameraVideoSource(self.SOURCE_CONFIG)
             pass
-        elif SOURCE_TYPE is VideoSourceType.CAMERA:
+        elif self.SOURCE_TYPE is VideoSourceType.CAMERA:
             self.video_source = CameraVideoSource(show_preview=True, device_index_name=0)
-        elif SOURCE_TYPE is VideoSourceType.YOUTUBE:
+        elif self.SOURCE_TYPE is VideoSourceType.YOUTUBE:
             # TODO
             pass
         else:
-            log.error("Video source type is not supported : %s ", SOURCE_TYPE.value)
+            log.error("Video source type is not supported : %s ", self.SOURCE_TYPE.value)
             exit(101)
 
     def _start(self):
@@ -139,7 +151,7 @@ class NDUCameraService:
             exit(102)
 
         # TODO - çalıştırma sırasına göre sonuçlar bir sonraki runnera aktarılabilir
-        # TODO - runner dependency ile kimin çıktısı kimn giridisi olacak şekilnde de olabilir
+        # TODO - runner dependency ile kimin çıktısı kimn giridisi olacak şeklinde de olabilir
         for i, frame in self.video_source.get_frames():
             if i % 100 == 0:
                 log.debug("frame count %s ", i)
@@ -150,17 +162,20 @@ class NDUCameraService:
             # if self.PRE_FIND_FACES:
             #     res_faces = FramePreProcessors.find_faces(frame)
 
+            # TODO - check runner settings before send the frame to runner
+
             for current_connector in self.available_runners:
                 try:
                     result = self.available_runners[current_connector].process_frame(frame=frame)
                     log.debug("result : %s", result)
 
+                    # TODO - sonuçları tb-gateway connector için sakla
                     # RunnerResultHandler.add_result(result, runner_name=current_connector)
 
                 except Exception as e:
                     log.exception(e)
 
-            # TODO - check runner settings before send the frame to runner
+
 
             # print(frame)
 

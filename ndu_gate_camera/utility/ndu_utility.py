@@ -47,7 +47,7 @@ class NDUUtility:
                                             # Save class into buffer
                                             NDUUtility.loaded_runners[extension_type + module_name] = extension_class[1]
                                             return extension_class[1]
-                                except ImportError as ie:
+                                except Exception as ie:
                                     log.error(ie)
                                     continue
                     else:

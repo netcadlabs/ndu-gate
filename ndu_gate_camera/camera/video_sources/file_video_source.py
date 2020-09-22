@@ -6,14 +6,17 @@ from ndu_gate_camera.api.video_source import VideoSource, log
 
 
 class FileVideoSource(VideoSource):
-    def __init__(self, video_path):
+    def __init__(self, source_config):
         super().__init__()
-        self.__video_path = video_path
+        self.__video_path = source_config.get("file_path", None)
+        if self.__video_path is None:
+            raise ValueError("Video file path is empty")
         self._set_capture()
 
     def get_frames(self):
         log.debug("start video streaming..")
         count = 0
+        # TODO - bitince başa sar?
         while self.__capture.isOpened():
             ret, frame = self.__capture.read()
             if ret is False:

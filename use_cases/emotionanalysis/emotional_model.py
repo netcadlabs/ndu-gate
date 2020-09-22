@@ -1,15 +1,18 @@
 import os
 from pathlib import Path
 
-import tensorflow as tf;
+from ndu_gate_camera.utility.ndu_utility import NDUUtility
 
-# from keras.models import Model, Sequential
-# from keras.layers import Conv2D, MaxPooling2D, AveragePooling2D, Flatten, Dense, Dropout
+try:
+    import tensorflow as tf
+except ImportError:
+    if NDUUtility.install_package("tensorflow") == 0:
+        import tensorflow as tf
 
 import zipfile
 
 
-def loadModel():
+def load_emotion_model():
     num_classes = 7
 
     model = tf.keras.models.Sequential()
