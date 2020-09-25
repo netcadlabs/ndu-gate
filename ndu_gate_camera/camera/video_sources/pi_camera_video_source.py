@@ -1,5 +1,5 @@
 import numpy as np
-from cv2 import cv2
+import cv2
 
 from ndu_gate_camera.api.video_source import VideoSource, log
 from ndu_gate_camera.utility.ndu_utility import NDUUtility

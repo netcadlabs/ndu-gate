@@ -10,7 +10,7 @@ except ImportError:
     if NDUUtility.install_package("tensorflow") == 0:
         import tensorflow as tf
 
-from cv2 import cv2
+import cv2
 import numpy as np
 
 from ndu_gate_camera.api.ndu_camera_runner import NDUCameraRunner, log

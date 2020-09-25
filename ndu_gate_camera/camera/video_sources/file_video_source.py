@@ -1,6 +1,6 @@
 from os.path import isfile
 
-from cv2 import cv2
+import cv2
 
 from ndu_gate_camera.api.video_source import VideoSource, log
 
