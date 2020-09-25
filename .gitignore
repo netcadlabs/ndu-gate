@@ -9,3 +9,9 @@ __pycache__/
 
 #ndu_gate_camera/dedectors/vision/data/
 docker/.ndu-gate/
+
+deb_dist
+dist
+ndu_gate.egg-info
+
+ndu-gate-*.tar.gz
