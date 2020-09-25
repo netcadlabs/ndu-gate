@@ -22,4 +22,5 @@ connectors:
     name: Person Counter Camera Runner
     type: personcounter
     configuration: personcounter.json
+    class: PersonCounterRunner
     runner: true
