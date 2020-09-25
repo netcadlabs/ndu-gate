@@ -106,6 +106,9 @@ class NDUCameraService:
                     runner = None
                     try:
                         if connector_config["config"][config] is not None:
+                            if self._implemented_runners[connector_type] is None:
+                                log.error("implemented runner not found for %s", connector_type)
+                            else:
                             runner = self._implemented_runners[connector_type](self, connector_config["config"][config], connector_type)
                             runner.setName(connector_config["name"])
                             settings = runner.get_settings()
@@ -126,6 +129,7 @@ class NDUCameraService:
         """
         if self.SOURCE_TYPE is VideoSourceType.VIDEO_FILE:
             video_path = path.dirname(path.dirname(path.abspath(__file__))) + '/data/duygu2.mp4'.replace('/', path.sep)
+            self.SOURCE_CONFIG["test_data_path"] = path.dirname(path.dirname(path.abspath(__file__))) + '/data/'.replace('/', path.sep)
             self.video_source = FileVideoSource(self.SOURCE_CONFIG)
             pass
         elif self.SOURCE_TYPE is VideoSourceType.PI_CAMERA:
