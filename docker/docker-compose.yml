@@ -1,0 +1,12 @@
+version: '2.2'
+services:
+  ndu-gate:
+    # restart: always
+    image: "netcadlabs/ndu-gate"
+    # Ports (Required for REST connector)
+    ports:
+      - "5000:5000"
+    volumes:
+      - ~/.ndu-gate/config:/ndu_gate_camera/config
+      - ~/.ndu-gate/logs:/ndu_gate_camera/logs
+      - ~/.ndu-gate/extensions:/ndu_gate_camera/extensions
