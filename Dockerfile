@@ -1,4 +1,5 @@
-FROM python:3.7-slim
+# FROM python:3.7-slim
+FROM jjanzic/docker-python3-opencv:latest
 
 ADD ./ /
 
@@ -24,6 +25,8 @@ ENV extensions /ndu_gate_camera/extensions
 ENV logs /ndu_gate_camera/logs
 
 RUN python /setup.py install && mkdir -p /default-config/config /default-config/runners/ && cp -r /ndu_gate_camera/config/* /default-config/config/ && cp -r /ndu_gate_camera/runners/* /default-config/runners
+
+RUN ./installations.sh
 
 VOLUME ["${configs}", "${extensions}", "${logs}"]
 
