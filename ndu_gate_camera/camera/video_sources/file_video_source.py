@@ -7,6 +7,10 @@ from ndu_gate_camera.api.video_source import VideoSource, log
 
 class FileVideoSource(VideoSource):
     def __init__(self, source_config):
+        """
+
+        :param source_config:
+        """
         super().__init__()
         self.__video_path = source_config.get("file_path", None)
         if self.__video_path is None:

@@ -35,10 +35,10 @@ class EmotionAnalysisRunner(Thread, NDUCameraRunner):
         return "EmotionAnalysisRunner"
 
     def get_settings(self):
-        settings = {'interval': 2, 'always': True}
+        settings = {'interval': 2, 'always': True, 'person': True, 'face': True}
         return settings
 
-    def process_frame(self, frame):
+    def process_frame(self, frame, extra_data):
         super().process_frame(frame)
 
         pedestrian_boxes, num_pedestrians, image_list = self.__personDetector.find_person(frame)

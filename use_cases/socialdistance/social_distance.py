@@ -21,10 +21,11 @@ class SocialDistanceRunner(Thread, NDUCameraRunner):
 
     def get_settings(self):
         settings = {'interval': 10,
-                    'always': False}
+                    'always': False,
+                    'person': True}
         return settings
 
-    def process_frame(self, frame):
+    def process_frame(self, frame, extra_data):
         super().process_frame(frame)
         result = {
             "time": 1224124124,

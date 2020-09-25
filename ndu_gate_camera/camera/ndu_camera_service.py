@@ -8,11 +8,12 @@ from simplejson import load
 
 from ndu_gate_camera.api.video_source import VideoSourceType
 from ndu_gate_camera.camera.frame_pre_processors import FramePreProcessors
-from ndu_gate_camera.camera.runner_result_handler import RunnerResultHandler
 from ndu_gate_camera.camera.video_sources.camera_video_source import CameraVideoSource
 from ndu_gate_camera.camera.video_sources.file_video_source import FileVideoSource
 from ndu_gate_camera.camera.video_sources.ip_camera_video_source import IPCameraVideoSource
 from ndu_gate_camera.camera.video_sources.pi_camera_video_source import PiCameraVideoSource
+from ndu_gate_camera.dedectors.face_dedector import FaceDedector
+from ndu_gate_camera.dedectors.person_dedector import PersonDedector
 from ndu_gate_camera.utility.ndu_utility import NDUUtility
 
 name = uname()
@@ -59,6 +60,16 @@ class NDUCameraService:
 
         self.PRE_FIND_PERSON = False
         self.PRE_FIND_FACES = False
+        self.__personDetector = None
+        self.__faceDetector = None
+        try:
+            self.__personDetector = PersonDedector()
+        except:
+            log.error("Can not create person dedector")
+        try:
+            self.__faceDetector = FaceDedector()
+        except:
+            log.error("Can not create face dedector")
 
         self._default_runners = DEFAULT_RUNNERS
         self._implemented_runners = {}
@@ -110,8 +121,10 @@ class NDUCameraService:
                             runner.setName(connector_config["name"])
                             settings = runner.get_settings()
                             if settings is not None:
-                                if settings.get("find_person", False):
+                                if settings.get("person", False):
                                     self.PRE_FIND_PERSON = True
+                                if settings.get("face", False):
+                                    self.PRE_FIND_FACES = True
                             self.available_runners[runner.get_name()] = runner
                         else:
                             log.info("Config not found for %s", connector_type)
@@ -156,17 +169,31 @@ class NDUCameraService:
             if i % 100 == 0:
                 log.debug("frame count %s ", i)
 
-            # res_person = None
-            # if self.PRE_FIND_PERSON:
-            #     res_person = FramePreProcessors.find_persons(frame)
-            # if self.PRE_FIND_FACES:
-            #     res_faces = FramePreProcessors.find_faces(frame)
+            pedestrian_boxes = None
+            num_pedestrians = None
+            person_image_list = None
+            face_list = None
+            if self.PRE_FIND_PERSON:
+                pedestrian_boxes, num_pedestrians, person_image_list = self.__personDetector.find_person(frame)
+            if self.PRE_FIND_FACES:
+                if len(person_image_list) > 0:
+                    face_list = self.__faceDetector.face_detector3(frame, num_pedestrians)
+                    # for face in face_list:
+                    #     res = self._get_emotions_analysis(face)
+                    #     log.debug(res)
+
+            extra_data = {
+                "pedestrian_boxes": pedestrian_boxes,
+                "num_pedestrians": num_pedestrians,
+                "person_image_list": person_image_list,
+                "face_list": face_list
+            }
 
             # TODO - check runner settings before send the frame to runner
 
             for current_connector in self.available_runners:
                 try:
-                    result = self.available_runners[current_connector].process_frame(frame=frame)
+                    result = self.available_runners[current_connector].process_frame(frame=frame, extra_data=extra_data)
                     log.debug("result : %s", result)
 
                     # TODO - sonuçları tb-gateway connector için sakla
@@ -174,8 +201,6 @@ class NDUCameraService:
 
                 except Exception as e:
                     log.exception(e)
-
-
 
             # print(frame)
 

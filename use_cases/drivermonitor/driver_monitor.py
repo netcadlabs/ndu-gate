@@ -23,7 +23,7 @@ class DriverMonitorRunner(Thread, NDUCameraRunner):
                     'always': True}
         return settings
 
-    def process_frame(self, frame):
+    def process_frame(self, frame, extra_data):
         super().process_frame(frame)
         result = {
             "time": 1224124124,
