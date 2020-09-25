@@ -1,7 +1,7 @@
 from ndu_gate_camera.api.result_handler import ResultHandler
 
 
-class RunnerResultHandler(ResultHandler):
+class ResultHandlerFile(ResultHandler):
     def save_result(self):
         pass
 

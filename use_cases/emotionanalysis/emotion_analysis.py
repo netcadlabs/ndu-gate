@@ -41,16 +41,21 @@ class EmotionAnalysisRunner(Thread, NDUCameraRunner):
     def process_frame(self, frame, extra_data):
         super().process_frame(frame)
 
-        pedestrian_boxes, num_pedestrians, image_list = self.__personDetector.find_person(frame)
+        # pedestrian_boxes, num_pedestrians, image_list = self.__personDetector.find_person(frame)
 
-        result = {}
+        num_pedestrians = extra_data.get("num_pedestrians", 0)
+        person_image_list = extra_data.get("person_image_list", 0)
+        face_list = extra_data.get("face_list", None)
 
-        if len(image_list) > 0:
+        result = []
+
+        if len(person_image_list) > 0:
             person_counter = 0
-            face_list = self.__faceDetector.face_detector3(frame, num_pedestrians)
+            # face_list = self.__faceDetector.face_detector3(frame, num_pedestrians)
             for face in face_list:
                 res = self._get_emotions_analysis(face)
                 log.debug(res)
+                result.append(res)
 
         return result
 

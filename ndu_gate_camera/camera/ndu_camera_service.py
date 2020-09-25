@@ -7,7 +7,8 @@ from yaml import safe_load
 from simplejson import load
 
 from ndu_gate_camera.api.video_source import VideoSourceType
-from ndu_gate_camera.camera.frame_pre_processors import FramePreProcessors
+from ndu_gate_camera.camera.result_handlers.result_handler_file import ResultHandlerFile
+from ndu_gate_camera.camera.result_handlers.result_handler_socket import ResultHandlerSocket
 from ndu_gate_camera.camera.video_sources.camera_video_source import CameraVideoSource
 from ndu_gate_camera.camera.video_sources.file_video_source import FileVideoSource
 from ndu_gate_camera.camera.video_sources.ip_camera_video_source import IPCameraVideoSource
@@ -58,6 +59,9 @@ class NDUCameraService:
         log = logging.getLogger('service')
         log.info("NDUCameraService starting...")
 
+        # self.__result_handler = ResultHandlerFile()
+        self.__result_handler = ResultHandlerSocket()
+
         self.PRE_FIND_PERSON = False
         self.PRE_FIND_FACES = False
         self.__personDetector = None
@@ -92,6 +96,8 @@ class NDUCameraService:
         if self.__config.get("connectors"):
             for connector in self.__config['connectors']:
                 try:
+                    if connector.get("runner", None) is None:
+                        continue
                     connector_class = NDUUtility.check_and_import(connector["type"], self._default_runners.get(connector["type"], connector.get("class")))
                     self._implemented_runners[connector["type"]] = connector_class
                     with open(self._config_dir + connector['configuration'], 'r', encoding="UTF-8") as conf_file:
@@ -193,11 +199,11 @@ class NDUCameraService:
 
             for current_connector in self.available_runners:
                 try:
-                    result = self.available_runners[current_connector].process_frame(frame=frame, extra_data=extra_data)
+                    result = self.available_runners[current_connector].process_frame(frame, extra_data=extra_data)
                     log.debug("result : %s", result)
 
-                    # TODO - sonuçları tb-gateway connector için sakla
-                    # RunnerResultHandler.add_result(result, runner_name=current_connector)
+                    if result is not None:
+                        self.__result_handler.add_result(result, runner_name=current_connector)
 
                 except Exception as e:
                     log.exception(e)

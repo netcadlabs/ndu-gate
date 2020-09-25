@@ -20,7 +20,7 @@ class NDUCameraRunner(ABC):
         pass
 
     @abstractmethod
-    def process_frame(self, frame, extra_data):
+    def process_frame(self, frame, extra_data=None):
         """
         :param frame: tek bir frame datası
         :param extra_data pre process sırasında frameden çıkarılan veriler, person, face gibi key ler içeren dictionary

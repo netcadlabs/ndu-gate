@@ -5,20 +5,19 @@ from ndu_gate_camera.api.result_handler import log
 
 
 class ResultHandlerSocket:
-    def __init__(self, folder):
-        self.workingPath = folder
+    def __init__(self):
         self.__socket_port = 60600
         self.__socket_host = '127.0.0.1'
         self.__socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        pass
+        self.__first_try = False
+        self._open_socket()
 
-    def open_socket(self):
+    def _open_socket(self):
         try:
             self.__socket.connect((self.__socket_host, self.__socket_port))
         except Exception as e:
             log.error(e)
 
-    @staticmethod
     def add_result(self, result, runner_name=None):
         """
 
@@ -36,6 +35,5 @@ class ResultHandlerSocket:
         except Exception as e:
             log.error(e)
 
-    @staticmethod
     def clear_results(self, runner_name=None):
         pass
