@@ -2,11 +2,11 @@ import time
 from os import path
 import cv2
 
-from ndu_gate_camera.dedectors.vision.ssd.config.fd_config import define_img_size
-from ndu_gate_camera.dedectors.vision.ssd.mb_tiny_RFB_fd import create_Mb_Tiny_RFB_fd, create_Mb_Tiny_RFB_fd_predictor
+from ndu_gate_camera.detectors.vision.ssd.config.fd_config import define_img_size
+from ndu_gate_camera.detectors.vision.ssd.mb_tiny_RFB_fd import create_Mb_Tiny_RFB_fd, create_Mb_Tiny_RFB_fd_predictor
 
 
-class FaceDedector:
+class FaceDetector:
     label_path = path.dirname(path.abspath(__file__)) + "/vision/data/voc-model-labels.txt"
     faceModelPath = path.dirname(path.abspath(__file__)) + "/vision/data/version-RFB-640.pth"
 
@@ -18,14 +18,14 @@ class FaceDedector:
         self.__threshold = threshold
         self.__candidate_size = candidate_size
         self.faceNetModel = create_Mb_Tiny_RFB_fd(len(self.__class_names), is_test=True, device=test_device)
-        self.facePretictor = create_Mb_Tiny_RFB_fd_predictor(self.faceNetModel, candidate_size=self.__candidate_size, device=test_device)
+        self.facePredictor = create_Mb_Tiny_RFB_fd_predictor(self.faceNetModel, candidate_size=self.__candidate_size, device=test_device)
         self.faceNetModel.load(self.faceModelPath)
 
-    def face_detector3(self, frame, personCounter):
+    def face_detector3(self, frame, person_counter):
         time_time = time.time()
         (h, w) = frame.shape[:2]
         image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        boxes, labels, probs = self.facePretictor.predict(image, self.__candidate_size / 2, self.__threshold)
+        boxes, labels, probs = self.facePredictor.predict(image, self.__candidate_size / 2, self.__threshold)
         faceCounter = 0
 
         faceList = []

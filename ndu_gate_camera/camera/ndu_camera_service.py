@@ -68,12 +68,14 @@ class NDUCameraService:
         self.__faceDetector = None
         try:
             self.__personDetector = PersonDedector()
-        except:
-            log.error("Can not create person dedector")
+        except Exception as e:
+            log.error("Can not create person detector")
+            log.error(e)
         try:
             self.__faceDetector = FaceDedector()
-        except:
-            log.error("Can not create face dedector")
+        except Exception as e:
+            log.error("Can not create face detector")
+            log.error(e)
 
         self._default_runners = DEFAULT_RUNNERS
         self._implemented_runners = {}
@@ -126,15 +128,15 @@ class NDUCameraService:
                             if self._implemented_runners[connector_type] is None:
                                 log.error("implemented runner not found for %s", connector_type)
                             else:
-                            runner = self._implemented_runners[connector_type](self, connector_config["config"][config], connector_type)
-                            runner.setName(connector_config["name"])
-                            settings = runner.get_settings()
-                            if settings is not None:
-                                if settings.get("person", False):
-                                    self.PRE_FIND_PERSON = True
-                                if settings.get("face", False):
-                                    self.PRE_FIND_FACES = True
-                            self.available_runners[runner.get_name()] = runner
+                                runner = self._implemented_runners[connector_type](self, connector_config["config"][config], connector_type)
+                                runner.setName(connector_config["name"])
+                                settings = runner.get_settings()
+                                if settings is not None:
+                                    if settings.get("person", False):
+                                        self.PRE_FIND_PERSON = True
+                                    if settings.get("face", False):
+                                        self.PRE_FIND_FACES = True
+                                self.available_runners[runner.get_name()] = runner
                         else:
                             log.info("Config not found for %s", connector_type)
                     except Exception as e:
@@ -147,7 +149,6 @@ class NDUCameraService:
         SOURCE_TYPE değerine göre video_source değişkenini oluşturur.
         """
         if self.SOURCE_TYPE is VideoSourceType.VIDEO_FILE:
-            video_path = path.dirname(path.dirname(path.abspath(__file__))) + '/data/duygu2.mp4'.replace('/', path.sep)
             self.SOURCE_CONFIG["test_data_path"] = path.dirname(path.dirname(path.abspath(__file__))) + '/data/'.replace('/', path.sep)
             self.video_source = FileVideoSource(self.SOURCE_CONFIG)
             pass

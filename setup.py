@@ -29,8 +29,6 @@ setup(
     url='https://github.com/netcadlabs/ndu-gate',
     download_url='https://github.com/netcadlabs/ndu-gate/archive/%s.tar.gz' % VERSION,
     install_requires=[
-        'jsonpath-rw',
-        'regex',
         'pip',
         'gdown',
         'PyYAML',
