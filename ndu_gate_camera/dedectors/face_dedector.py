@@ -1,6 +1,6 @@
 import time
 from os import path
-from cv2 import cv2
+import cv2
 
 from ndu_gate_camera.dedectors.vision.ssd.config.fd_config import define_img_size
 from ndu_gate_camera.dedectors.vision.ssd.mb_tiny_RFB_fd import create_Mb_Tiny_RFB_fd, create_Mb_Tiny_RFB_fd_predictor

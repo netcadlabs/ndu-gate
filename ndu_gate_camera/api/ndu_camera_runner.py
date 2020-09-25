@@ -20,6 +20,10 @@ class NDUCameraRunner(ABC):
         pass
 
     @abstractmethod
-    def process_frame(self, frame):
+    def process_frame(self, frame, extra_data=None):
+        """
+        :param frame: tek bir frame datası
+        :param extra_data pre process sırasında frameden çıkarılan veriler, person, face gibi key ler içeren dictionary
+        """
         self.frame_count = self.frame_count + 1
         log.debug("%s processing frame %s", self.get_name(), self.frame_count)

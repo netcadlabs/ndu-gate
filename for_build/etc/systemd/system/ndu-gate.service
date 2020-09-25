@@ -1,0 +1,17 @@
+[Unit]
+Description=NDU-Gate Camera Service
+After=multi-user.target
+
+[Service]
+Type=simple
+User=ndu_gate
+Group=ndu_gate
+
+ExecStart=/usr/bin/python3 -c "from ndu_gate_camera.ndu_camera import daemon; daemon()"
+ExecStop=/bin/kill -INT $MAINPID
+ExecReload=/bin/kill -TERM $MAINPID
+
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
