@@ -2,6 +2,7 @@ from threading import Thread
 from random import choice
 from string import ascii_lowercase
 
+from ndu_gate_camera.runners.emotionanalysis.emotional_model import load_emotion_model
 from ndu_gate_camera.utility.ndu_utility import NDUUtility
 
 try:
@@ -16,7 +17,6 @@ import numpy as np
 from ndu_gate_camera.api.ndu_camera_runner import NDUCameraRunner, log
 from ndu_gate_camera.detectors.face_detector import FaceDetector
 from ndu_gate_camera.detectors.person_detector import PersonDetector
-from use_cases.emotionanalysis.emotional_model import load_emotion_model
 
 
 class EmotionAnalysisRunner(Thread, NDUCameraRunner):

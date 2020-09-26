@@ -21,10 +21,10 @@ class NDUUtility:
             file_dir = path.dirname(path.dirname(__file__))
 
             if system() == "Windows":
-                extensions_paths = (path.abspath(file_dir + '/../use_cases/'.replace('/', path.sep) + extension_type.lower()))
+                extensions_paths = (path.abspath(file_dir + '/runners/'.replace('/', path.sep) + extension_type.lower()))
             else:
                 extensions_paths = ('/var/lib/thingsboard_gateway/extensions/'.replace('/', path.sep) + extension_type.lower(),
-                                    path.abspath(file_dir + '/../use_cases/'.replace('/', path.sep) + extension_type.lower()))
+                                    path.abspath(file_dir + '/runners/'.replace('/', path.sep) + extension_type.lower()))
             try:
                 for extension_path in extensions_paths:
                     if path.exists(extension_path):

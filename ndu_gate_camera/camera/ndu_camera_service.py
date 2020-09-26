@@ -102,14 +102,22 @@ class NDUCameraService:
                         continue
                     connector_class = NDUUtility.check_and_import(connector["type"], self._default_runners.get(connector["type"], connector.get("class")))
                     self._implemented_runners[connector["type"]] = connector_class
-                    with open(self._config_dir + connector['configuration'], 'r', encoding="UTF-8") as conf_file:
-                        connector_conf = load(conf_file)
-                        if not self.connectors_configs.get(connector['type']):
-                            self.connectors_configs[connector['type']] = []
-                        connector_conf["name"] = connector["name"]
+                    config_file = self._config_dir + connector['configuration']
+
+                    if not self.connectors_configs.get(connector['type']):
+                        self.connectors_configs[connector['type']] = []
+
+                    if path.isfile(config_file):
+                        with open(self._config_dir + connector['configuration'], 'r', encoding="UTF-8") as conf_file:
+                            connector_conf = load(conf_file)
+                            connector_conf["name"] = connector["name"]
+                            self.connectors_configs[connector['type']].append({"name": connector["name"], "config": {connector['configuration']: connector_conf}})
+                    else:
+                        log.error("config not found %s", config_file)
+                        connector_conf = {"name": connector["name"]}
                         self.connectors_configs[connector['type']].append({"name": connector["name"], "config": {connector['configuration']: connector_conf}})
                 except Exception as e:
-                    log.error("Error on loading connector:")
+                    log.error("Error on loading connector config")
                     log.exception(e)
         else:
             log.error("Connectors - not found! Check your configuration!")
