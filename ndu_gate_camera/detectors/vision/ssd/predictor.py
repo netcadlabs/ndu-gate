@@ -1,8 +1,11 @@
 import torch
 
-from ..utils import box_utils
-from .data_preprocessing import PredictionTransform
-from ..utils.misc import Timer
+# from ..utils import box_utils
+# from .data_preprocessing import PredictionTransform
+# from ..utils.misc import Timer
+from ndu_gate_camera.detectors.vision.ssd.data_preprocessing import PredictionTransform
+from ndu_gate_camera.detectors.vision.utils import box_utils
+from ndu_gate_camera.detectors.vision.utils.misc import Timer
 
 
 class Predictor:

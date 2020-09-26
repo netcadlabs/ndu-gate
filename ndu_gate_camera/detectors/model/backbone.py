@@ -5,7 +5,7 @@
 import glob, os, tarfile, urllib
 import tensorflow as tf
 
-from ndu_gate_camera.dedectors.model import label_map_util
+from ndu_gate_camera.detectors.model import label_map_util
 
 
 def set_model(model_name, label_name):

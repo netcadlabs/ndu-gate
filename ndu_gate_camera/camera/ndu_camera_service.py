@@ -13,8 +13,8 @@ from ndu_gate_camera.camera.video_sources.camera_video_source import CameraVideo
 from ndu_gate_camera.camera.video_sources.file_video_source import FileVideoSource
 from ndu_gate_camera.camera.video_sources.ip_camera_video_source import IPCameraVideoSource
 from ndu_gate_camera.camera.video_sources.pi_camera_video_source import PiCameraVideoSource
-from ndu_gate_camera.dedectors.face_dedector import FaceDedector
-from ndu_gate_camera.dedectors.person_dedector import PersonDedector
+from ndu_gate_camera.detectors.face_detector import FaceDetector
+from ndu_gate_camera.detectors.person_detector import PersonDetector
 from ndu_gate_camera.utility.ndu_utility import NDUUtility
 
 name = uname()
@@ -67,12 +67,12 @@ class NDUCameraService:
         self.__personDetector = None
         self.__faceDetector = None
         try:
-            self.__personDetector = PersonDedector()
+            self.__personDetector = PersonDetector()
         except Exception as e:
             log.error("Can not create person detector")
             log.error(e)
         try:
-            self.__faceDetector = FaceDedector()
+            self.__faceDetector = FaceDetector()
         except Exception as e:
             log.error("Can not create face detector")
             log.error(e)

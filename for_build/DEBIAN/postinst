@@ -3,10 +3,10 @@ set -e
 
 # Automatically added by dh_python3:
 if which py3compile >/dev/null 2>&1; then
-	py3compile -p python3-thingsboard-gateway 
+	py3compile -p python3-ndu-gate 
 fi
 if which pypy3compile >/dev/null 2>&1; then
-	pypy3compile -p python3-thingsboard-gateway  || true
+	pypy3compile -p python3-ndu-gate  || true
 fi
 
 # End automatically added section
@@ -18,17 +18,17 @@ sudo pip3 install --upgrade jsonschema==3.1.1
 sudo pip3 install --upgrade pyrsistent --progress-bar off -qqq || echo "OK"
 sudo pip3 install --upgrade importlib --progress-bar off -qqq || echo "OK"
 sudo pip3 install --upgrade importlib-metadata --progress-bar off -qqq || echo "OK"
-sudo cp -a -r /etc/thingsboard-gateway/extensions /var/lib/thingsboard_gateway/
-sudo rm -r /etc/thingsboard-gateway/extensions
+sudo cp -a -r /etc/ndu-gate/extensions /var/lib/ndu_gate/
+sudo rm -r /etc/ndu-gate/extensions
 sudo usermod -a -G dialout $CURRENT_USER
-sudo usermod -a -G thingsboard_gateway $CURRENT_USER
-sudo chown thingsboard_gateway:thingsboard_gateway /var/log/thingsboard-gateway/ -R
-sudo chown thingsboard_gateway:thingsboard_gateway /var/lib/thingsboard_gateway/ -R
-sudo chown thingsboard_gateway:thingsboard_gateway /etc/thingsboard-gateway/ -R
-sudo sed -i 's/\.\/logs/\/var\/log\/thingsboard-gateway/g' /etc/thingsboard-gateway/config/logs.conf >> /etc/thingsboard-gateway/config/logs.conf
-echo "Installation completed"
-echo "Enabling daemon..."
-sudo pidof systemd && sudo systemctl enable thingsboard-gateway || echo "Systemctl not found"
+sudo usermod -a -G ndu_gate $CURRENT_USER
+sudo chown ndu_gate:ndu_gate /var/log/ndu-gate/ -R
+sudo chown ndu_gate:ndu_gate /var/lib/ndu_gate/ -R
+sudo chown ndu_gate:ndu_gate /etc/ndu-gate/ -R
+sudo sed -i 's/\.\/logs/\/var\/log\/ndu-gate/g' /etc/ndu-gate/config/logs.conf >> /etc/ndu-gate/config/logs.conf
+echo "Kurulum tamamlandı"
+echo "NDU-Gate kamera servisi başlatılıyor..."
+sudo pidof systemd && sudo systemctl enable ndu-gate || echo "Systemctl not found"
 #echo "Daemon starting..."
-sudo pidof systemd && sudo systemctl start thingsboard-gateway || echo
-echo -e "\e[96mThingsboard Gateway \e[92mhas been installed. Have a nice day \e[93m\e[5m:)\e[25m\e[39m"
+sudo pidof systemd && sudo systemctl start ndu-gate || echo
+echo -e "\e[96mNDU-Gate Kamera Servisi\e[92mhas kurulumu tamamlandi. opencv, torch vs. gibi kütüphaneleri kurmayı unutma \e[93m\e[5m:)\e[25m\e[39m"

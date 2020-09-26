@@ -7,7 +7,6 @@ logs
 __pycache__/
 *.DS_Store
 
-#ndu_gate_camera/dedectors/vision/data/
 docker/.ndu-gate/
 
 deb_dist

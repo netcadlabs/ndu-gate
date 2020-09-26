@@ -14,8 +14,8 @@ import cv2
 import numpy as np
 
 from ndu_gate_camera.api.ndu_camera_runner import NDUCameraRunner, log
-from ndu_gate_camera.dedectors.face_dedector import FaceDedector
-from ndu_gate_camera.dedectors.person_dedector import PersonDedector
+from ndu_gate_camera.detectors.face_detector import FaceDetector
+from ndu_gate_camera.detectors.person_detector import PersonDetector
 from use_cases.emotionanalysis.emotional_model import load_emotion_model
 
 
@@ -25,8 +25,8 @@ class EmotionAnalysisRunner(Thread, NDUCameraRunner):
         super().__init__()
         self.setName(config.get("name", 'EmotionAnalysisRunner' + ''.join(choice(ascii_lowercase) for _ in range(5))))
         self.__config = config
-        self.__personDetector = PersonDedector()
-        self.__faceDetector = FaceDedector()
+        self.__personDetector = PersonDetector()
+        self.__faceDetector = FaceDetector()
 
         self.__emotion_model = load_emotion_model()
         self.__emotion_labels = ['angry', 'disgust', 'fear', 'happy', 'sad', 'surprise', 'neutral']
