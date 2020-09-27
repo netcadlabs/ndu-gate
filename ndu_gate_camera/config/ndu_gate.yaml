@@ -1,5 +1,5 @@
 video_source:
-  type: CAMERA
+  type: CAMERA # VIDEO_FILE, PI_CAMERA, CAMERA, IP_CAMERA, VIDEO_URL, YOUTUBE
   file_path: data/duygu2.mp4
   url:
 

@@ -14,18 +14,20 @@ echo "Installing jsonschema"
 sudo rm -rf /usr/lib/python3/dist-packages/jsonschema
 CURRENT_USER=$USER
 sudo pip3 install --upgrade jsonschema==3.1.1
-#sudo pip3 install --upgrade bluepy
 sudo pip3 install --upgrade pyrsistent --progress-bar off -qqq || echo "OK"
 sudo pip3 install --upgrade importlib --progress-bar off -qqq || echo "OK"
 sudo pip3 install --upgrade importlib-metadata --progress-bar off -qqq || echo "OK"
 sudo cp -a -r /etc/ndu-gate/extensions /var/lib/ndu_gate/
+sudo cp -a -r /etc/ndu-gate/runners /var/lib/ndu_gate/
 sudo rm -r /etc/ndu-gate/extensions
+sudo rm -r /etc/ndu-gate/runners
 sudo usermod -a -G dialout $CURRENT_USER
 sudo usermod -a -G ndu_gate $CURRENT_USER
 sudo chown ndu_gate:ndu_gate /var/log/ndu-gate/ -R
 sudo chown ndu_gate:ndu_gate /var/lib/ndu_gate/ -R
 sudo chown ndu_gate:ndu_gate /etc/ndu-gate/ -R
 sudo sed -i 's/\.\/logs/\/var\/log\/ndu-gate/g' /etc/ndu-gate/config/logs.conf >> /etc/ndu-gate/config/logs.conf
+sudo sed -i 's/\.\/logs/\/var\/log\/ndu-gate/g' /etc/ndu-gate/config/logs_macosx.conf >> /etc/ndu-gate/config/logs_macosx.conf
 echo "Kurulum tamamlandı"
 echo "NDU-Gate kamera servisi başlatılıyor..."
 sudo pidof systemd && sudo systemctl enable ndu-gate || echo "Systemctl not found"

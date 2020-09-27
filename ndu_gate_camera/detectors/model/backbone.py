@@ -15,22 +15,22 @@ def set_model(model_name, label_name):
         if file == model_name:
             model_found = 1
 
-    # What model to download.
-    model_name = model_name
-    model_file = model_name + ".tar.gz"
-    download_base = "http://download.tensorflow.org/models/object_detection/"
-
     # Path to frozen detection graph. This is the actual model that is used for the object detection.
-    path_to_ckpt = model_name + "/frozen_inference_graph.pb"
-
+    path_to_ckpt = os.path.dirname(os.path.abspath(__file__)) + ("data/" + model_name).replace('/', os.path.sep)
+    if os.path.isfile(path_to_ckpt):
+        model_found = 1
+        
     # List of the strings that is used to add correct label for each box.
-
-    path_to_labels = os.path.dirname(os.path.abspath(__file__)) + ("/data/" + label_name).replace('/', os.path.sep);
+    path_to_labels = os.path.dirname(os.path.abspath(__file__)) + ("/data/" + label_name).replace('/', os.path.sep)
 
     num_classes = 90
 
     # Download Model if it has not been downloaded yet
     if model_found == 0:
+        # What model to download.
+        model_name = model_name
+        model_file = model_name + ".tar.gz"
+        download_base = "http://download.tensorflow.org/models/object_detection/"
         opener = urllib.request.URLopener()
         opener.retrieve(download_base + model_file, model_file)
         tar_file = tarfile.open(model_file)

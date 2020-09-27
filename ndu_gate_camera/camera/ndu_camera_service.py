@@ -82,6 +82,7 @@ class NDUCameraService:
         except Exception as e:
             log.error("Can not create person detector")
             log.error(e)
+            print(e)
         try:
             self.__faceDetector = FaceDetector()
         except Exception as e:
