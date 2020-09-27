@@ -1,6 +1,5 @@
-import math
-
 import torch
+import math
 
 
 def generate_priors(feature_map_list, shrinkage_list, image_size, min_boxes, clamp=True) -> torch.Tensor:

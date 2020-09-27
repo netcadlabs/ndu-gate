@@ -1,20 +1,19 @@
+import torch
+
 from collections import namedtuple
 from typing import List, Tuple
 
 import numpy as np
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
 
-from ..utils import box_utils
+from ndu_gate_camera.detectors.vision.utils import box_utils
 
 GraphPath = namedtuple("GraphPath", ['s0', 'name', 's1'])
 
 
-class SSD(nn.Module):
-    def __init__(self, num_classes: int, base_net: nn.ModuleList, source_layer_indexes: List[int],
-                 extras: nn.ModuleList, classification_headers: nn.ModuleList,
-                 regression_headers: nn.ModuleList, is_test=False, config=None, device=None):
+class SSD(torch.nn.Module):
+    def __init__(self, num_classes: int, base_net: torch.nn.ModuleList, source_layer_indexes: List[int],
+                 extras: torch.nn.ModuleList, classification_headers: torch.nn.ModuleList,
+                 regression_headers: torch.nn.ModuleList, is_test=False, config=None, device=None):
         """Compose a SSD model using the given components.
         """
         super(SSD, self).__init__()
@@ -29,7 +28,7 @@ class SSD(nn.Module):
         self.config = config
 
         # register layers in source_layer_indexes by adding them to a module list
-        self.source_layer_add_ons = nn.ModuleList([t[1] for t in source_layer_indexes
+        self.source_layer_add_ons = torch.nn.ModuleList([t[1] for t in source_layer_indexes
                                                    if isinstance(t, tuple) and not isinstance(t, GraphPath)])
         if device:
             self.device = device
@@ -91,7 +90,7 @@ class SSD(nn.Module):
         locations = torch.cat(locations, 1)
 
         if self.is_test:
-            confidences = F.softmax(confidences, dim=2)
+            confidences = torch.nn.functional.softmax(confidences, dim=2)
             boxes = box_utils.convert_locations_to_boxes(
                 locations, self.priors, self.config.center_variance, self.config.size_variance
             )
@@ -161,6 +160,6 @@ class MatchPrior(object):
         return locations, labels
 
 
-def _xavier_init_(m: nn.Module):
-    if isinstance(m, nn.Conv2d):
-        nn.init.xavier_uniform_(m.weight)
+def _xavier_init_(m: torch.nn.Module):
+    if isinstance(m, torch.nn.Conv2d):
+        torch.nn.init.xavier_uniform_(m.weight)

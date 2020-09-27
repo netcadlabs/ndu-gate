@@ -14,3 +14,8 @@ dist
 ndu_gate.egg-info
 
 ndu-gate-*.tar.gz
+
+# bu dizinler kurulum dosyası oluşturulurken kullanılıyor
+# default ayar ve runnerlar
+for_build/etc/ndu-gate/config
+for_build/etc/ndu-gate/runners

@@ -1,11 +1,10 @@
 # from https://github.com/amdegroot/ssd.pytorch
 
-
+import torch
 import types
 
 import cv2
 import numpy as np
-import torch
 from numpy import random
 from torchvision import transforms
 

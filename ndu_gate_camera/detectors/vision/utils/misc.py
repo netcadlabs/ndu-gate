@@ -1,6 +1,5 @@
-import datetime
-
 import torch
+import datetime
 
 
 def str2bool(s):
