@@ -2,6 +2,7 @@
 set -e
 
 echo "Installing directory for configs..."
-sudo mkdir /etc/thingsboard-gateway || echo
-sudo adduser --system --gecos "ThingsBoard-Gateway Service" --disabled-password --group --home /var/lib/thingsboard_gateway thingsboard_gateway || echo "User exists"
-sudo mkdir /var/lib/thingsboard_gateway/extensions || echo
+sudo mkdir /etc/ndu-gate || echo
+sudo adduser --system --gecos "NDU-Gate Camera Service" --disabled-password --group --home /var/lib/ndu_gate ndu_gate || echo "User exists"
+sudo mkdir /var/lib/ndu_gate/extensions || echo
+sudo mkdir /var/lib/ndu_gate/runners || echo

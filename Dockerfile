@@ -28,7 +28,7 @@ RUN python /setup.py install && mkdir -p /default-config/config /default-config/
 
 RUN echo '#Installation start script\n\
 \n\
-python3 -m pip install torch==1.6.0\n\
+python3 -m pip install torch==1.6.0+cu101 torchvision==0.7.0+cu101 -f https://download.pytorch.org/whl/torch_stable.html\n\
 \n\
 python3 -c "import cv2; print(cv2.__version__)"\n\
 \n\
@@ -37,7 +37,7 @@ python3 -c "import cv2; print(cv2.__version__)"\n\
 
 RUN ./installations.sh
 
-RUN "python3 -m pip install torchvision"
+# RUN "python3 -m pip install torch torchvision"
 
 VOLUME ["${configs}", "${extensions}", "${logs}"]
 

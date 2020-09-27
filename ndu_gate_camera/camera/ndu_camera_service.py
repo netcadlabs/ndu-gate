@@ -17,6 +17,8 @@ from ndu_gate_camera.detectors.face_detector import FaceDetector
 from ndu_gate_camera.detectors.person_detector import PersonDetector
 from ndu_gate_camera.utility.ndu_utility import NDUUtility
 
+from ndu_gate_camera.utility.constants import DEFAULT_TB_GATEWAY_CONF, DEFAULT_NDU_GATE_CONF
+
 name = uname()
 
 DEFAULT_RUNNERS = {
@@ -27,18 +29,25 @@ DEFAULT_RUNNERS = {
 
 
 class NDUCameraService:
-    def __init__(self, gateway_config_file=None):
+    def __init__(self, gateway_config_file=None, ndu_gate_config_file=None):
         if gateway_config_file is None:
-            gateway_config_file = path.dirname(path.dirname(path.abspath(__file__))) + '/../config/tb_gateway.yaml'.replace('/', path.sep)
+            gateway_config_file = path.dirname(path.dirname(path.abspath(__file__))) + '/config/tb_gateway.yaml'.replace('/', path.sep)
+
+        if ndu_gate_config_file is None:
+            ndu_gate_config_file = path.dirname(path.dirname(path.abspath(__file__))) + '/config/ndu_gate.yaml'.replace('/', path.sep)
 
         with open(gateway_config_file) as general_config:
             self.__config = safe_load(general_config)
         self._config_dir = path.dirname(path.abspath(gateway_config_file)) + path.sep
 
+        with open(ndu_gate_config_file) as general_config:
+            self.__ndu_gate_config = safe_load(general_config)
+        self._ndu_gate_config_dir = path.dirname(path.abspath(gateway_config_file)) + path.sep
+
         self.SOURCE_TYPE = VideoSourceType.CAMERA
         self.SOURCE_CONFIG = None
-        if self.__config.get("video_source"):
-            self.SOURCE_CONFIG = self.__config.get("video_source")
+        if self.__ndu_gate_config.get("video_source"):
+            self.SOURCE_CONFIG = self.__ndu_gate_config.get("video_source")
             type_str = self.SOURCE_CONFIG.get("type", "CAMERA")
             if VideoSourceType[type_str]:
                 self.SOURCE_TYPE = VideoSourceType[type_str]
@@ -49,9 +58,9 @@ class NDUCameraService:
         try:
             import platform
             if platform.system() == "Darwin":
-                logging.config.fileConfig(self._config_dir + "logs_macosx.conf", disable_existing_loggers=False)
+                logging.config.fileConfig(self._ndu_gate_config_dir + "logs_macosx.conf", disable_existing_loggers=False)
             else:
-                logging.config.fileConfig(self._config_dir + "logs.conf", disable_existing_loggers=False)
+                logging.config.fileConfig(self._ndu_gate_config_dir + "logs.conf", disable_existing_loggers=False)
         except Exception as e:
             logging_error = e
 
@@ -59,8 +68,10 @@ class NDUCameraService:
         log = logging.getLogger('service')
         log.info("NDUCameraService starting...")
 
-        # self.__result_handler = ResultHandlerFile()
-        self.__result_handler = ResultHandlerSocket()
+        if self.__ndu_gate_config.get("result_handler") is str("FILE"):
+            self.__result_handler = ResultHandlerFile()
+        else:
+            self.__result_handler = ResultHandlerSocket()
 
         self.PRE_FIND_PERSON = False
         self.PRE_FIND_FACES = False
@@ -233,4 +244,4 @@ class NDUCameraService:
 
 
 if __name__ == '__main__':
-    NDUCameraService(path.dirname(path.dirname(path.abspath(__file__))) + '/config/tb_gateway.yaml'.replace('/', path.sep))
+    NDUCameraService(DEFAULT_TB_GATEWAY_CONF.replace('/', path.sep), DEFAULT_NDU_GATE_CONF.replace('/', path.sep))

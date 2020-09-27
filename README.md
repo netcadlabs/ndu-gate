@@ -17,4 +17,7 @@ kullanım senaryolarına özel kodları içerir.
 ```api/ndu_camera_runner.py``` dosyasında tanımlı video kaynağından alınan frameleri
  işlemek için gerçeklenecek olan arayüz sınıfıdır.
 
+## ResultHandler
+
+##### TODO
 

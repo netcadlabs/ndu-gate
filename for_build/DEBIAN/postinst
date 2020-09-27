@@ -31,4 +31,4 @@ echo "NDU-Gate kamera servisi başlatılıyor..."
 sudo pidof systemd && sudo systemctl enable ndu-gate || echo "Systemctl not found"
 #echo "Daemon starting..."
 sudo pidof systemd && sudo systemctl start ndu-gate || echo
-echo -e "\e[96mNDU-Gate Kamera Servisi\e[92mhas kurulumu tamamlandi. opencv, torch vs. gibi kütüphaneleri kurmayı unutma \e[93m\e[5m:)\e[25m\e[39m"
+echo -e "\e[96mNDU-Gate Camera Service kurulumu tamamlandi. opencv, tensorflow, torch vs. gibi kütüphaneleri kurmayı unutma \e[93m\e[5m:P\e[25m\e[39m"

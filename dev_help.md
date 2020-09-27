@@ -1,4 +1,21 @@
+# Kurulum hazırlama
 
+AŞağıdaki komut ile *deb_dist/ndu-gate-<versıon>/debian/python3-ndu-gate.deb* klasörüne 
+.deb dosyası oluşturulur
+```
+sudo ./generate_deb_package.sh clean
+```
+
+# Kurulum
+
+```
+sudo apt install ./python3-ndu-gate.deb -y
+```
+
+Kontrol 
+```
+systemctl status ndu-gate
+```
 
 # Problem #1
 
