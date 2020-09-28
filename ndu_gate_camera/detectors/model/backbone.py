@@ -1,27 +1,46 @@
 # Already trained model available @
 # https://github.com/tensorflow/models/tree/master/research/object_detection
 # was used as a part of this code.
-
+import errno
 import glob, os, tarfile, urllib
 import tensorflow as tf
+from os import path
 
 from ndu_gate_camera.detectors.model import label_map_util
+from ndu_gate_camera.utility.constants import NDU_GATE_MODEL_FOLDER
 
 
 def set_model(model_name, label_name):
     model_found = 0
+    labels_found = 0
 
     for file in glob.glob("*"):
         if file == model_name:
             model_found = 1
 
     # Path to frozen detection graph. This is the actual model that is used for the object detection.
-    path_to_ckpt = os.path.dirname(os.path.abspath(__file__)) + ("data/" + model_name).replace('/', os.path.sep)
-    if os.path.isfile(path_to_ckpt):
+    path_to_model = path.dirname(path.abspath(__file__)) + ("/../../data/vision/" + model_name).replace('/', os.path.sep)
+    path_to_model = path.abspath(path_to_model)
+    if path.isfile(path_to_model):
         model_found = 1
-        
-    # List of the strings that is used to add correct label for each box.
-    path_to_labels = os.path.dirname(os.path.abspath(__file__)) + ("/data/" + label_name).replace('/', os.path.sep)
+    else:
+        path_to_model = (NDU_GATE_MODEL_FOLDER + ("/vision/" + model_name)).replace('/', os.path.sep)
+        if path.isfile(path_to_model):
+            model_found = 1
+
+    path_to_labels = os.path.dirname(os.path.abspath(__file__)) + ("/../../data/vision/" + label_name).replace('/', os.path.sep)
+    path_to_labels = path.abspath(path_to_labels)
+    if path.isfile(path_to_labels):
+        labels_found = 1
+    else:
+        path_to_labels = (NDU_GATE_MODEL_FOLDER + ("/vision/" + label_name)).replace('/', os.path.sep)
+        if path.isfile(path_to_labels):
+            labels_found = 1
+
+    if model_found == 0:
+        raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), path_to_model)
+    if labels_found == 0:
+        raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), path_to_labels)
 
     num_classes = 90
 
@@ -43,7 +62,7 @@ def set_model(model_name, label_name):
     detection_graph = tf.Graph()
     with detection_graph.as_default():
         od_graph_def = tf.compat.v1.GraphDef()
-        with tf.io.gfile.GFile(path_to_ckpt, "rb") as fid:
+        with tf.io.gfile.GFile(path_to_model, "rb") as fid:
             serialized_graph = fid.read()
             od_graph_def.ParseFromString(serialized_graph)
             tf.import_graph_def(od_graph_def, name="")

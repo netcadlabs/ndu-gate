@@ -24,6 +24,7 @@ class NDUUtility:
                 extensions_paths = (path.abspath(file_dir + '/runners/'.replace('/', path.sep) + extension_type.lower()))
             else:
                 extensions_paths = ('/var/lib/thingsboard_gateway/extensions/'.replace('/', path.sep) + extension_type.lower(),
+                                    '/var/lib/ndu_gate/extensions/'.replace('/', path.sep) + extension_type.lower(),
                                     path.abspath(file_dir + '/runners/'.replace('/', path.sep) + extension_type.lower()))
             try:
                 for extension_path in extensions_paths:
