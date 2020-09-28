@@ -14,6 +14,7 @@ dist
 ndu_gate.egg-info
 
 ndu-gate-*.tar.gz
+python3-ndu-gate.deb
 
 # bu dizinler kurulum dosyası oluşturulurken kullanılıyor
 # default ayar ve runnerlar

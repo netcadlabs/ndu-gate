@@ -14,6 +14,7 @@ from ndu_gate_camera.utility.constants import NDU_GATE_MODEL_FOLDER
 # pylint: disable=protected-access
 LOG = getLogger("service")
 
+
 def set_model(model_name, label_name):
     model_found = 0
     labels_found = 0

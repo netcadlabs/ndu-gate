@@ -7,6 +7,7 @@ from yaml import safe_load
 from simplejson import load
 
 from ndu_gate_camera.api.video_source import VideoSourceType
+from ndu_gate_camera.camera.ndu_logger import NDULoggerHandler
 from ndu_gate_camera.camera.result_handlers.result_handler_file import ResultHandlerFile
 from ndu_gate_camera.camera.result_handlers.result_handler_socket import ResultHandlerSocket
 from ndu_gate_camera.camera.video_sources.camera_video_source import CameraVideoSource
@@ -38,11 +39,11 @@ class NDUCameraService:
 
         with open(gateway_config_file) as general_config:
             self.__config = safe_load(general_config)
-        self._config_dir = path.dirname(path.abspath(gateway_config_file)) + path.sep
+        self._tb_gateway_config_dir = path.dirname(path.abspath(gateway_config_file)) + path.sep
 
         with open(ndu_gate_config_file) as general_config:
             self.__ndu_gate_config = safe_load(general_config)
-        self._ndu_gate_config_dir = path.dirname(path.abspath(gateway_config_file)) + path.sep
+        self._ndu_gate_config_dir = path.dirname(path.abspath(ndu_gate_config_file)) + path.sep
 
         self.SOURCE_TYPE = VideoSourceType.CAMERA
         self.SOURCE_CONFIG = None
@@ -64,6 +65,7 @@ class NDUCameraService:
         except Exception as e:
             print(e)
             logging_error = e
+            NDULoggerHandler.set_default_handler()
 
         global log
         log = logging.getLogger('service')
@@ -82,13 +84,13 @@ class NDUCameraService:
             self.__personDetector = PersonDetector()
         except Exception as e:
             log.error("Can not create person detector")
-            log.error(e)
+            log.error(e, stack_info=True)
             print(e)
         try:
             self.__faceDetector = FaceDetector()
         except Exception as e:
             log.error("Can not create face detector")
-            log.error(e)
+            log.error(e, stack_info=True)
 
         self._default_runners = DEFAULT_RUNNERS
         self._implemented_runners = {}
@@ -115,13 +117,13 @@ class NDUCameraService:
                         continue
                     connector_class = NDUUtility.check_and_import(connector["type"], self._default_runners.get(connector["type"], connector.get("class")))
                     self._implemented_runners[connector["type"]] = connector_class
-                    config_file = self._config_dir + connector['configuration']
+                    config_file = self._tb_gateway_config_dir + connector['configuration']
 
                     if not self.connectors_configs.get(connector['type']):
                         self.connectors_configs[connector['type']] = []
 
                     if path.isfile(config_file):
-                        with open(self._config_dir + connector['configuration'], 'r', encoding="UTF-8") as conf_file:
+                        with open(self._tb_gateway_config_dir + connector['configuration'], 'r', encoding="UTF-8") as conf_file:
                             connector_conf = load(conf_file)
                             connector_conf["name"] = connector["name"]
                             self.connectors_configs[connector['type']].append({"name": connector["name"], "config": {connector['configuration']: connector_conf}})
