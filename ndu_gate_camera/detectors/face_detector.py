@@ -12,25 +12,25 @@ from ndu_gate_camera.utility.constants import NDU_GATE_MODEL_FOLDER
 class FaceDetector:
 
     def __init__(self, threshold=0.8, candidate_size=1000):
-        label_path = path.dirname(path.abspath(__file__)) + "/data/vision/voc-model-labels.txt"
-        face_model_path = path.dirname(path.abspath(__file__)) + "/data/vision/version-RFB-640.pth"
+        self.label_path = path.dirname(path.abspath(__file__)) + "/data/vision/voc-model-labels.txt"
+        self.face_model_path = path.dirname(path.abspath(__file__)) + "/data/vision/version-RFB-640.pth"
 
-        if not path.isfile(label_path):
-            label_path = NDU_GATE_MODEL_FOLDER + "/vision/voc-model-labels.txt"
+        if not path.isfile(self.label_path):
+            self.label_path = NDU_GATE_MODEL_FOLDER + "/vision/voc-model-labels.txt"
 
-        if not path.isfile(face_model_path):
+        if not path.isfile(self.face_model_path):
             face_model_path = NDU_GATE_MODEL_FOLDER + "/vision/voc-model-labels.txt"
 
-        if not path.isfile(label_path):
-            raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), label_path)
+        if not path.isfile(self.label_path):
+            raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), self.label_path)
 
-        if not path.isfile(face_model_path):
-            raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), face_model_path)
+        if not path.isfile(self.face_model_path):
+            raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), self.face_model_path)
 
         define_img_size(480)
         test_device = "cpu"
 
-        self.__class_names = [name.strip() for name in open(self.label_path).readlines()]
+        self.__class_names = [name.strip() for name in open(self.self.label_path).readlines()]
         self.__threshold = threshold
         self.__candidate_size = candidate_size
         self.faceNetModel = create_Mb_Tiny_RFB_fd(len(self.__class_names), is_test=True, device=test_device)

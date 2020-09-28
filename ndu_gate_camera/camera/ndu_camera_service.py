@@ -62,6 +62,7 @@ class NDUCameraService:
             else:
                 logging.config.fileConfig(self._ndu_gate_config_dir + "logs.conf", disable_existing_loggers=False)
         except Exception as e:
+            print(e)
             logging_error = e
 
         global log

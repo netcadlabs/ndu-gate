@@ -3,12 +3,16 @@
 # was used as a part of this code.
 import errno
 import glob, os, tarfile, urllib
+from logging import getLogger
+
 import tensorflow as tf
 from os import path
 
 from ndu_gate_camera.detectors.model import label_map_util
 from ndu_gate_camera.utility.constants import NDU_GATE_MODEL_FOLDER
 
+# pylint: disable=protected-access
+LOG = getLogger("service")
 
 def set_model(model_name, label_name):
     model_found = 0
@@ -27,6 +31,8 @@ def set_model(model_name, label_name):
         path_to_model = (NDU_GATE_MODEL_FOLDER + ("/vision/" + model_name)).replace('/', os.path.sep)
         if path.isfile(path_to_model):
             model_found = 1
+        else:
+            LOG.error("Model file not found %s", path_to_model)
 
     path_to_labels = os.path.dirname(os.path.abspath(__file__)) + ("/../../data/vision/" + label_name).replace('/', os.path.sep)
     path_to_labels = path.abspath(path_to_labels)
@@ -36,6 +42,8 @@ def set_model(model_name, label_name):
         path_to_labels = (NDU_GATE_MODEL_FOLDER + ("/vision/" + label_name)).replace('/', os.path.sep)
         if path.isfile(path_to_labels):
             labels_found = 1
+        else:
+            LOG.error("Labels file not found %s", path_to_labels)
 
     if model_found == 0:
         raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), path_to_model)

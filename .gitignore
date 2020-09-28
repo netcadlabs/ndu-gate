@@ -19,3 +19,4 @@ ndu-gate-*.tar.gz
 # default ayar ve runnerlar
 for_build/etc/ndu-gate/config
 for_build/etc/ndu-gate/runners
+for_build/etc/ndu-gate/data
