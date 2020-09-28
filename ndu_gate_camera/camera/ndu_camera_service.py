@@ -71,10 +71,19 @@ class NDUCameraService:
         log = logging.getLogger('service')
         log.info("NDUCameraService starting...")
 
-        if self.__ndu_gate_config.get("result_handler") is str("FILE"):
-            self.__result_handler = ResultHandlerFile()
+        self.__result_hand_conf = self.__ndu_gate_config.get("result_handler", None)
+        default_result_file_path = "/var/lib/thingsboard_gateway/extensions/camera/"
+        if self.__result_hand_conf is None:
+            self.__result_hand_conf = {
+                "type": "FILE",
+                "file_path": default_result_file_path
+            }
+
+        if str(self.__result_hand_conf.get("type", "FILE")) is str("SOCKET"):
+            self.__result_handler = ResultHandlerSocket(socket_port=self.__result_hand_conf.get("port", 60060),
+                                                        socket_host=self.__result_hand_conf.get("host", '127.0.0.1'))
         else:
-            self.__result_handler = ResultHandlerSocket()
+            self.__result_handler = ResultHandlerFile(self.__result_hand_conf.get("file_path", default_result_file_path))
 
         self.PRE_FIND_PERSON = False
         self.PRE_FIND_FACES = False

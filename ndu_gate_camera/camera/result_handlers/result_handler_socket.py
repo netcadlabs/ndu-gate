@@ -5,11 +5,12 @@ from ndu_gate_camera.api.result_handler import log
 
 
 class ResultHandlerSocket:
-    def __init__(self):
-        self.__socket_port = 60600
-        self.__socket_host = '127.0.0.1'
+    def __init__(self, socket_port=60600, socket_host='127.0.0.1'):
+        self.__socket_port = socket_port
+        self.__socket_host = socket_host
         self.__socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.__first_try = False
+        log.info("ResultHandlerSocket %s:%s", self.__socket_host, self.self.__socket_port)
         self._open_socket()
 
     def _open_socket(self):

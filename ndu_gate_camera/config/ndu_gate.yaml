@@ -3,4 +3,8 @@ video_source:
   file_path: data/duygu2.mp4
   url:
 
-result_handler: FILE # FILE, SOCKET
+result_handler:
+  type: FILE # FILE, SOCKET
+  file_path: /var/lib/thingsboard_gateway/extensions/camera/serviceTelemetry.txt
+  port: 60060
+  host: 127.0.0.1

@@ -1,4 +1,5 @@
-from ndu_gate_camera.api.result_handler import ResultHandler
+from ndu_gate_camera.api.result_handler import ResultHandler, log
+from os import path
 
 
 class ResultHandlerFile(ResultHandler):
@@ -7,12 +8,13 @@ class ResultHandlerFile(ResultHandler):
 
     def __init__(self, folder):
         self.workingPath = folder
-        pass
+        if not path.isdir(folder):
+            self.workingPath = "/etc/ndu_gate/"
+        log.info("ResultHandlerFile %s", self.workingPath)
 
-    @staticmethod
     def save_result(self, result, runner_name=None):
         """
-
+        Verilen ölçümleri serviceTelemetry.txt dosyasına yazar.
         :param self:
         :param result: {"key" : "telem-key", "value": 1, "ts" : timestamp }
         :param runner_name:
@@ -25,10 +27,5 @@ class ResultHandlerFile(ResultHandler):
             f.truncate()
             f.close()
 
-        with open(self.workingPath + 'serviceTelemetry.txt', 'r') as myfile:
-            personcount = myfile.read()
-            print("person count: %s ", str(result))
-
-    @staticmethod
     def clear_results(self, runner_name=None):
         pass

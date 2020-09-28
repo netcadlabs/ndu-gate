@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 
 import logging
 
-log = logging.getLogger("video_source")
+log = logging.getLogger("result")
 
 
 class ResultHandler(ABC):
