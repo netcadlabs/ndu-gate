@@ -5,6 +5,6 @@ video_source:
 
 result_handler:
   type: FILE # FILE, SOCKET
-  file_path: /var/lib/thingsboard_gateway/extensions/camera/serviceTelemetry.txt
+  file_path: /var/lib/thingsboard_gateway/extensions/camera/
   port: 60060
   host: 127.0.0.1

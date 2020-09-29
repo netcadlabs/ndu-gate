@@ -12,8 +12,8 @@ from ndu_gate_camera.utility.constants import NDU_GATE_MODEL_FOLDER
 class FaceDetector:
 
     def __init__(self, threshold=0.8, candidate_size=1000):
-        self.label_path = path.dirname(path.abspath(__file__)) + "/data/vision/voc-model-labels.txt"
-        self.face_model_path = path.dirname(path.abspath(__file__)) + "/data/vision/version-RFB-640.pth"
+        self.label_path = path.dirname(path.abspath(__file__)) + "/../data/vision/voc-model-labels.txt"
+        self.face_model_path = path.dirname(path.abspath(__file__)) + "/../data/vision/version-RFB-640.pth"
 
         if not path.isfile(self.label_path):
             self.label_path = NDU_GATE_MODEL_FOLDER + "/vision/voc-model-labels.txt"

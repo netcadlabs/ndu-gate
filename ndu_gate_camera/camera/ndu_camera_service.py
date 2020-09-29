@@ -56,12 +56,12 @@ class NDUCameraService:
                 self.SOURCE_TYPE = VideoSourceType.CAMERA
 
         logging_error = None
+        logging_config_file = self._ndu_gate_config_dir + "logs.conf"
         try:
             import platform
             if platform.system() == "Darwin":
-                logging.config.fileConfig(self._ndu_gate_config_dir + "logs_macosx.conf", disable_existing_loggers=False)
-            else:
-                logging.config.fileConfig(self._ndu_gate_config_dir + "logs.conf", disable_existing_loggers=False)
+                self._ndu_gate_config_dir + "logs_macosx.conf"
+            logging.config.fileConfig(logging_config_file, disable_existing_loggers=False)
         except Exception as e:
             print(e)
             logging_error = e
@@ -70,20 +70,24 @@ class NDUCameraService:
         global log
         log = logging.getLogger('service')
         log.info("NDUCameraService starting...")
+        log.info("TB-Gateway config file: %s", gateway_config_file)
+        log.info("NDU-Gate config file: %s", ndu_gate_config_file)
+        log.info("NDU-Gate logging config file: %s", logging_config_file)
+        log.info("NDU-Gate logging service level: %s", log.level)
 
-        self.__result_hand_conf = self.__ndu_gate_config.get("result_handler", None)
+        result_hand_conf = self.__ndu_gate_config.get("result_handler", None)
         default_result_file_path = "/var/lib/thingsboard_gateway/extensions/camera/"
-        if self.__result_hand_conf is None:
-            self.__result_hand_conf = {
+        if result_hand_conf is None:
+            result_hand_conf = {
                 "type": "FILE",
                 "file_path": default_result_file_path
             }
 
-        if str(self.__result_hand_conf.get("type", "FILE")) is str("SOCKET"):
-            self.__result_handler = ResultHandlerSocket(socket_port=self.__result_hand_conf.get("port", 60060),
-                                                        socket_host=self.__result_hand_conf.get("host", '127.0.0.1'))
+        if str(result_hand_conf.get("type", "FILE")) == str("SOCKET"):
+            self.__result_handler = ResultHandlerSocket(socket_port=result_hand_conf.get("port", 60060),
+                                                        socket_host=result_hand_conf.get("host", '127.0.0.1'))
         else:
-            self.__result_handler = ResultHandlerFile(self.__result_hand_conf.get("file_path", default_result_file_path))
+            self.__result_handler = ResultHandlerFile(result_hand_conf.get("file_path", default_result_file_path))
 
         self.PRE_FIND_PERSON = False
         self.PRE_FIND_FACES = False
@@ -170,7 +174,7 @@ class NDUCameraService:
                                         self.PRE_FIND_FACES = True
                                 self.available_runners[runner.get_name()] = runner
                         else:
-                            log.info("Config not found for %s", connector_type)
+                            log.warning("Config not found for %s", connector_type)
                     except Exception as e:
                         log.exception(e)
                         if runner is not None and NDUUtility.has_method(runner, 'close'):
@@ -193,7 +197,7 @@ class NDUCameraService:
             self.video_source = IPCameraVideoSource(self.SOURCE_CONFIG)
             pass
         elif self.SOURCE_TYPE is VideoSourceType.CAMERA:
-            self.video_source = CameraVideoSource(show_preview=True, device_index_name=0)
+            self.video_source = CameraVideoSource()
         elif self.SOURCE_TYPE is VideoSourceType.YOUTUBE:
             # TODO
             pass
@@ -240,7 +244,7 @@ class NDUCameraService:
                     log.debug("result : %s", result)
 
                     if result is not None:
-                        self.__result_handler.add_result(result, runner_name=current_connector)
+                        self.__result_handler.save_result(result, runner_name=current_connector)
 
                 except Exception as e:
                     log.exception(e)

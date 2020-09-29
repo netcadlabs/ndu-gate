@@ -10,7 +10,7 @@ class ResultHandlerSocket:
         self.__socket_host = socket_host
         self.__socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.__first_try = False
-        log.info("ResultHandlerSocket %s:%s", self.__socket_host, self.self.__socket_port)
+        log.info("ResultHandlerSocket %s:%s", self.__socket_host, self.__socket_port)
         self._open_socket()
 
     def _open_socket(self):
@@ -19,7 +19,7 @@ class ResultHandlerSocket:
         except Exception as e:
             log.error(e)
 
-    def add_result(self, result, runner_name=None):
+    def save_result(self, result, runner_name=None):
         """
 
         :param self:

@@ -1,17 +1,17 @@
-from os.path import isfile
 from time import sleep
-
 import cv2
 
 from ndu_gate_camera.api.video_source import VideoSource, log
 
 
 class CameraVideoSource(VideoSource):
-    def __init__(self, device_index_name=-1, show_preview=False):
+    def __init__(self, device_index_name=-2, show_preview=False):
         super().__init__()
-        self.__capture = cv2.VideoCapture(device_index_name)
+        if device_index_name == -2:
+            self.__capture = self._find_vide_capture()
+        else:
+            self.__capture = cv2.VideoCapture(device_index_name)
         self.__show_preview = show_preview
-        pass
 
     def get_frames(self):
         log.info("start camera streaming..")
@@ -49,3 +49,16 @@ class CameraVideoSource(VideoSource):
 
     def stop(self):
         pass
+
+    @staticmethod
+    def _find_vide_capture():
+        index = -1
+        cap = cv2.VideoCapture(index)
+        r, fr = cap.read()
+        while fr is None:
+            index += 1
+            if index > 100:
+                raise Exception('Cannot capture camera video')
+            cap = cv2.VideoCapture(index)
+            r, fr = cap.read()
+        return cap

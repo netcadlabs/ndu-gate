@@ -25,8 +25,8 @@ class EmotionAnalysisRunner(Thread, NDUCameraRunner):
         super().__init__()
         self.setName(config.get("name", 'EmotionAnalysisRunner' + ''.join(choice(ascii_lowercase) for _ in range(5))))
         self.__config = config
-        self.__personDetector = PersonDetector()
-        self.__faceDetector = FaceDetector()
+        # self.__personDetector = PersonDetector()
+        # self.__faceDetector = FaceDetector()
 
         self.__emotion_model = load_emotion_model()
         self.__emotion_labels = ['angry', 'disgust', 'fear', 'happy', 'sad', 'surprise', 'neutral']

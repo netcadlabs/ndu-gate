@@ -3,14 +3,22 @@ from os import path
 
 
 class ResultHandlerFile(ResultHandler):
-    def save_result(self):
-        pass
-
     def __init__(self, folder):
-        self.workingPath = folder
+        self.__working_path = folder
         if not path.isdir(folder):
-            self.workingPath = "/etc/ndu_gate/"
-        log.info("ResultHandlerFile %s", self.workingPath)
+            log.warning("This path is not a folder %s", self.folder)
+            self.__working_path = "/etc/ndu_gate/"
+
+        self.__telemetry_file = self.__working_path + 'serviceTelemetry.txt'.replace('/', path.sep)
+        if not path.isfile(self.__telemetry_file):
+            try:
+                file = open(self.__telemetry_file, 'w+')
+                file.close()
+            except Exception as e:
+                log.error(e)
+                log.warning("Can not create telemetry file %s", self.__telemetry_file)
+
+        log.info("ResultHandlerFile %s", self.__telemetry_file)
 
     def save_result(self, result, runner_name=None):
         """
@@ -20,7 +28,7 @@ class ResultHandlerFile(ResultHandler):
         :param runner_name:
         :return:
         """
-        with open(self.workingPath + 'serviceTelemetry.txt', 'r+') as f:
+        with open(self.__telemetry_file, 'r+') as f:
             f.seek(0)
             for i in range(len(result)):
                 f.write(str(result[i]) + '\n')
