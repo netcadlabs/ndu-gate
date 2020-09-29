@@ -1,3 +1,4 @@
+import sys
 from re import search
 from os import path, listdir
 from platform import system
@@ -24,6 +25,13 @@ class NDUUtility:
                 extensions_paths = ('/var/lib/thingsboard_gateway/extensions/'.replace('/', path.sep) + extension_type.lower(),
                                     '/var/lib/ndu_gate/runners/'.replace('/', path.sep) + extension_type.lower(),
                                     path.abspath(file_dir + '/runners/'.replace('/', path.sep) + extension_type.lower()))
+
+            get_trace = getattr(sys, 'gettrace', None)
+            if get_trace:
+                extensions_paths_list = list(extensions_paths)
+                extensions_paths_list.append(path.abspath(file_dir + '/../runners/'.replace('/', path.sep) + extension_type.lower()))
+                extensions_paths = tuple(extensions_paths_list)
+
             try:
                 for extension_path in extensions_paths:
                     if path.exists(extension_path):

@@ -5,8 +5,8 @@ from os import path
 class ResultHandlerFile(ResultHandler):
     def __init__(self, folder):
         self.__working_path = folder
-        if not path.isdir(folder):
-            log.warning("This path is not a folder %s", self.folder)
+        if not path.isdir(self.__working_path):
+            log.warning("This path is not a folder %s", self.__working_path)
             self.__working_path = "/etc/ndu_gate/"
 
         self.__telemetry_file = self.__working_path + 'serviceTelemetry.txt'.replace('/', path.sep)

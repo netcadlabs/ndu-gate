@@ -8,3 +8,17 @@ result_handler:
   file_path: /var/lib/thingsboard_gateway/extensions/camera/
   port: 60060
   host: 127.0.0.1
+
+runners:
+  - name: socialdistance Camera Runner
+    type: socialdistance
+    configuration: socialdistance.json
+
+  - name: emotionanalysis Camera Runner
+    type: emotionanalysis
+    configuration: emotionanalysis.json
+
+  - name: Person Counter Camera Runner
+    type: personcounter
+    configuration: personcounter.json
+    class: PersonCounterRunner

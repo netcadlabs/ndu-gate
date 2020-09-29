@@ -9,18 +9,18 @@ connectors:
 #    name: drivermonitor Camera Runner
 #    type: drivermonitor
 #    configuration: drivermonitor.json
-  -
-    name: socialdistance Camera Runner
-    type: socialdistance
-    configuration: socialdistance.json
-  -
-    name: emotionanalysis Camera Runner
-    type: emotionanalysis
-    configuration: emotionanalysis.json
-    runner: true
-  -
-    name: Person Counter Camera Runner
-    type: personcounter
-    configuration: personcounter.json
-    class: PersonCounterRunner
-    runner: true
+#  -
+#    name: socialdistance Camera Runner
+#    type: socialdistance
+#    configuration: socialdistance.json
+#  -
+#    name: emotionanalysis Camera Runner
+#    type: emotionanalysis
+#    configuration: emotionanalysis.json
+#    runner: true
+#  -
+#    name: Person Counter Camera Runner
+#    type: personcounter
+#    configuration: personcounter.json
+#    class: PersonCounterRunner
+#    runner: true
