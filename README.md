@@ -21,3 +21,11 @@ kullanım senaryolarına özel kodları içerir.
 
 ##### TODO
 
+
+## Yeni Runner Ekleme
+
+Bu servisin kurulduğu bir cihaza yeni runner eklemek için
+ * **/var/lib/ndu_gate/runners/** dizinine NDUCameraRunner sınıfından türeyen script(ler) eklenir.
+ * 
+
+

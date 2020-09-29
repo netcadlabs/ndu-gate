@@ -111,7 +111,7 @@ class NDUCameraService:
         self.frame_num = 0
 
         self._load_runners()
-        self._connect_with_connectors()
+        self._connect_with_runners()
 
         self.video_source = None
         self._set_video_source()
@@ -122,50 +122,50 @@ class NDUCameraService:
         config dosyasında belirtilen NDUCameraRunner imaplementasyonlarını bulur ve _implemented_runners içerisine ekler
         Aynı şekilde herbir runner için config dosyalarını bulur ve connectors_configs içerisine ekler
         """
-        self.connectors_configs = {}
-        if self.__config.get("connectors"):
-            for connector in self.__config['connectors']:
+        self.runners_configs = {}
+        if self.__ndu_gate_config.get("runners"):
+            for runner in self.__ndu_gate_config['runners']:
                 try:
-                    if connector.get("runner", None) is None:
-                        continue
-                    connector_class = NDUUtility.check_and_import(connector["type"], self._default_runners.get(connector["type"], connector.get("class")))
-                    self._implemented_runners[connector["type"]] = connector_class
-                    config_file = self._tb_gateway_config_dir + connector['configuration']
+                    # if connector.get("runner", None) is None:
+                    #     continue
+                    runner_class = NDUUtility.check_and_import(runner["type"], self._default_runners.get(runner["type"], runner.get("class")))
+                    self._implemented_runners[runner["type"]] = runner_class
+                    config_file = self._tb_gateway_config_dir + runner['configuration']
 
-                    if not self.connectors_configs.get(connector['type']):
-                        self.connectors_configs[connector['type']] = []
+                    if not self.runners_configs.get(runner['type']):
+                        self.runners_configs[runner['type']] = []
 
                     if path.isfile(config_file):
-                        with open(self._tb_gateway_config_dir + connector['configuration'], 'r', encoding="UTF-8") as conf_file:
-                            connector_conf = load(conf_file)
-                            connector_conf["name"] = connector["name"]
-                            self.connectors_configs[connector['type']].append({"name": connector["name"], "config": {connector['configuration']: connector_conf}})
+                        with open(self._tb_gateway_config_dir + runner['configuration'], 'r', encoding="UTF-8") as conf_file:
+                            runner_conf = load(conf_file)
+                            runner_conf["name"] = runner["name"]
+                            self.runners_configs[runner['type']].append({"name": runner["name"], "config": {runner['configuration']: runner_conf}})
                     else:
-                        log.error("config not found %s", config_file)
-                        connector_conf = {"name": connector["name"]}
-                        self.connectors_configs[connector['type']].append({"name": connector["name"], "config": {connector['configuration']: connector_conf}})
+                        log.error("config file is not found %s", config_file)
+                        runner_conf = {"name": runner["name"]}
+                        self.runners_configs[runner['type']].append({"name": runner["name"], "config": {runner['configuration']: runner_conf}})
                 except Exception as e:
-                    log.error("Error on loading connector config")
+                    log.error("Error on loading runner config")
                     log.exception(e)
         else:
-            log.error("Connectors - not found! Check your configuration!")
+            log.error("Runners - not found! Check your configuration!")
 
-    def _connect_with_connectors(self):
+    def _connect_with_runners(self):
         """
-        connectors_configs içindeki configleri kullanarak sırayla yüklenen runner sınıflarının instance'larını oluşturur
+        runners_configs içindeki configleri kullanarak sırayla yüklenen runner sınıflarının instance'larını oluşturur
         oluşturulan bu nesneleri available_runners içerisine ekler.
         """
-        for connector_type in self.connectors_configs:
-            for connector_config in self.connectors_configs[connector_type]:
-                for config in connector_config["config"]:
+        for runner_type in self.runners_configs:
+            for runner_config in self.runners_configs[runner_type]:
+                for config in runner_config["config"]:
                     runner = None
                     try:
-                        if connector_config["config"][config] is not None:
-                            if self._implemented_runners[connector_type] is None:
-                                log.error("implemented runner not found for %s", connector_type)
+                        if runner_config["config"][config] is not None:
+                            if self._implemented_runners[runner_type] is None:
+                                log.error("implemented runner not found for %s", runner_type)
                             else:
-                                runner = self._implemented_runners[connector_type](self, connector_config["config"][config], connector_type)
-                                runner.setName(connector_config["name"])
+                                runner = self._implemented_runners[runner_type](self, runner_config["config"][config], runner_type)
+                                runner.setName(runner_config["name"])
                                 settings = runner.get_settings()
                                 if settings is not None:
                                     if settings.get("person", False):
@@ -174,7 +174,7 @@ class NDUCameraService:
                                         self.PRE_FIND_FACES = True
                                 self.available_runners[runner.get_name()] = runner
                         else:
-                            log.warning("Config not found for %s", connector_type)
+                            log.warning("Config not found for %s", runner_type)
                     except Exception as e:
                         log.exception(e)
                         if runner is not None and NDUUtility.has_method(runner, 'close'):
@@ -238,13 +238,13 @@ class NDUCameraService:
 
             # TODO - check runner settings before send the frame to runner
 
-            for current_connector in self.available_runners:
+            for current_runner in self.available_runners:
                 try:
-                    result = self.available_runners[current_connector].process_frame(frame, extra_data=extra_data)
+                    result = self.available_runners[current_runner].process_frame(frame, extra_data=extra_data)
                     log.debug("result : %s", result)
 
                     if result is not None:
-                        self.__result_handler.save_result(result, runner_name=current_connector)
+                        self.__result_handler.save_result(result, runner_name=current_runner)
 
                 except Exception as e:
                     log.exception(e)
