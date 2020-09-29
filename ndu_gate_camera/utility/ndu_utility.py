@@ -17,14 +17,12 @@ class NDUUtility:
     @staticmethod
     def check_and_import(extension_type, module_name):
         if NDUUtility.loaded_runners.get(extension_type + module_name) is None:
-
             file_dir = path.dirname(path.dirname(__file__))
-
             if system() == "Windows":
                 extensions_paths = (path.abspath(file_dir + '/runners/'.replace('/', path.sep) + extension_type.lower()))
             else:
                 extensions_paths = ('/var/lib/thingsboard_gateway/extensions/'.replace('/', path.sep) + extension_type.lower(),
-                                    '/var/lib/ndu_gate/extensions/'.replace('/', path.sep) + extension_type.lower(),
+                                    '/var/lib/ndu_gate/runners/'.replace('/', path.sep) + extension_type.lower(),
                                     path.abspath(file_dir + '/runners/'.replace('/', path.sep) + extension_type.lower()))
             try:
                 for extension_path in extensions_paths:
@@ -40,13 +38,13 @@ class NDUUtility:
                                         continue
 
                                     module = util.module_from_spec(module_spec)
-                                    log.debug(str(module))
+                                    log.info(str(module))
                                     module_spec.loader.exec_module(module)
                                     for extension_class in getmembers(module, isclass):
                                         if module_name in extension_class:
-                                            log.debug("Import %s from %s.", module_name, extension_path)
-                                            # Save class into buffer
+                                            log.info("Import %s from %s", module_name, extension_path)
                                             NDUUtility.loaded_runners[extension_type + module_name] = extension_class[1]
+                                            log.info("Total runners : %s", len(NDUUtility.loaded_runners))
                                             return extension_class[1]
                                 except Exception as ie:
                                     log.error(ie)
@@ -56,7 +54,7 @@ class NDUUtility:
             except Exception as e:
                 log.exception(e)
         else:
-            log.debug("Class %s found in NDUUtility buffer.", module_name)
+            log.info("Class %s found in NDUUtility buffer.", module_name)
             return NDUUtility.loaded_runners[extension_type + module_name]
 
     @staticmethod

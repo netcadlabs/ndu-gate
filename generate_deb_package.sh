@@ -6,7 +6,7 @@ if [ "$1" = "clean" ] || [ "$1" = "only_clean" ] ; then
   sudo rm -rf dist/
   sudo rm -rf ndu_gate.egg-info/
   sudo rm -rf /etc/ndu-gate/
-  sudo rm -rf ndu-gate-$CURRENT_VERSION.tar.gz
+  sudo rm -rf ndu-gate-*.tar.gz
   sudo rm -rf python3-ndu-gate.deb
   sudo apt remove python3-ndu-gate -y
 fi
