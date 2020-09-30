@@ -14,11 +14,12 @@ from ndu_gate_camera.camera.video_sources.camera_video_source import CameraVideo
 from ndu_gate_camera.camera.video_sources.file_video_source import FileVideoSource
 from ndu_gate_camera.camera.video_sources.ip_camera_video_source import IPCameraVideoSource
 from ndu_gate_camera.camera.video_sources.pi_camera_video_source import PiCameraVideoSource
+from ndu_gate_camera.camera.video_sources.youtube_video_source import YoutubeVideoSource
 from ndu_gate_camera.detectors.face_detector import FaceDetector
 from ndu_gate_camera.detectors.person_detector import PersonDetector
 from ndu_gate_camera.utility.ndu_utility import NDUUtility
 
-from ndu_gate_camera.utility.constants import DEFAULT_TB_GATEWAY_CONF, DEFAULT_NDU_GATE_CONF
+from ndu_gate_camera.utility.constants import DEFAULT_NDU_GATE_CONF
 
 name = uname()
 
@@ -30,16 +31,9 @@ DEFAULT_RUNNERS = {
 
 
 class NDUCameraService:
-    def __init__(self, gateway_config_file=None, ndu_gate_config_file=None):
-        if gateway_config_file is None:
-            gateway_config_file = path.dirname(path.dirname(path.abspath(__file__))) + '/config/tb_gateway.yaml'.replace('/', path.sep)
-
+    def __init__(self, ndu_gate_config_file=None):
         if ndu_gate_config_file is None:
             ndu_gate_config_file = path.dirname(path.dirname(path.abspath(__file__))) + '/config/ndu_gate.yaml'.replace('/', path.sep)
-
-        with open(gateway_config_file) as general_config:
-            self.__config = safe_load(general_config)
-        self._tb_gateway_config_dir = path.dirname(path.abspath(gateway_config_file)) + path.sep
 
         with open(ndu_gate_config_file) as general_config:
             self.__ndu_gate_config = safe_load(general_config)
@@ -54,6 +48,8 @@ class NDUCameraService:
                 self.SOURCE_TYPE = VideoSourceType[type_str]
             else:
                 self.SOURCE_TYPE = VideoSourceType.CAMERA
+
+        self.SOURCE_CONFIG["show_preview"] = NDUUtility.is_debug_mode()
 
         logging_error = None
         logging_config_file = self._ndu_gate_config_dir + "logs.conf"
@@ -70,7 +66,6 @@ class NDUCameraService:
         global log
         log = logging.getLogger('service')
         log.info("NDUCameraService starting...")
-        log.info("TB-Gateway config file: %s", gateway_config_file)
         log.info("NDU-Gate config file: %s", ndu_gate_config_file)
         log.info("NDU-Gate logging config file: %s", logging_config_file)
         log.info("NDU-Gate logging service level: %s", log.level)
@@ -116,6 +111,7 @@ class NDUCameraService:
         self.video_source = None
         self._set_video_source()
         self._start()
+        log.info("NDUCameraService exiting...")
 
     def _load_runners(self):
         """
@@ -130,13 +126,13 @@ class NDUCameraService:
                     #     continue
                     runner_class = NDUUtility.check_and_import(runner["type"], self._default_runners.get(runner["type"], runner.get("class")))
                     self._implemented_runners[runner["type"]] = runner_class
-                    config_file = self._tb_gateway_config_dir + runner['configuration']
+                    config_file = self._ndu_gate_config_dir + runner['configuration']
 
                     if not self.runners_configs.get(runner['type']):
                         self.runners_configs[runner['type']] = []
 
                     if path.isfile(config_file):
-                        with open(self._tb_gateway_config_dir + runner['configuration'], 'r', encoding="UTF-8") as conf_file:
+                        with open(self._ndu_gate_config_dir + runner['configuration'], 'r', encoding="UTF-8") as conf_file:
                             runner_conf = load(conf_file)
                             runner_conf["name"] = runner["name"]
                             self.runners_configs[runner['type']].append({"name": runner["name"], "config": {runner['configuration']: runner_conf}})
@@ -184,26 +180,29 @@ class NDUCameraService:
         """
         SOURCE_TYPE değerine göre video_source değişkenini oluşturur.
         """
-        if self.SOURCE_TYPE is VideoSourceType.VIDEO_FILE:
-            self.SOURCE_CONFIG["test_data_path"] = path.dirname(path.dirname(path.abspath(__file__))) + '/data/'.replace('/', path.sep)
-            self.video_source = FileVideoSource(self.SOURCE_CONFIG)
-            pass
-        elif self.SOURCE_TYPE is VideoSourceType.PI_CAMERA:
-            self.video_source = PiCameraVideoSource(show_preview=True)
-        elif self.SOURCE_TYPE is VideoSourceType.VIDEO_URL:
-            # TODO
-            pass
-        elif self.SOURCE_TYPE is VideoSourceType.IP_CAMERA:
-            self.video_source = IPCameraVideoSource(self.SOURCE_CONFIG)
-            pass
-        elif self.SOURCE_TYPE is VideoSourceType.CAMERA:
-            self.video_source = CameraVideoSource()
-        elif self.SOURCE_TYPE is VideoSourceType.YOUTUBE:
-            # TODO
-            pass
-        else:
-            log.error("Video source type is not supported : %s ", self.SOURCE_TYPE.value)
-            exit(101)
+        try:
+            if self.SOURCE_TYPE is VideoSourceType.VIDEO_FILE:
+                self.SOURCE_CONFIG["test_data_path"] = path.dirname(path.dirname(path.abspath(__file__))) + '/data/'.replace('/', path.sep)
+                self.video_source = FileVideoSource(self.SOURCE_CONFIG)
+                pass
+            elif self.SOURCE_TYPE is VideoSourceType.PI_CAMERA:
+                self.video_source = PiCameraVideoSource(show_preview=True)
+            elif self.SOURCE_TYPE is VideoSourceType.VIDEO_URL:
+                # TODO
+                pass
+            elif self.SOURCE_TYPE is VideoSourceType.IP_CAMERA:
+                self.video_source = IPCameraVideoSource(self.SOURCE_CONFIG)
+                pass
+            elif self.SOURCE_TYPE is VideoSourceType.CAMERA:
+                self.video_source = CameraVideoSource()
+            elif self.SOURCE_TYPE is VideoSourceType.YOUTUBE:
+                self.video_source = YoutubeVideoSource(self.SOURCE_CONFIG)
+            else:
+                log.error("Video source type is not supported : %s ", self.SOURCE_TYPE.value)
+                exit(101)
+        except Exception as e:
+            log.error("Error during setting up video source")
+            log.error(e)
 
     def _start(self):
         if self.video_source is None:
@@ -252,6 +251,7 @@ class NDUCameraService:
             # print(frame)
 
         # TODO - set camera_perspective
+        log.info("Video source is finished")
 
     def _process_frame(self, frame):
         self.frame_num += 1
@@ -261,4 +261,4 @@ class NDUCameraService:
 
 
 if __name__ == '__main__':
-    NDUCameraService(DEFAULT_TB_GATEWAY_CONF.replace('/', path.sep), DEFAULT_NDU_GATE_CONF.replace('/', path.sep))
+    NDUCameraService(DEFAULT_NDU_GATE_CONF.replace('/', path.sep))

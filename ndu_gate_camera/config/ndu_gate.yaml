@@ -1,7 +1,14 @@
 video_source:
-  type: CAMERA # VIDEO_FILE, PI_CAMERA, CAMERA, IP_CAMERA, VIDEO_URL, YOUTUBE
-  file_path: data/duygu2.mp4
-  url:
+  type: PI_CAMERA # VIDEO_FILE, PI_CAMERA, CAMERA, IP_CAMERA, VIDEO_URL, YOUTUBE
+  file_path: duygu2.mp4
+  data_folder: /etc/ndu-gate/data/video
+  replay: False # not implemented
+  url: https://www.youtube.com/watch?v=IzbCLBXAGFM
+  cam_gear_options:
+    CAP_PROP_FRAME_WIDTH: 320
+    CAP_PROP_FRAME_HEIGHT: 240
+    CAP_PROP_FPS: 10
+
 
 result_handler:
   type: FILE # FILE, SOCKET
@@ -10,15 +17,15 @@ result_handler:
   host: 127.0.0.1
 
 runners:
-  - name: socialdistance Camera Runner
-    type: socialdistance
-    configuration: socialdistance.json
+  # - name: socialdistance Camera Runner
+  #   type: socialdistance
+  #   configuration: socialdistance.json
 
-  - name: emotionanalysis Camera Runner
-    type: emotionanalysis
-    configuration: emotionanalysis.json
+  # - name: emotionanalysis Camera Runner
+  #   type: emotionanalysis
+  #   configuration: emotionanalysis.json
 
-  - name: Person Counter Camera Runner
-    type: personcounter
-    configuration: personcounter.json
-    class: PersonCounterRunner
+  # - name: Person Counter Camera Runner
+  #   type: personcounter
+  #   configuration: personcounter.json
+  #   class: PersonCounterRunner

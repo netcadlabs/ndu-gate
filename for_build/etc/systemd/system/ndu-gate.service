@@ -12,7 +12,7 @@ ExecStop=/bin/kill -INT $MAINPID
 ExecReload=/bin/kill -TERM $MAINPID
 
 Restart=on-failure
-RestartSec=15
+RestartSec=60
 
 [Install]
 WantedBy=multi-user.target

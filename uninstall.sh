@@ -11,3 +11,5 @@ systemctl reset-failed
 sudo apt remove python3-ndu-gate
 
 pip3 uninstall python3-ndu-gate
+
+rm -rf /var/log/ndu-gate/*

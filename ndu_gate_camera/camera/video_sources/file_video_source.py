@@ -19,7 +19,7 @@ class FileVideoSource(VideoSource):
 
         if path.isfile(self.__video_path) is False:
             # TODO - get default installation path using OS
-            self.__video_path = source_config.get("test_data_path", "var/lib/ndu_gate_camera/data") + self.__video_path
+            self.__video_path = source_config.get("data_folder", "var/lib/ndu_gate_camera/data/".replace('/', path.sep)) + self.__video_path
 
         if path.isfile(self.__video_path) is False:
             raise ValueError("Video file is not exist : %s", self.__video_path)

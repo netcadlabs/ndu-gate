@@ -1,5 +1,5 @@
 import sys
-from re import search
+import re
 from os import path, listdir
 from platform import system
 from importlib import util
@@ -26,8 +26,7 @@ class NDUUtility:
                                     '/var/lib/ndu_gate/runners/'.replace('/', path.sep) + extension_type.lower(),
                                     path.abspath(file_dir + '/runners/'.replace('/', path.sep) + extension_type.lower()))
 
-            get_trace = getattr(sys, 'gettrace', None)
-            if get_trace:
+            if NDUUtility.is_debug_mode():
                 extensions_paths_list = list(extensions_paths)
                 extensions_paths_list.append(path.abspath(file_dir + '/../runners/'.replace('/', path.sep) + extension_type.lower()))
                 extensions_paths = tuple(extensions_paths_list)
@@ -107,3 +106,20 @@ class NDUUtility:
                         log.error(e)
 
         return result
+
+    @staticmethod
+    def is_url_valid(url) -> bool:
+        regex = re.compile(
+            r'^(?:http|ftp)s?://'  # http:// or https://
+            r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|'  # domain...
+            r'localhost|'  # localhost...
+            r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'  # ...or ip
+            r'(?::\d+)?'  # optional port
+            r'(?:/?|[/?]\S+)$', re.IGNORECASE)
+
+        return re.match(regex, url) is not None
+
+    @staticmethod
+    def is_debug_mode():
+        get_trace = getattr(sys, 'gettrace', None)
+        return get_trace is not None
