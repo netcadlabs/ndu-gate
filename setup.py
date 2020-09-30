@@ -6,13 +6,13 @@ this_directory = path.abspath(path.dirname(__file__))
 with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
-VERSION = "0.0.5"
+VERSION = "0.0.6"
 
 setup(
     name='ndu-gate',
-    version='0.0.5',
+    version='0.0.6',
     license='',
-    author='netcadlabs',
+    author='Netcad Innovation Labs @NETCAD',
     author_email='netcadinnovationlabs@gmail.com',
     description='NDU Gate Camera Service',
     long_description=long_description,
