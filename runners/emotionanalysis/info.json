@@ -1,0 +1,11 @@
+{
+    "connector_config": {
+      "class": "PersonCounterRunner"
+    },
+    "copy": [
+      {
+        "source": "data",
+        "destination": "/etc/ndu-gate/data/ea"
+      }
+    ]
+}

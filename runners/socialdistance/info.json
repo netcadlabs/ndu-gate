@@ -1,0 +1,6 @@
+{
+    "connector_config": {
+      "class": "SocialDistanceRunner"
+    },
+    "copy": []
+}

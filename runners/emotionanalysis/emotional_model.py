@@ -71,7 +71,3 @@ def load_emotion_model():
     model.load_weights(facial_weights_file_final)
 
     return model
-
-    # ----------------------------
-
-    return 0
