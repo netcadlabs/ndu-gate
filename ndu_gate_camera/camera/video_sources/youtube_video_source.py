@@ -8,7 +8,7 @@ try:
     from vidgear.gears import CamGear
 except ImportError:
     if NDUUtility.install_package("vidgear") == 0:
-        import tensorflow as tf
+        from vidgear.gears import CamGear
 
 from ndu_gate_camera.api.video_source import VideoSource, log
 

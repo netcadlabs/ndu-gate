@@ -6,11 +6,11 @@ this_directory = path.abspath(path.dirname(__file__))
 with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
-VERSION = "0.0.6"
+VERSION = "0.0.7"
 
 setup(
     name='ndu-gate',
-    version='0.0.6',
+    version='0.0.7',
     license='',
     author='Netcad Innovation Labs @NETCAD',
     author_email='netcadinnovationlabs@gmail.com',
@@ -32,7 +32,8 @@ setup(
         'pip',
         'gdown',
         'PyYAML',
-        'simplejson'
+        'simplejson',
+        'vidgear'
     ],
     package_data={
         "*": ["config/*"]

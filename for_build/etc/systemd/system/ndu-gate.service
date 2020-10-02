@@ -7,7 +7,7 @@ Type=simple
 User=ndu_gate
 Group=ndu_gate
 
-ExecStart=python3 -c "from ndu_gate_camera.ndu_camera import daemon; daemon()"
+ExecStart=/usr/bin/python3 -c "from ndu_gate_camera.ndu_camera import daemon; daemon()"
 ExecStop=/bin/kill -INT $MAINPID
 ExecReload=/bin/kill -TERM $MAINPID
 
