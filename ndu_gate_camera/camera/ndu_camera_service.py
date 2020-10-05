@@ -121,10 +121,10 @@ class NDUCameraService:
         self.runners_configs = {}
         if self.__ndu_gate_config.get("runners"):
             for runner in self.__ndu_gate_config['runners']:
+                log.debug("runner config : %s", runner)
                 try:
-                    # if connector.get("runner", None) is None:
-                    #     continue
-                    runner_class = NDUUtility.check_and_import(runner["type"], self._default_runners.get(runner["type"], runner.get("class")))
+                    class_name = self._default_runners.get(runner["type"], runner.get("class"))
+                    runner_class = NDUUtility.check_and_import(runner["type"], class_name, package_uuids=runner.get("uuids", None))
                     self._implemented_runners[runner["type"]] = runner_class
                     config_file = self._ndu_gate_config_dir + runner['configuration']
 

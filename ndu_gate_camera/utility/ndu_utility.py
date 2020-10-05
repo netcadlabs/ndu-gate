@@ -16,20 +16,23 @@ class NDUUtility:
     loaded_runners = {}
 
     @staticmethod
-    def check_and_import(extension_type, module_name):
+    def check_and_import(extension_type, module_name, package_uuids=None):
         if NDUUtility.loaded_runners.get(extension_type + module_name) is None:
             file_dir = path.dirname(path.dirname(__file__))
+            extensions_paths = []
+
             if system() == "Windows":
-                extensions_paths = (path.abspath(file_dir + '/runners/'.replace('/', path.sep) + extension_type.lower()))
+                extensions_paths.append(path.abspath(file_dir + '/runners/'.replace('/', path.sep) + extension_type.lower()))
             else:
-                extensions_paths = ('/var/lib/ndu_gate/runners/'.replace('/', path.sep) + extension_type.lower(),
-                                    '/var/lib/ndu_gate/runners/'.replace('/', path.sep) + 'Pack_' + extension_type.lower(),
-                                    path.abspath(file_dir + '/runners/'.replace('/', path.sep) + extension_type.lower()))
+                extensions_paths.append('/var/lib/ndu_gate/runners/'.replace('/', path.sep) + extension_type.lower())
+                extensions_paths.append(path.abspath(file_dir + '/runners/'.replace('/', path.sep) + extension_type.lower()))
 
             if NDUUtility.is_debug_mode():
-                extensions_paths_list = list(extensions_paths)
-                extensions_paths_list.append(path.abspath(file_dir + '/../runners/'.replace('/', path.sep) + extension_type.lower()))
-                extensions_paths = tuple(extensions_paths_list)
+                extensions_paths.append(path.abspath(file_dir + '/../runners/'.replace('/', path.sep) + extension_type.lower()))
+
+            if package_uuids:
+                for uuid in package_uuids:
+                    extensions_paths.append('/var/lib/ndu_gate/runners/'.replace('/', path.sep) + 'Pack_' + uuid)
 
             try:
                 for extension_path in extensions_paths:
