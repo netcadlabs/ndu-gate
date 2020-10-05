@@ -22,8 +22,8 @@ class NDUUtility:
             if system() == "Windows":
                 extensions_paths = (path.abspath(file_dir + '/runners/'.replace('/', path.sep) + extension_type.lower()))
             else:
-                extensions_paths = ('/var/lib/thingsboard_gateway/extensions/'.replace('/', path.sep) + extension_type.lower(),
-                                    '/var/lib/ndu_gate/runners/'.replace('/', path.sep) + extension_type.lower(),
+                extensions_paths = ('/var/lib/ndu_gate/runners/'.replace('/', path.sep) + extension_type.lower(),
+                                    '/var/lib/ndu_gate/runners/'.replace('/', path.sep) + 'Pack_' + extension_type.lower(),
                                     path.abspath(file_dir + '/runners/'.replace('/', path.sep) + extension_type.lower()))
 
             if NDUUtility.is_debug_mode():
