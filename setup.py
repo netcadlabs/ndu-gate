@@ -33,7 +33,8 @@ setup(
         'gdown',
         'PyYAML',
         'simplejson',
-        'vidgear'
+        'vidgear',
+        'pyzmq'
     ],
     package_data={
         "*": ["config/*"]

@@ -79,8 +79,7 @@ class NDUCameraService:
             }
 
         if str(result_hand_conf.get("type", "FILE")) == str("SOCKET"):
-            self.__result_handler = ResultHandlerSocket(socket_port=result_hand_conf.get("port", 60060),
-                                                        socket_host=result_hand_conf.get("host", '127.0.0.1'))
+            self.__result_handler = ResultHandlerSocket(result_hand_conf.get("socket", 60060))
         else:
             self.__result_handler = ResultHandlerFile(result_hand_conf.get("file_path", default_result_file_path))
 

@@ -9,7 +9,10 @@ class ResultHandlerFile(ResultHandler):
             log.warning("This path is not a folder %s", self.__working_path)
             self.__working_path = "/etc/ndu_gate/"
 
-        self.__telemetry_file = self.__working_path + 'serviceTelemetry.txt'.replace('/', path.sep)
+        self.__telemetry_file = self.__working_path + 'serviceTelemetry.txt'
+
+        self.__working_path = path.expanduser("~") + path.sep + 'serviceTelemetry.txt'
+
         if not path.isfile(self.__telemetry_file):
             try:
                 file = open(self.__telemetry_file, 'w+')
