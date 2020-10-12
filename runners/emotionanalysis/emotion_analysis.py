@@ -18,7 +18,7 @@ from ndu_gate_camera.api.ndu_camera_runner import NDUCameraRunner, log
 
 class EmotionAnalysisRunner(Thread, NDUCameraRunner):
 
-    def __init__(self, camera_service, config, connector_type):
+    def __init__(self, config, connector_type):
         super().__init__()
         self.setName(config.get("name", 'EmotionAnalysisRunner' + ''.join(choice(ascii_lowercase) for _ in range(5))))
         self.__config = config

@@ -24,26 +24,32 @@ runners:
     configuration: personcounter.json
     class: PersonCounterRunner
     priority: 100
-  - name: Social Distance
-    type: socialdistance
-    configuration: socialdistance.json
-    class: SocialDistanceRunner
-    priority: 75
-  - name: Person 2
-    type: personcounter
-    configuration: personcounter2.json
-    class: PersonCounterRunner
-  - name: Driver Monitor 2 with emo.conf
-    type: drivermonitor
-    configuration: emotionanalysis.json
-    class: DriverMonitorRunner
-    priority: 200
-  - name: Emotion Analysis
-    type: emotionanalysis
-    configuration: emotionanalysis.json
-    class: EmotionAnalysisRunner
-    priority: 50
-  - name: Driver Monitor 1
-    type: drivermonitor
-    configuration: drivermonitor.json
-    class: DriverMonitorRunner
+  - name: ObjectDedection80Runner Test
+    type: objectdedection
+    configuration: asdasdas.json
+    class: ObjectDedection80Runner
+    priority: 10
+
+#  - name: Social Distance
+#    type: socialdistance
+#    configuration: socialdistance.json
+#    class: SocialDistanceRunner
+#    priority: 75
+#  - name: Person 2
+#    type: personcounter
+#    configuration: personcounter2.json
+#    class: PersonCounterRunner
+#  - name: Driver Monitor 2 with emo.conf
+#    type: drivermonitor
+#    configuration: emotionanalysis.json
+#    class: DriverMonitorRunner
+#    priority: 200
+#  - name: Emotion Analysis
+#    type: emotionanalysis
+#    configuration: emotionanalysis.json
+#    class: EmotionAnalysisRunner
+#    priority: 50
+#  - name: Driver Monitor 1
+#    type: drivermonitor
+#    configuration: drivermonitor.json
+#    class: DriverMonitorRunner

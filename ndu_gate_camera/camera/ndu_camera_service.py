@@ -209,8 +209,8 @@ class NDUCameraService:
                 if self.implemented_runners[runner_key] is None:
                     log.error("Implemented runner not found for %s", runner_key)
                 else:
-                    runner = self.implemented_runners[runner_key](self, runner_config["config"], runner_type)
-                    runner.setName(runner_config["name"])
+                    runner = self.implemented_runners[runner_key](runner_config["config"], runner_type)
+                    # runner.setName(runner_config["name"])
                     settings = runner.get_settings()
                     if settings is not None:
                         if settings.get("person", False):
