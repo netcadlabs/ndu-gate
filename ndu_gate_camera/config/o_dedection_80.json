@@ -1,4 +1,6 @@
 {
-  "key": 1,
-  "model_data" : ""
+  "model_type": 0,
+  "onnx_fn": "/yolov3.onnx",
+  "input_size": 416,
+  "classes_filename": "/coco.names"
 }
