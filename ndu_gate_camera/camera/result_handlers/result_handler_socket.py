@@ -11,7 +11,7 @@ class ResultHandlerSocket:
         self.__socket_host = config.get("host", "localhost")
 
         self.context = zmq.Context()
-        self.socket = self.context.socket(zmq.REQ)
+        self.socket = self.context.socket(zmq.PUB)
         self.socket.connect("tcp://" + str(self.__socket_host) + ":" + str(self.__socket_port))
 
         log.info("ResultHandlerSocket %s:%s", self.__socket_host, self.__socket_port)
@@ -34,12 +34,13 @@ class ResultHandlerSocket:
             log.error(e)
 
     def __send_item(self, item):
-        print("Sending request %s …" % item)
+        print("Sending telemetry data [ %s ]" % item)
         if not item.get("ts"):
             item["ts"] = int(time.time())
-        self.socket.send_json(item)
-        message = self.socket.recv()
-        print("Received reply [ %s ]" % message)
+        # self.socket.send_json(item)
+        self.socket.send_multipart([b"telem", item])
+        # message = self.socket.recv()
+        # print("Received reply from connector [ %s ]" % message)
 
     def clear_results(self, runner_name=None):
         pass

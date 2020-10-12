@@ -38,29 +38,30 @@ class NDUUtility:
                 for extension_path in extensions_paths:
                     if path.exists(extension_path):
                         for file in listdir(extension_path):
-                            if not file.startswith('__') and file.endswith('.py'):
-                                try:
-                                    module_spec = util.spec_from_file_location(module_name, extension_path + path.sep + file)
-                                    log.debug(module_spec)
+                            if file.startswith('__') or not file.endswith('.py'):
+                                continue
+                            try:
+                                module_spec = util.spec_from_file_location(module_name, extension_path + path.sep + file)
+                                log.debug(module_spec)
 
-                                    if module_spec is None:
-                                        log.error('Module: %s not found', module_name)
-                                        continue
-
-                                    module = util.module_from_spec(module_spec)
-                                    log.info(str(module))
-                                    module_spec.loader.exec_module(module)
-                                    for extension_class in getmembers(module, isclass):
-                                        if module_name in extension_class:
-                                            log.info("Import %s from %s", module_name, extension_path)
-                                            NDUUtility.loaded_runners[extension_type + module_name] = extension_class[1]
-                                            log.info("Total runners : %s", len(NDUUtility.loaded_runners))
-                                            return extension_class[1]
-                                except Exception as ie:
-                                    log.error(ie)
+                                if module_spec is None:
+                                    log.error('Module not found : %s', module_name)
                                     continue
+
+                                module = util.module_from_spec(module_spec)
+                                log.info(str(module))
+                                module_spec.loader.exec_module(module)
+                                for extension_class in getmembers(module, isclass):
+                                    if module_name in extension_class:
+                                        log.info("Import %s from %s", module_name, extension_path)
+                                        NDUUtility.loaded_runners[extension_type + module_name] = extension_class[1]
+                                        log.info("Total runners : %s", len(NDUUtility.loaded_runners))
+                                        return extension_class[1]
+                            except Exception as ie:
+                                log.error(ie)
+                                continue
                     else:
-                        log.error("Import %s failed, path %s doesn't exist", module_name, extension_path)
+                        log.error("Import %s failed, path doesn't exist: %s", module_name, extension_path)
             except Exception as e:
                 log.exception(e)
         else:

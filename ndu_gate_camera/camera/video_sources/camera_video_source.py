@@ -5,13 +5,10 @@ from ndu_gate_camera.api.video_source import VideoSource, log
 
 
 class CameraVideoSource(VideoSource):
-    def __init__(self, device_index_name=-2, show_preview=False):
+    def __init__(self, source_config):
         super().__init__()
-        if device_index_name == -2:
-            self.__capture = self._find_vide_capture()
-        else:
-            self.__capture = cv2.VideoCapture(device_index_name)
-        self.__show_preview = show_preview
+        self.__capture = self._find_vide_capture()
+        self.__show_preview = source_config.get("show_preview", False)
 
     def get_frames(self):
         log.info("start camera streaming..")

@@ -24,9 +24,9 @@ from ndu_gate_camera.utility.constants import DEFAULT_NDU_GATE_CONF
 name = uname()
 
 DEFAULT_RUNNERS = {
-    "drivermonitor": "DriverMonitorRunner",
-    "socialdistance": "SocialDistanceRunner",
-    "emotionanalysis": "EmotionAnalysisRunner",
+    # "drivermonitor": "DriverMonitorRunner",
+    # "socialdistance": "SocialDistanceRunner",
+    # "emotionanalysis": "EmotionAnalysisRunner",
 }
 
 
@@ -49,7 +49,8 @@ class NDUCameraService:
             else:
                 self.SOURCE_TYPE = VideoSourceType.CAMERA
 
-        self.SOURCE_CONFIG["show_preview"] = NDUUtility.is_debug_mode()
+        if self.SOURCE_CONFIG.get("show_preview", None) is None:
+            self.SOURCE_CONFIG["show_preview"] = NDUUtility.is_debug_mode()
 
         logging_error = None
         logging_config_file = self._ndu_gate_config_dir + "logs.conf"
@@ -99,8 +100,10 @@ class NDUCameraService:
             log.error("Can not create face detector")
             log.error(e, stack_info=True)
 
-        self._default_runners = DEFAULT_RUNNERS
-        self._implemented_runners = {}
+        self.default_runners = DEFAULT_RUNNERS
+        self.runners_configs = []
+        self.runners_configs_by_key = {}
+        self.implemented_runners = {}
         self.available_runners = {}
         self.frame_num = 0
 
@@ -117,63 +120,109 @@ class NDUCameraService:
         config dosyasında belirtilen NDUCameraRunner imaplementasyonlarını bulur ve _implemented_runners içerisine ekler
         Aynı şekilde herbir runner için config dosyalarını bulur ve connectors_configs içerisine ekler
         """
-        self.runners_configs = {}
+        runners_configs_temp = {}
+        last_priority = 1000000
+
         if self.__ndu_gate_config.get("runners"):
             for runner in self.__ndu_gate_config['runners']:
                 log.debug("runner config : %s", runner)
                 try:
-                    class_name = self._default_runners.get(runner["type"], runner.get("class"))
-                    runner_class = NDUUtility.check_and_import(runner["type"], class_name, package_uuids=runner.get("uuids", None))
-                    self._implemented_runners[runner["type"]] = runner_class
-                    config_file = self._ndu_gate_config_dir + runner['configuration']
+                    runner_type = runner.get("type", None)
+                    if runner_type is None:
+                        log.warning("type not found for %s", runner)
+                        continue
 
-                    if not self.runners_configs.get(runner['type']):
-                        self.runners_configs[runner['type']] = []
+                    class_name = self.default_runners.get(runner_type, runner.get("class", None))
+                    if class_name is None:
+                        log.warning("class name not found for %s", runner)
+                        continue
 
+                    runner_class = NDUUtility.check_and_import(runner_type, class_name, package_uuids=runner.get("uuids", None))
+                    if runner_class is None:
+                        log.warning("class name implementation not found for %s - %s", runner_type, class_name)
+                        continue
+
+                    runner_key = self.__get_runner_key(runner_type, class_name)
+                    self.implemented_runners[runner_key] = runner_class
+
+                    configuration_name = runner['configuration']
+                    config_file = self._ndu_gate_config_dir + configuration_name
+
+                    runner_conf = {}
                     if path.isfile(config_file):
-                        with open(self._ndu_gate_config_dir + runner['configuration'], 'r', encoding="UTF-8") as conf_file:
+                        with open(config_file, 'r', encoding="UTF-8") as conf_file:
                             runner_conf = load(conf_file)
                             runner_conf["name"] = runner["name"]
-                            self.runners_configs[runner['type']].append({"name": runner["name"], "config": {runner['configuration']: runner_conf}})
                     else:
                         log.error("config file is not found %s", config_file)
                         runner_conf = {"name": runner["name"]}
-                        self.runners_configs[runner['type']].append({"name": runner["name"], "config": {runner['configuration']: runner_conf}})
+
+                    runner_unique_key = self.__get_runner_configuration_key(runner_type, class_name, configuration_name)
+
+                    runner_priority = runner.get("priority", None)
+                    if runner_priority is None:
+                        runner_priority = last_priority
+                        last_priority = last_priority + 100
+
+                    runners_configs_temp[runner_unique_key] = {
+                        "name": runner["name"],
+                        "type": runner_type,
+                        "class": runner_class,
+                        "configuration_name": configuration_name,
+                        "config": runner_conf,
+                        "priority": runner_priority,
+                        "runner_key": runner_key,
+                        "runner_unique_key": runner_unique_key
+                    }
+
                 except Exception as e:
                     log.error("Error on loading runner config")
                     log.exception(e)
+
+            runner_arr = []
+            # add all configs to array
+            for key in runners_configs_temp:
+                runner_arr.append(runners_configs_temp[key])
+
+            self.runners_configs_by_key = runners_configs_temp
+            self.runners_configs = sorted(runner_arr, key=lambda x: x["priority"], reverse=False)
         else:
             log.error("Runners - not found! Check your configuration!")
+        dummy = True
 
     def _connect_with_runners(self):
         """
         runners_configs içindeki configleri kullanarak sırayla yüklenen runner sınıflarının instance'larını oluşturur
         oluşturulan bu nesneleri available_runners içerisine ekler.
         """
-        for runner_type in self.runners_configs:
-            for runner_config in self.runners_configs[runner_type]:
-                for config in runner_config["config"]:
-                    runner = None
-                    try:
-                        if runner_config["config"][config] is not None:
-                            if self._implemented_runners[runner_type] is None:
-                                log.error("implemented runner not found for %s", runner_type)
-                            else:
-                                runner = self._implemented_runners[runner_type](self, runner_config["config"][config], runner_type)
-                                runner.setName(runner_config["name"])
-                                settings = runner.get_settings()
-                                if settings is not None:
-                                    if settings.get("person", False):
-                                        self.PRE_FIND_PERSON = True
-                                    if settings.get("face", False):
-                                        self.PRE_FIND_FACES = True
-                                self.available_runners[runner.get_name()] = runner
-                        else:
-                            log.warning("Config not found for %s", runner_type)
-                    except Exception as e:
-                        log.exception(e)
-                        if runner is not None and NDUUtility.has_method(runner, 'close'):
-                            runner.close()
+        for runner_config in self.runners_configs:
+            runner = None
+            try:
+                runner_key = runner_config["runner_key"]
+                runner_type = runner_config["type"]
+                runner_unique_key = runner_config["runner_unique_key"]
+
+                if runner_config["config"] is None:
+                    log.warning("Config not found for %s", runner_key)
+                    continue
+
+                if self.implemented_runners[runner_key] is None:
+                    log.error("Implemented runner not found for %s", runner_key)
+                else:
+                    runner = self.implemented_runners[runner_key](self, runner_config["config"], runner_type)
+                    runner.setName(runner_config["name"])
+                    settings = runner.get_settings()
+                    if settings is not None:
+                        if settings.get("person", False):
+                            self.PRE_FIND_PERSON = True
+                        if settings.get("face", False):
+                            self.PRE_FIND_FACES = True
+                    self.available_runners[runner_unique_key] = runner
+
+            except Exception as e:
+                log.exception(e)
+                if runner is not None and NDUUtility.has_method(runner, 'close'):
+                    runner.close()
 
     def _set_video_source(self):
         """
@@ -193,7 +242,7 @@ class NDUCameraService:
                 self.video_source = IPCameraVideoSource(self.SOURCE_CONFIG)
                 pass
             elif self.SOURCE_TYPE is VideoSourceType.CAMERA:
-                self.video_source = CameraVideoSource()
+                self.video_source = CameraVideoSource(self.SOURCE_CONFIG)
             elif self.SOURCE_TYPE is VideoSourceType.YOUTUBE:
                 self.video_source = YoutubeVideoSource(self.SOURCE_CONFIG)
             else:
@@ -218,6 +267,7 @@ class NDUCameraService:
             num_pedestrians = None
             person_image_list = None
             face_list = None
+
             if self.PRE_FIND_PERSON:
                 pedestrian_boxes, num_pedestrians, person_image_list = self.__personDetector.find_person(frame)
             if self.PRE_FIND_FACES:
@@ -231,18 +281,21 @@ class NDUCameraService:
                 "pedestrian_boxes": pedestrian_boxes,
                 "num_pedestrians": num_pedestrians,
                 "person_image_list": person_image_list,
-                "face_list": face_list
+                "face_list": face_list,
+                "results": {}
             }
 
             # TODO - check runner settings before send the frame to runner
 
-            for current_runner in self.available_runners:
+            for runner_unique_key in self.available_runners:
                 try:
-                    result = self.available_runners[current_runner].process_frame(frame, extra_data=extra_data)
+                    runner_conf = self.runners_configs_by_key[runner_unique_key]
+                    result = self.available_runners[runner_unique_key].process_frame(frame, extra_data=extra_data)
+                    extra_data["results"][runner_unique_key] = result
                     log.debug("result : %s", result)
 
                     if result is not None:
-                        self.__result_handler.save_result(result, runner_name=current_runner)
+                        self.__result_handler.save_result(result, runner_name=runner_conf["name"])
 
                 except Exception as e:
                     log.exception(e)
@@ -257,6 +310,14 @@ class NDUCameraService:
         print("Processing frame: ", self.frame_num)
 
         pass
+
+    def __get_runner_configuration_key(self, runner_type, class_name, configuration):
+        if configuration is None:
+            configuration = runner_type + ".json"
+        return runner_type + "_" + class_name + "_" + configuration
+
+    def __get_runner_key(self, type, class_name):
+        return type + "_" + class_name
 
 
 if __name__ == '__main__':

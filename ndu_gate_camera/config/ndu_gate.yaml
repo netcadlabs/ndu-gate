@@ -1,9 +1,10 @@
 video_source:
-  type: CAMERA # VIDEO_FILE, PI_CAMERA, CAMERA, IP_CAMERA, VIDEO_URL, YOUTUBE
+  type: YOUTUBE # VIDEO_FILE, PI_CAMERA, CAMERA, IP_CAMERA, VIDEO_URL, YOUTUBE
   file_path: duygu2.mp4
   data_folder: /etc/ndu-gate/data/video
   replay: False # not implemented
-  url: https://www.youtube.com/watch?v=IzbCLBXAGFM
+  url: https://www.youtube.com/watch?v=3FXUw98rrUY
+  show_preview: True
   cam_gear_options:
     CAP_PROP_FRAME_WIDTH: 320
     CAP_PROP_FRAME_HEIGHT: 240
@@ -18,10 +19,31 @@ result_handler:
     host: 127.0.0.1
 
 runners:
-   - name: Person Counter Camera Runner
-     type: personcounter
-     configuration: personcounter.json
-     class: PersonCounterRunner
-     uuids:
-      - uuid1
-      - uuid2
+  - name: Person 1
+    type: personcounter
+    configuration: personcounter.json
+    class: PersonCounterRunner
+    priority: 100
+  - name: Social Distance
+    type: socialdistance
+    configuration: socialdistance.json
+    class: SocialDistanceRunner
+    priority: 75
+  - name: Person 2
+    type: personcounter
+    configuration: personcounter2.json
+    class: PersonCounterRunner
+  - name: Driver Monitor 2 with emo.conf
+    type: drivermonitor
+    configuration: emotionanalysis.json
+    class: DriverMonitorRunner
+    priority: 200
+  - name: Emotion Analysis
+    type: emotionanalysis
+    configuration: emotionanalysis.json
+    class: EmotionAnalysisRunner
+    priority: 50
+  - name: Driver Monitor 1
+    type: drivermonitor
+    configuration: drivermonitor.json
+    class: DriverMonitorRunner

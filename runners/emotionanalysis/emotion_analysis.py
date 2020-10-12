@@ -2,7 +2,6 @@ from threading import Thread
 from random import choice
 from string import ascii_lowercase
 
-from runners.emotionanalysis.emotional_model import load_emotion_model
 from ndu_gate_camera.utility.ndu_utility import NDUUtility
 
 try:
@@ -26,6 +25,7 @@ class EmotionAnalysisRunner(Thread, NDUCameraRunner):
         # self.__personDetector = PersonDetector()
         # self.__faceDetector = FaceDetector()
 
+        from .emotional_model import load_emotion_model
         self.__emotion_model = load_emotion_model()
         self.__emotion_labels = ['angry', 'disgust', 'fear', 'happy', 'sad', 'surprise', 'neutral']
 

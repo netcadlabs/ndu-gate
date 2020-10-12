@@ -1,3 +1,5 @@
 {
-  "interval": 3
+  "interval": 3,
+  "camera_x": 2,
+  "camera_y": 4
 }
