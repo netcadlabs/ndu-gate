@@ -26,7 +26,7 @@ runners:
     priority: 100
   - name: ObjectDedection80Runner Test
     type: objectdedection
-    configuration: asdasdas.json
+    configuration: o_dedection_80.json
     class: ObjectDedection80Runner
     priority: 10
 
