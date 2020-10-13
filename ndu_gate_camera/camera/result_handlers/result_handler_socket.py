@@ -12,8 +12,8 @@ class ResultHandlerSocket:
 
         self.context = zmq.Context()
         self.socket = self.context.socket(zmq.PUB)
-        self.socket.connect("tcp://" + str(self.__socket_host) + ":" + str(self.__socket_port))
-
+        self.socket.bind("tcp://{}:{}".format(self.__socket_host, self.__socket_port))
+        time.sleep(.5)
         log.info("ResultHandlerSocket %s:%s", self.__socket_host, self.__socket_port)
 
     def save_result(self, result, runner_name=None):
@@ -33,14 +33,22 @@ class ResultHandlerSocket:
         except Exception as e:
             log.error(e)
 
-    def __send_item(self, item):
+    def __send_item(self, item, runner_name):
         print("Sending telemetry data [ %s ]" % item)
         if not item.get("ts"):
             item["ts"] = int(time.time())
         # self.socket.send_json(item)
-        self.socket.send_multipart([b"telem", item])
-        # message = self.socket.recv()
-        # print("Received reply from connector [ %s ]" % message)
+        data = {
+            "telem": item,
+            "runner": runner_name
+        }
+
+        data_json = json.dumps(data)
+        log.debug("Sending data %s ", data_json)
+        try:
+            self.socket.send_string("ndugate " + data_json)
+        except Exception as a:
+            log.debug("exception sending item : %s", a)
 
     def clear_results(self, runner_name=None):
         pass
