@@ -1,6 +1,7 @@
 {
   "model_type": 0,
-  "onnx_fn": "/yolov3.onnx",
+  "onnx_fn": "/data/yolov3.onnx",
   "input_size": 416,
-  "classes_filename": "/coco.names"
+  "classes_filename": "/data/coco.names"
 }
+

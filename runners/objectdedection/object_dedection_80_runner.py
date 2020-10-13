@@ -11,9 +11,16 @@ class ObjectDedection80Runner(NDUCameraRunner):
         super().__init__()
         self.__config = config
         self.model_type = config.get("model_type", 0)
-        self.onnx_fn = config.get("onnx_fn", "yolov3.onnx")
         self.input_size = config.get("input_size", 416)
+
+        self.onnx_fn = config.get("onnx_fn", "yolov3.onnx")
+        if not os.path.isfile(self.onnx_fn):
+            self.onnx_fn = os.path.dirname(os.path.abspath(__file__)) + self.onnx_fn.replace("/", os.path.sep)
+
         self.classes_filename = config.get("classes_filename", "coco.names")
+        if not os.path.isfile(self.classes_filename):
+            self.classes_filename = os.path.dirname(os.path.abspath(__file__)) + self.classes_filename.replace("/", os.path.sep)
+
         os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
         self.yolo_sess, self.yolo_input_name, self.yolo_class_names = self.create_session()
@@ -41,14 +48,21 @@ class ObjectDedection80Runner(NDUCameraRunner):
         if model_type == 0:  # yolov3.onnx
             img_size = np.array([input_size, input_size], dtype=np.float32).reshape(1, 2)
             boxes, scores, indices = sess.run(None, {input_name: image_data, "image_shape": img_size})
-            out_boxes, out_scores, out_classes, len = self.postprocess_yoloV3(boxes, scores, indices, class_names)
+            out_boxes, out_scores, out_classes, length = self.postprocess_yoloV3(boxes, scores, indices, class_names)
         elif model_type == 1:  # yolov3-tiny.onnx  tiny-yolov3-11.onnx
             img_size = np.array([input_size, input_size], dtype=np.float32).reshape(1, 2)
             boxes, scores, indices = sess.run(None, {input_name: image_data, "image_shape": img_size})
-            out_boxes, out_scores, out_classes, len = self.postprocess_tiny_yoloV3(boxes, scores, indices, class_names)
+            out_boxes, out_scores, out_classes, length = self.postprocess_tiny_yoloV3(boxes, scores, indices, class_names)
 
         out_boxes = self.remove_padding(out_boxes, w, h, nw, nh, dw, dh)
-        return out_boxes, out_scores, out_classes, len
+
+        rect = "rect"
+        score = "score"
+        class_name = "class_name"
+        res = []
+        for i in range(len(out_boxes)):
+            res.append({rect:out_boxes[i], score:out_scores[i], class_name:class_names[i]})
+        return res
 
     def image_preprocess(self, image, target_size, gt_boxes=None):
         ih, iw = target_size

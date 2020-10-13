@@ -2,9 +2,11 @@ from os import path, uname
 import logging
 import logging.config
 import logging.handlers
-
 from yaml import safe_load
 from simplejson import load
+
+import cv2
+import numpy as np
 
 from ndu_gate_camera.api.video_source import VideoSourceType
 from ndu_gate_camera.camera.ndu_logger import NDULoggerHandler
@@ -33,7 +35,8 @@ DEFAULT_RUNNERS = {
 class NDUCameraService:
     def __init__(self, ndu_gate_config_file=None):
         if ndu_gate_config_file is None:
-            ndu_gate_config_file = path.dirname(path.dirname(path.abspath(__file__))) + '/config/ndu_gate.yaml'.replace('/', path.sep)
+            ndu_gate_config_file = path.dirname(path.dirname(path.abspath(__file__))) + '/config/ndu_gate.yaml'.replace(
+                '/', path.sep)
 
         with open(ndu_gate_config_file) as general_config:
             self.__ndu_gate_config = safe_load(general_config)
@@ -51,6 +54,10 @@ class NDUCameraService:
 
         if self.SOURCE_CONFIG.get("show_preview", None) is None:
             self.SOURCE_CONFIG["show_preview"] = NDUUtility.is_debug_mode()
+        self.__show_preview = self.SOURCE_CONFIG.get("show_preview", False)
+        self.__write_preview = self.SOURCE_CONFIG.get("write_preview", False)
+        if self.__write_preview:
+            self.__write_preview_file_name = self.SOURCE_CONFIG.get("write_preview_file_name", "")
 
         logging_error = None
         logging_config_file = self._ndu_gate_config_dir + "logs.conf"
@@ -105,7 +112,6 @@ class NDUCameraService:
         self.runners_configs_by_key = {}
         self.implemented_runners = {}
         self.available_runners = {}
-        self.frame_num = 0
 
         self._load_runners()
         self._connect_with_runners()
@@ -137,7 +143,8 @@ class NDUCameraService:
                         log.warning("class name not found for %s", runner)
                         continue
 
-                    runner_class = NDUUtility.check_and_import(runner_type, class_name, package_uuids=runner.get("uuids", None))
+                    runner_class = NDUUtility.check_and_import(runner_type, class_name,
+                                                               package_uuids=runner.get("uuids", None))
                     if runner_class is None:
                         log.warning("class name implementation not found for %s - %s", runner_type, class_name)
                         continue
@@ -230,7 +237,8 @@ class NDUCameraService:
         """
         try:
             if self.SOURCE_TYPE is VideoSourceType.VIDEO_FILE:
-                self.SOURCE_CONFIG["test_data_path"] = path.dirname(path.dirname(path.abspath(__file__))) + '/data/'.replace('/', path.sep)
+                self.SOURCE_CONFIG["test_data_path"] = path.dirname(
+                    path.dirname(path.abspath(__file__))) + '/data/'.replace('/', path.sep)
                 self.video_source = FileVideoSource(self.SOURCE_CONFIG)
                 pass
             elif self.SOURCE_TYPE is VideoSourceType.PI_CAMERA:
@@ -287,6 +295,7 @@ class NDUCameraService:
 
             # TODO - check runner settings before send the frame to runner
 
+            results = []
             for runner_unique_key in self.available_runners:
                 try:
                     runner_conf = self.runners_configs_by_key[runner_unique_key]
@@ -296,20 +305,105 @@ class NDUCameraService:
 
                     if result is not None:
                         self.__result_handler.save_result(result, runner_name=runner_conf["name"])
-
+                        results.append(result)
                 except Exception as e:
                     log.exception(e)
 
-            # print(frame)
+            if self.__show_preview:
+                preview = self._get_preview(frame, results)
+                cv2.imshow("ndu_gate_camera preview", preview)
+                if cv2.waitKey(1) & 0xFF == ord('q'):
+                    break
+                if self.__write_preview:
+                    self._write_frame(preview)
+            elif self.__write_preview:
+                self._write_frame(frame)
+
+        if self.__write_preview and self.__out is not None:
+            self.__out.release()
 
         # TODO - set camera_perspective
         log.info("Video source is finished")
 
-    def _process_frame(self, frame):
-        self.frame_num += 1
-        print("Processing frame: ", self.frame_num)
+    def _write_frame(self, frame):
+        if not hasattr(self, "__out"):
+            fourcc = cv2.VideoWriter_fourcc(*'MP4V')
+            self.__out = cv2.VideoWriter(self.__write_preview_file_name, fourcc, 20.0, (1280, 720))
+        self.__out.write(frame)
 
-        pass
+    def _get_preview(self, image, results):
+        def put_text(img, text, center, color=[255, 255, 255], font_scale=0.5):
+            cv2.putText(img=img, text=text, org=(center[0] + 50, center[1]),
+                        fontFace=cv2.FONT_HERSHEY_COMPLEX, fontScale=font_scale, color=[0, 0, 0], lineType=cv2.LINE_AA,
+                        thickness=2)
+            cv2.putText(img=img, text=text, org=(center[0] + 50, center[1]),
+                        fontFace=cv2.FONT_HERSHEY_COMPLEX, fontScale=font_scale, color=color,
+                        lineType=cv2.LINE_AA, thickness=1)
+
+        def draw_rect(image, c1, c2):
+            cv2.rectangle(image, c1, c2, 0, 2)
+            cv2.rectangle(image, c1, c2, 0, 2.2)
+
+        if results is not None:
+            line_height = 20
+            rect = "rect"
+            score = "score"
+            class_name = "class_name"
+            _texts = "_texts"
+            for result in results:
+                item = {rect: None, score: None, class_name: None, _texts: []}
+                for res in result:
+                    for key in res:
+                        if not key in item:
+                            item[_texts].append(key + ": " + str(res[key]))
+                        else:
+                            item[key] = res[key]
+                if item[class_name] is not None:
+                    text = str(item[class_name])
+                    if item[score] is not None:
+                        text = f"{text} - %{item[score] * 100:.2f}"
+                    item[_texts].insert(0, text)
+
+                if item[rect] is not None:
+                    coor = np.array(item[rect][:4], dtype=np.int32)
+                    c1, c2 = [coor[1], coor[0]], [coor[3], coor[2]]
+                    draw_rect(image, c1, c2)
+                    for text in item[_texts]:
+                        c1[1] = c1[1] + line_height
+                        put_text(image, text, c1)
+                else:
+                    c1 = [line_height, line_height]
+                    for text in item[_texts]:
+                        c1[1] = c1[1] + line_height
+                        put_text(image, text, c1)
+            ####koray sil
+            # bbox = out_boxes[i]
+            #
+            # if not bbox is None:
+            #     coor = np.array(bbox[:4], dtype=np.int32)
+            #     c1, c2 = (coor[1], coor[0]), (coor[3], coor[2])
+            #
+            #     cv2.rectangle(image, c1, c2, 0, 2)
+            #     score = out_scores[i]
+            #     # cv2.putText(image, f'%{score*100:.2f}' + ' ' + out_classes[i], (c1[0], c1[1] - 2), cv2.FONT_HERSHEY_SIMPLEX,
+            #     #             0.5, (255, 255, 255), 2 // 2, lineType=cv2.LINE_AA)
+            #     put_text(image, f'%{score * 100:.2f}' + ' ' + out_classes[i], (c1[0], c1[1] - 2))
+            #     drawn = True
+            # else:
+            #     c1 = (0, h)
+            #     h = h + 30
+            #     score = out_scores[i]
+            #     # cv2.putText(image, f'%{score*100:.2f}' + ' ' + out_classes[i], (c1[0], c1[1] - 2), cv2.FONT_HERSHEY_SIMPLEX,
+            #     #             0.8, (255, 255, 255), 2 // 2, lineType=cv2.LINE_AA)
+            #     put_text(image, f'%{score * 100:.2f}' + ' ' + out_classes[i], (c1[0], c1[1] - 2))
+            #     drawn = True
+
+            # global last_drawn
+            # if not drawn and last_drawn is not None:
+            #     return draw(*last_drawn, image)
+            # elif drawn:
+            #     last_drawn = out_boxes, out_scores, out_classes, len
+        return image
 
     def __get_runner_configuration_key(self, runner_type, class_name, configuration):
         if configuration is None:

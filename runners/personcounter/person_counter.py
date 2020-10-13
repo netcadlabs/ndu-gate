@@ -24,6 +24,6 @@ class PersonCounterRunner(Thread, NDUCameraRunner):
         num_pedestrians = extra_data.get("num_pedestrians", 0)
 
         if num_pedestrians > 0:
-            return {"person_count": num_pedestrians}
+            return [{"person_count": num_pedestrians}]
 
         return None
