@@ -11,7 +11,7 @@ video_source:
     CAP_PROP_FPS: 10
 
 #video_source:
-#  type: YOUTUBE # VIDEO_FILE, PI_CAMERA, CAMERA, IP_CAMERA, VIDEO_URL, YOUTUBE
+#  type: CAMERA # VIDEO_FILE, PI_CAMERA, CAMERA, IP_CAMERA, VIDEO_URL, YOUTUBE
 #  file_path: duygu2.mp4
 #  data_folder: /etc/ndu-gate/data/video
 #  replay: False # not implemented
@@ -51,6 +51,11 @@ runners:
 #    configuration: yolov3-tiny.json
 #    class: yolov3_tiny_runner
 #    priority: 10
+  - name: Face Detector
+    type: facedetector
+    configuration: facedetector.json
+    class: face_detector_runner
+    priority: 10
 
 #  - name: Social Distance
 #    type: socialdistance
