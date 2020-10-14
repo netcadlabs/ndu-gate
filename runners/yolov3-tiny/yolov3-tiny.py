@@ -101,13 +101,27 @@ class yolov3_tiny_runner(NDUCameraRunner):
             for idx_0 in indices:
                 for idx_ in idx_0:
                     class_index = idx_[1]
-                    if class_index == 0:
-                        out_classes.append(class_names[class_index])
-                        out_scores.append(scores[tuple(idx_)])
-                        idx_1 = (idx_[0], idx_[2])
-                        out_boxes.append(boxes[idx_1])
-                        length = length + 1
+                    out_classes.append(class_names[class_index])
+                    out_scores.append(scores[tuple(idx_)])
+                    idx_1 = (idx_[0], idx_[2])
+                    out_boxes.append(boxes[idx_1])
+                    length = length + 1
         return out_boxes, out_scores, out_classes, length
+
+    def postprocess_tiny_yoloV3(boxes, scores, indices, class_names):
+        objects_identified = indices.shape[0]
+        len = 0
+        out_boxes, out_scores, out_classes = [], [], []
+        if objects_identified > 0:
+            for idx_0 in indices:
+                for idx_ in idx_0:
+                    classIndex = idx_[1]
+                    out_classes.append(class_names[classIndex])
+                    out_scores.append(scores[tuple(idx_)])
+                    idx_1 = (idx_[0], idx_[2])
+                    out_boxes.append(boxes[idx_1])
+                    len = len + 1;
+        return out_boxes, out_scores, out_classes, len
 
     @staticmethod
     def _remove_padding(bboxes, w, h, nw, nh, dw, dh):

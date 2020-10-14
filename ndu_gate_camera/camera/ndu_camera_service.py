@@ -1,3 +1,4 @@
+import time
 from os import path, uname
 import logging
 import logging.config
@@ -263,56 +264,67 @@ class NDUCameraService:
         if self.video_source is None:
             log.error("video source is not set!")
             exit(102)
-
+        skip = 0
         # TODO - çalıştırma sırasına göre sonuçlar bir sonraki runnera aktarılabilir
         # TODO - runner dependency ile kimin çıktısı kimn giridisi olacak şeklinde de olabilir
         for i, frame in self.video_source.get_frames():
             if i % 100 == 0:
                 log.debug("frame count %s ", i)
 
-            pedestrian_boxes = None
-            num_pedestrians = None
-            person_image_list = None
-            face_list = None
-
-            if self.PRE_FIND_PERSON:
-                pedestrian_boxes, num_pedestrians, person_image_list = self.__personDetector.find_person(frame)
-            if self.PRE_FIND_FACES:
-                if len(person_image_list) > 0:
-                    face_list = self.__faceDetector.face_detector3(frame, num_pedestrians)
-                    # for face in face_list:
-                    #     res = self._get_emotions_analysis(face)
-                    #     log.debug(res)
-
-            extra_data = {
-                "pedestrian_boxes": pedestrian_boxes,
-                "num_pedestrians": num_pedestrians,
-                "person_image_list": person_image_list,
-                "face_list": face_list,
-                "results": {}
-            }
-
-            # TODO - check runner settings before send the frame to runner
-
             results = []
-            for runner_unique_key in self.available_runners:
-                try:
-                    runner_conf = self.runners_configs_by_key[runner_unique_key]
-                    result = self.available_runners[runner_unique_key].process_frame(frame, extra_data=extra_data)
-                    extra_data["results"][runner_unique_key] = result
-                    log.debug("result : %s", result)
+            if skip <= 0:
+                pedestrian_boxes = None
+                num_pedestrians = None
+                person_image_list = None
+                face_list = None
 
-                    if result is not None:
-                        self.__result_handler.save_result(result, runner_name=runner_conf["name"])
-                        results.append(result)
-                except Exception as e:
-                    log.exception(e)
+                if self.PRE_FIND_PERSON:
+                    pedestrian_boxes, num_pedestrians, person_image_list = self.__personDetector.find_person(frame)
+                if self.PRE_FIND_FACES:
+                    if len(person_image_list) > 0:
+                        face_list = self.__faceDetector.face_detector3(frame, num_pedestrians)
+                        # for face in face_list:
+                        #     res = self._get_emotions_analysis(face)
+                        #     log.debug(res)
+
+                extra_data = {
+                    "pedestrian_boxes": pedestrian_boxes,
+                    "num_pedestrians": num_pedestrians,
+                    "person_image_list": person_image_list,
+                    "face_list": face_list,
+                    "results": {}
+                }
+
+                # TODO - check runner settings before send the frame to runner
+                for runner_unique_key in self.available_runners:
+                    try:
+                        runner_conf = self.runners_configs_by_key[runner_unique_key]
+                        start = time.time()
+                        result = self.available_runners[runner_unique_key].process_frame(frame, extra_data=extra_data)
+                        elapsed = time.time() - start
+                        if self.__show_preview:
+                            result.append({"elapsed_time": f'{runner_conf["type"]}: {elapsed:.4f}sn'})
+                        extra_data["results"][runner_unique_key] = result
+                        log.debug("result : %s", result)
+
+                        if result is not None:
+                            self.__result_handler.save_result(result, runner_name=runner_conf["name"])
+                            results.append(result)
+                    except Exception as e:
+                        log.exception(e)
 
             if self.__show_preview:
-                preview = self._get_preview(frame, results)
+                if skip > 0:
+                    skip = skip - 1
+                    preview = frame
+                else:
+                    preview = self._get_preview(frame, results)
                 cv2.imshow("ndu_gate_camera preview", preview)
-                if cv2.waitKey(1) & 0xFF == ord('q'):
+                k = cv2.waitKey(1)
+                if k & 0xFF == ord("q"):
                     break
+                if k & 0xFF == ord("s"):
+                    skip = 10
                 if self.__write_preview:
                     self._write_frame(preview)
             elif self.__write_preview:
@@ -351,31 +363,44 @@ class NDUCameraService:
 
         if results is not None:
             line_height = 20
+            current_line = [20, 0]
             for result in results:
+                text_type = ""
                 for item in result:
-                    class_name = item.get(constants.RESULT_KEY_CLASS_NAME, None)
-                    score = item.get(constants.RESULT_KEY_SCORE, None)
-                    rect = item.get(constants.RESULT_KEY_RECT, None)
-                    text = None
+                    values = {}
+                    elapsed_time = values["elapsed_time"] = item.get("elapsed_time", None)
+                    class_name = values[constants.RESULT_KEY_CLASS_NAME] = item.get(constants.RESULT_KEY_CLASS_NAME, None)
+                    score = values[constants.RESULT_KEY_SCORE] = item.get(constants.RESULT_KEY_SCORE, None)
+                    rect = values[constants.RESULT_KEY_RECT] = item.get(constants.RESULT_KEY_RECT, None)
+                    data = values[constants.RESULT_KEY_DATA] = item.get(constants.RESULT_KEY_DATA, None)
+
+                    text = ""
                     if class_name is not None:
-                        text = str(class_name)
+                        text = str(class_name) + " "
                         if score is not None:
-                            text = f"{text} - %{score * 100:.2f}"
+                            text = f"{text} - %{score * 100:.2f} "
                     elif score is not None:
-                        text = f"%{score * 100:.2f}"
+                        text = f"%{score * 100:.2f} "
+                    for key in item:
+                        if key not in values:
+                            text = text + str(item[key])
+                    if data is not None:
+                        text = text + str(data)
                     if rect is not None:
                         c = np.array(rect[:4], dtype=np.int32)
                         c1, c2 = [c[1], c[0]], (c[3], c[2])
                         draw_rect(image, c1, c2)
-                        if text is not None:
+                        if len(text) > 0:
                             c1[1] = c1[1] + line_height
                             put_text(image, text, c1)
-                    elif text is not None:
-                        c1 = [line_height, line_height]
-                        c1[1] = c1[1] + line_height
-                        put_text(image, text, c1)
-
-
+                            text = ""
+                    if elapsed_time is not None:
+                        text_type = elapsed_time + " " + text_type
+                    if len(text) > 0:
+                        text_type = text_type + text + " "
+                if len(text_type)>0:
+                    current_line[1] = current_line[1] + line_height
+                    put_text(image, text_type, current_line)
 
         return image
 
