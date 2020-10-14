@@ -39,21 +39,17 @@ class YoutubeVideoSource(VideoSource):
         count = 0
         # TODO - bitince başa sar?
         self.__stream.start()
-        while True:
-            frame = self.__stream.read()
-            if frame is None:
-                break
-
-            if self.__show_preview:
-                cv2.imshow("Youtube Video", frame)
-                key = cv2.waitKey(30)
-                if key == ord("q"):
+        try:
+            while True:
+                frame = self.__stream.read()
+                if frame is None:
                     break
-
-            yield count, frame
-            count += 1
-
-        self.stop()
+                yield count, frame
+                count += 1
+        except StopIteration:
+            pass
+        finally:
+            self.stop()
 
     def reset(self):
         self.__stream.stop()

@@ -325,10 +325,13 @@ class NDUCameraService:
         log.info("Video source is finished")
 
     def _write_frame(self, frame):
-        if not hasattr(self, "__out"):
+        try:
+            self.__out.write(frame)
+        except:
+            shape = frame.shape[1], frame.shape[0]
             fourcc = cv2.VideoWriter_fourcc(*'MP4V')
-            self.__out = cv2.VideoWriter(self.__write_preview_file_name, fourcc, 20.0, (1280, 720))
-        self.__out.write(frame)
+            self.__out = cv2.VideoWriter(self.__write_preview_file_name, fourcc, 24.0, shape)
+            self.__out.write(frame)
 
     @staticmethod
     def _get_preview(image, results):

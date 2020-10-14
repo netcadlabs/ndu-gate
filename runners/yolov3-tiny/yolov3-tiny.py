@@ -7,13 +7,13 @@ from ndu_gate_camera.api.ndu_camera_runner import NDUCameraRunner, log
 from ndu_gate_camera.utility import constants
 
 
-class yolov3_runner(NDUCameraRunner):
+class yolov3_tiny_runner(NDUCameraRunner):
     def __init__(self, config, connector_type):
         super().__init__()
         self.__config = config
         self.input_size = config.get("input_size", 416)
 
-        self.onnx_fn = config.get("onnx_fn", "yolov3.onnx")
+        self.onnx_fn = config.get("onnx_fn", "yolov3-tiny.onnx")
         if not os.path.isfile(self.onnx_fn):
             self.onnx_fn = os.path.dirname(os.path.abspath(__file__)) + self.onnx_fn.replace("/", os.path.sep)
 
@@ -26,7 +26,7 @@ class yolov3_runner(NDUCameraRunner):
         self.yolo_sess, self.yolo_input_name, self.yolo_class_names = self._create_session(self.onnx_fn, self.classes_filename)
 
     def get_name(self):
-        return "yolov3"
+        return "yolov3-tiny"
 
     def get_settings(self):
         settings = {}
@@ -38,16 +38,16 @@ class yolov3_runner(NDUCameraRunner):
 
     @staticmethod
     def _predict(sess, input_name, input_size, class_names, frame):
-        img_processed, w, h, nw, nh, dw, dh = yolov3_runner._image_preprocess(np.copy(frame), [input_size, input_size])
+        img_processed, w, h, nw, nh, dw, dh = yolov3_tiny_runner._image_preprocess(np.copy(frame), [input_size, input_size])
         image_data = img_processed[np.newaxis, ...].astype(np.float32)
         image_data = np.transpose(image_data, [0, 3, 1, 2])
 
         # yolov3-tiny için özel kısım
         img_size = np.array([input_size, input_size], dtype=np.float32).reshape(1, 2)
         boxes, scores, indices = sess.run(None, {input_name: image_data, "image_shape": img_size})
-        out_boxes, out_scores, out_classes, length = yolov3_runner._postprocess_yolov3(boxes, scores, indices, class_names)
+        out_boxes, out_scores, out_classes, length = yolov3_tiny_runner._postprocess_tiny_yolov3(boxes, scores, indices, class_names)
 
-        out_boxes = yolov3_runner._remove_padding(out_boxes, w, h, nw, nh, dw, dh)
+        out_boxes = yolov3_tiny_runner._remove_padding(out_boxes, w, h, nw, nh, dw, dh)
 
         res = []
         for i in range(len(out_boxes)):

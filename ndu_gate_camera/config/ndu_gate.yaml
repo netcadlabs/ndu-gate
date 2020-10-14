@@ -11,7 +11,7 @@ video_source:
     CAP_PROP_FPS: 10
 
 #video_source:
-#  type: CAMERA
+#  type: YOUTUBE # VIDEO_FILE, PI_CAMERA, CAMERA, IP_CAMERA, VIDEO_URL, YOUTUBE
 #  file_path: duygu2.mp4
 #  data_folder: /etc/ndu-gate/data/video
 #  replay: False # not implemented
@@ -20,7 +20,7 @@ video_source:
 #  write_preview: True
 #  write_preview_file_name: /Users/korhun/Documents/temp/preview.mov
 #  mirror: True
-#  sleep: 0.1
+##  sleep: 0.1
 #  cam_gear_options:
 #    CAP_PROP_FRAME_WIDTH: 320
 #    CAP_PROP_FRAME_HEIGHT: 240
@@ -40,10 +40,15 @@ runners:
     configuration: personcounter.json
     class: PersonCounterRunner
     priority: 100
-  - name: yolov3 Test
-    type: yolov3
-    configuration: yolov3.json
-    class: yolov3_runner
+#  - name: yolov3 - Object detection with 80 classes
+#    type: yolov3
+#    configuration: yolov3.json
+#    class: yolov3_runner
+#    priority: 10
+  - name: yolov3-tiny - Fast object detection with 80 classes
+    type: yolov3-tiny
+    configuration: yolov3-tiny.json
+    class: yolov3_tiny_runner
     priority: 10
 
 #  - name: Social Distance
