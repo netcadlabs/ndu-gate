@@ -4,13 +4,13 @@ import onnxruntime as rt
 import os
 
 from ndu_gate_camera.api.ndu_camera_runner import NDUCameraRunner, log
+from ndu_gate_camera.utility import constants
 
 
-class ObjectDedection80Runner(NDUCameraRunner):
+class yolov3_runner(NDUCameraRunner):
     def __init__(self, config, connector_type):
         super().__init__()
         self.__config = config
-        self.model_type = config.get("model_type", 0)
         self.input_size = config.get("input_size", 416)
 
         self.onnx_fn = config.get("onnx_fn", "yolov3.onnx")
@@ -23,48 +23,47 @@ class ObjectDedection80Runner(NDUCameraRunner):
 
         os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
-        self.yolo_sess, self.yolo_input_name, self.yolo_class_names = self.create_session()
+        self.yolo_sess, self.yolo_input_name, self.yolo_class_names = self.create_session(self.onnx_fn, self.classes_filename)
 
     def get_name(self):
-        return "ObjectDedection80Runner"
+        return "yolov3"
 
     def get_settings(self):
         settings = {}
         return settings
 
-    def process_frame(self, frame, extra_data):
+    def process_frame(self, frame, extra_data=None):
         super().process_frame(frame)
-        log.debug("ObjectDedection80Runner içindeyim")
+        return self.predict(self.yolo_sess, self.yolo_input_name, self.input_size, self.yolo_class_names, frame)
 
-        result = self.predict(self.yolo_sess, self.yolo_input_name, self.input_size, self.model_type, self.yolo_class_names, frame)
-
-        return result
-
-    def predict(self, sess, input_name, input_size, model_type, class_names, frame):
+    def predict(self, sess, input_name, input_size, class_names, frame):
         img_processed, w, h, nw, nh, dw, dh = self.image_preprocess(np.copy(frame), [input_size, input_size])
         image_data = img_processed[np.newaxis, ...].astype(np.float32)
         image_data = np.transpose(image_data, [0, 3, 1, 2])
 
-        if model_type == 0:  # yolov3.onnx
-            img_size = np.array([input_size, input_size], dtype=np.float32).reshape(1, 2)
-            boxes, scores, indices = sess.run(None, {input_name: image_data, "image_shape": img_size})
-            out_boxes, out_scores, out_classes, length = self.postprocess_yoloV3(boxes, scores, indices, class_names)
-        elif model_type == 1:  # yolov3-tiny.onnx  tiny-yolov3-11.onnx
-            img_size = np.array([input_size, input_size], dtype=np.float32).reshape(1, 2)
-            boxes, scores, indices = sess.run(None, {input_name: image_data, "image_shape": img_size})
-            out_boxes, out_scores, out_classes, length = self.postprocess_tiny_yoloV3(boxes, scores, indices, class_names)
+        #####koray sil
+        # if model_type == 0:  # yolov3.onnx
+        #     img_size = np.array([input_size, input_size], dtype=np.float32).reshape(1, 2)
+        #     boxes, scores, indices = sess.run(None, {input_name: image_data, "image_shape": img_size})
+        #     out_boxes, out_scores, out_classes, length = self.postprocess_yolov3(boxes, scores, indices, class_names)
+        # elif model_type == 1:  # yolov3-tiny.onnx  tiny-yolov3-11.onnx
+        #     img_size = np.array([input_size, input_size], dtype=np.float32).reshape(1, 2)
+        #     boxes, scores, indices = sess.run(None, {input_name: image_data, "image_shape": img_size})
+        #     out_boxes, out_scores, out_classes, length = self.postprocess_tiny_yolov3(boxes, scores, indices, class_names)
+
+        img_size = np.array([input_size, input_size], dtype=np.float32).reshape(1, 2)
+        boxes, scores, indices = sess.run(None, {input_name: image_data, "image_shape": img_size})
+        out_boxes, out_scores, out_classes, length = self.postprocess_yolov3(boxes, scores, indices, class_names)
 
         out_boxes = self.remove_padding(out_boxes, w, h, nw, nh, dw, dh)
 
-        rect = "rect"
-        score = "score"
-        class_name = "class_name"
         res = []
         for i in range(len(out_boxes)):
-            res.append({rect:out_boxes[i], score:out_scores[i], class_name:class_names[i]})
+            res.append({constants.RESULT_KEY_RECT: out_boxes[i], constants.RESULT_KEY_SCORE: out_scores[i], constants.RESULT_KEY_CLASS_NAME: out_classes[i]})
         return res
 
-    def image_preprocess(self, image, target_size, gt_boxes=None):
+    @staticmethod
+    def image_preprocess(image, target_size, gt_boxes=None):
         ih, iw = target_size
         h, w, _ = image.shape
 
@@ -85,9 +84,10 @@ class ObjectDedection80Runner(NDUCameraRunner):
             gt_boxes[:, [1, 3]] = gt_boxes[:, [1, 3]] * scale + dh
             return image_padded, gt_boxes
 
-    def postprocess_yoloV3(self, boxes, scores, indices, class_names):
+    @staticmethod
+    def postprocess_yolov3(boxes, scores, indices, class_names):
         objects_identified = indices.shape[0]
-        len = 0
+        length = 0
         out_boxes, out_scores, out_classes = [], [], []
         if objects_identified > 0:
             for idx_ in indices:
@@ -97,12 +97,13 @@ class ObjectDedection80Runner(NDUCameraRunner):
                 out_scores.append(scores[tuple(idx_)])
                 idx_1 = (idx_[0], idx_[2])
                 out_boxes.append(boxes[idx_1])
-                len = len + 1
-        return out_boxes, out_scores, out_classes, len
+                length = length + 1
+        return out_boxes, out_scores, out_classes, length
 
-    def postprocess_tiny_yoloV3(self, boxes, scores, indices, class_names):
+    @staticmethod
+    def postprocess_tiny_yolov3(boxes, scores, indices, class_names):
         objects_identified = indices.shape[0]
-        len = 0
+        length = 0
         out_boxes, out_scores, out_classes = [], [], []
         if objects_identified > 0:
             for idx_0 in indices:
@@ -113,10 +114,11 @@ class ObjectDedection80Runner(NDUCameraRunner):
                         out_scores.append(scores[tuple(idx_)])
                         idx_1 = (idx_[0], idx_[2])
                         out_boxes.append(boxes[idx_1])
-                        len = len + 1
-        return out_boxes, out_scores, out_classes, len
+                        length = length + 1
+        return out_boxes, out_scores, out_classes, length
 
-    def remove_padding(self, bboxes, w, h, nw, nh, dw, dh):
+    @staticmethod
+    def remove_padding(bboxes, w, h, nw, nh, dw, dh):
         rw = w / nw
         rh = h / nh
         for i in range(len(bboxes)):
@@ -133,9 +135,10 @@ class ObjectDedection80Runner(NDUCameraRunner):
 
         return bboxes
 
-    def create_session(self):
-        class_names = [line.rstrip('\n') for line in open(self.classes_filename)]
+    @staticmethod
+    def create_session(onnx_fn, classes_filename):
+        class_names = [line.rstrip('\n') for line in open(classes_filename)]
 
-        sess = rt.InferenceSession(self.onnx_fn)
+        sess = rt.InferenceSession(onnx_fn)
         input_name = sess.get_inputs()[0].name  # "input_1"
         return sess, input_name, class_names

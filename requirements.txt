@@ -1,0 +1,7 @@
+numpy
+opencv-python
+setuptools
+vidgear
+pyzmq
+PyYAML
+simplejson

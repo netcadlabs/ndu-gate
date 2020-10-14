@@ -19,9 +19,8 @@ from ndu_gate_camera.camera.video_sources.pi_camera_video_source import PiCamera
 from ndu_gate_camera.camera.video_sources.youtube_video_source import YoutubeVideoSource
 from ndu_gate_camera.detectors.face_detector import FaceDetector
 from ndu_gate_camera.detectors.person_detector import PersonDetector
+from ndu_gate_camera.utility import constants
 from ndu_gate_camera.utility.ndu_utility import NDUUtility
-
-from ndu_gate_camera.utility.constants import DEFAULT_NDU_GATE_CONF
 
 name = uname()
 
@@ -331,78 +330,50 @@ class NDUCameraService:
             self.__out = cv2.VideoWriter(self.__write_preview_file_name, fourcc, 20.0, (1280, 720))
         self.__out.write(frame)
 
-    def _get_preview(self, image, results):
-        def put_text(img, text, center, color=[255, 255, 255], font_scale=0.5):
-            cv2.putText(img=img, text=text, org=(center[0] + 50, center[1]),
+    @staticmethod
+    def _get_preview(image, results):
+        def put_text(img, text, center, color=None, font_scale=0.5):
+            if color is None:
+                color = [255, 255, 255]
+            cv2.putText(img=img, text=text, org=(center[0] + 5, center[1]),
                         fontFace=cv2.FONT_HERSHEY_COMPLEX, fontScale=font_scale, color=[0, 0, 0], lineType=cv2.LINE_AA,
                         thickness=2)
-            cv2.putText(img=img, text=text, org=(center[0] + 50, center[1]),
+            cv2.putText(img=img, text=text, org=(center[0] + 5, center[1]),
                         fontFace=cv2.FONT_HERSHEY_COMPLEX, fontScale=font_scale, color=color,
                         lineType=cv2.LINE_AA, thickness=1)
 
-        def draw_rect(image, c1, c2):
-            cv2.rectangle(image, c1, c2, 0, 2)
-            cv2.rectangle(image, c1, c2, 0, 2.2)
+        def draw_rect(img, c1, c2):
+            cv2.rectangle(img, (c1[0], c1[1]), (c2[0], c2[1]), color=[0, 0, 0], thickness=3)
+            cv2.rectangle(img, (c1[0], c1[1]), (c2[0], c2[1]), color=[255, 255, 255], thickness=2)
 
         if results is not None:
             line_height = 20
-            rect = "rect"
-            score = "score"
-            class_name = "class_name"
-            _texts = "_texts"
             for result in results:
-                item = {rect: None, score: None, class_name: None, _texts: []}
-                for res in result:
-                    for key in res:
-                        if not key in item:
-                            item[_texts].append(key + ": " + str(res[key]))
-                        else:
-                            item[key] = res[key]
-                if item[class_name] is not None:
-                    text = str(item[class_name])
-                    if item[score] is not None:
-                        text = f"{text} - %{item[score] * 100:.2f}"
-                    item[_texts].insert(0, text)
-
-                if item[rect] is not None:
-                    coor = np.array(item[rect][:4], dtype=np.int32)
-                    c1, c2 = [coor[1], coor[0]], [coor[3], coor[2]]
-                    draw_rect(image, c1, c2)
-                    for text in item[_texts]:
+                for item in result:
+                    class_name = item.get(constants.RESULT_KEY_CLASS_NAME, None)
+                    score = item.get(constants.RESULT_KEY_SCORE, None)
+                    rect = item.get(constants.RESULT_KEY_RECT, None)
+                    text = None
+                    if class_name is not None:
+                        text = str(class_name)
+                        if score is not None:
+                            text = f"{text} - %{score * 100:.2f}"
+                    elif score is not None:
+                        text = f"%{score * 100:.2f}"
+                    if rect is not None:
+                        c = np.array(rect[:4], dtype=np.int32)
+                        c1, c2 = [c[1], c[0]], (c[3], c[2])
+                        draw_rect(image, c1, c2)
+                        if text is not None:
+                            c1[1] = c1[1] + line_height
+                            put_text(image, text, c1)
+                    elif text is not None:
+                        c1 = [line_height, line_height]
                         c1[1] = c1[1] + line_height
                         put_text(image, text, c1)
-                else:
-                    c1 = [line_height, line_height]
-                    for text in item[_texts]:
-                        c1[1] = c1[1] + line_height
-                        put_text(image, text, c1)
-            ####koray sil
-            # bbox = out_boxes[i]
-            #
-            # if not bbox is None:
-            #     coor = np.array(bbox[:4], dtype=np.int32)
-            #     c1, c2 = (coor[1], coor[0]), (coor[3], coor[2])
-            #
-            #     cv2.rectangle(image, c1, c2, 0, 2)
-            #     score = out_scores[i]
-            #     # cv2.putText(image, f'%{score*100:.2f}' + ' ' + out_classes[i], (c1[0], c1[1] - 2), cv2.FONT_HERSHEY_SIMPLEX,
-            #     #             0.5, (255, 255, 255), 2 // 2, lineType=cv2.LINE_AA)
-            #     put_text(image, f'%{score * 100:.2f}' + ' ' + out_classes[i], (c1[0], c1[1] - 2))
-            #     drawn = True
-            # else:
-            #     c1 = (0, h)
-            #     h = h + 30
-            #     score = out_scores[i]
-            #     # cv2.putText(image, f'%{score*100:.2f}' + ' ' + out_classes[i], (c1[0], c1[1] - 2), cv2.FONT_HERSHEY_SIMPLEX,
-            #     #             0.8, (255, 255, 255), 2 // 2, lineType=cv2.LINE_AA)
-            #     put_text(image, f'%{score * 100:.2f}' + ' ' + out_classes[i], (c1[0], c1[1] - 2))
-            #     drawn = True
 
-            # global last_drawn
-            # if not drawn and last_drawn is not None:
-            #     return draw(*last_drawn, image)
-            # elif drawn:
-            #     last_drawn = out_boxes, out_scores, out_classes, len
+
+
         return image
 
     def __get_runner_configuration_key(self, runner_type, class_name, configuration):
@@ -415,4 +386,4 @@ class NDUCameraService:
 
 
 if __name__ == '__main__':
-    NDUCameraService(DEFAULT_NDU_GATE_CONF.replace('/', path.sep))
+    NDUCameraService(constants.DEFAULT_NDU_GATE_CONF.replace('/', path.sep))

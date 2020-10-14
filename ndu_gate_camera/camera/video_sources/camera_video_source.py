@@ -15,30 +15,6 @@ class CameraVideoSource(VideoSource):
     def get_frames(self):
         log.info("start camera streaming..")
         count = 0
-
-        ###koray  sil
-        # while True:
-        #     try:
-        #         ret, frame = self.__capture.read()
-        #
-        #         if frame is None:
-        #             continue
-        #
-        #         if self.__show_preview:
-        #             rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2BGRA)
-        #             cv2.imshow('os default camera', rgb)
-        #             if cv2.waitKey(1) & 0xFF == ord('q'):
-        #                 out = cv2.imwrite('capture.jpg', frame)
-        #                 break
-        #
-        #         count += 1
-        #         yield count, frame
-        #         sleep(0.1)
-        #     except Exception as e:
-        #         log.error(e)
-        #         cv2.destroyAllWindows()
-        #         break
-
         try:
             while self.__capture.isOpened():
                 ok, frame = self.__capture.read()

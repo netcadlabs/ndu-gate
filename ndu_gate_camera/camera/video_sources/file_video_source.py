@@ -30,25 +30,6 @@ class FileVideoSource(VideoSource):
             self._calc_skip()
         self._set_capture()
 
-    ####koray  sil
-    # def get_frames(self):
-    #     log.debug("start video streaming..")
-    #     count = 0
-    #     # TODO - bitince başa sar?
-    #     while self.__capture.isOpened():
-    #         ret, frame = self.__capture.read()
-    #         if ret is False:
-    #             break
-    #
-    #         # TODO - burayı kaldır ?
-    #         cv2.imwrite('files/FileVideoSource_' + str(count) + '.jpg', frame)
-    #         yield count, frame
-    #         count += 1
-    #
-    #     log.debug("video finished..")
-    #     self.__capture.release()
-    #     cv2.destroyAllWindows()
-
     def get_frames(self):
         log.debug("start video streaming..")
         count = 0

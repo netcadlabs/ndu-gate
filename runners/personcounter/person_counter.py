@@ -3,6 +3,7 @@ from random import choice
 from string import ascii_lowercase
 
 from ndu_gate_camera.api.ndu_camera_runner import NDUCameraRunner, log
+from ndu_gate_camera.utility import constants
 
 
 class PersonCounterRunner(Thread, NDUCameraRunner):
@@ -24,6 +25,8 @@ class PersonCounterRunner(Thread, NDUCameraRunner):
         num_pedestrians = extra_data.get("num_pedestrians", 0)
 
         if num_pedestrians > 0:
-            return [{"person_count": num_pedestrians}]
+            return [{
+                constants.RESULT_KEY_DATA: {"person_count": num_pedestrians}
+            }]
 
         return None

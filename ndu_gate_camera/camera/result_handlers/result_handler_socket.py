@@ -3,6 +3,7 @@ import time
 import zmq
 
 from ndu_gate_camera.api.result_handler import log
+from ndu_gate_camera.utility import constants
 
 
 class ResultHandlerSocket:
@@ -25,11 +26,12 @@ class ResultHandlerSocket:
         :return:
         """
         try:
-            if isinstance(result, list):
+            if result is not None:
                 for item in result:
-                    self.__send_item(item)
-            else:
-                self.__send_item(result)
+                    data = item.get(constants.RESULT_KEY_DATA, None)
+                    if data is not None:
+                        self.__send_item(data, runner_name)
+
         except Exception as e:
             log.error(e)
 
