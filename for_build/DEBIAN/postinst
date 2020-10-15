@@ -13,6 +13,7 @@ fi
 echo "Installing jsonschema"
 sudo rm -rf /usr/lib/python3/dist-packages/jsonschema
 CURRENT_USER=$USER
+sudo pip3 install vidgear  || echo "OK"
 sudo pip3 install --upgrade jsonschema==3.1.1
 sudo pip3 install --upgrade pyrsistent --progress-bar off -qqq || echo "OK"
 sudo pip3 install --upgrade importlib --progress-bar off -qqq || echo "OK"
