@@ -21,7 +21,7 @@ class yolov3_tiny_runner(NDUCameraRunner):
         if not os.path.isfile(self.classes_filename):
             self.classes_filename = os.path.dirname(os.path.abspath(__file__)) + self.classes_filename.replace("/", os.path.sep)
 
-        os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
+        # os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
         self.yolo_sess, self.yolo_input_name, self.yolo_class_names = self._create_session(self.onnx_fn, self.classes_filename)
 
@@ -45,7 +45,7 @@ class yolov3_tiny_runner(NDUCameraRunner):
         # yolov3-tiny için özel kısım
         img_size = np.array([input_size, input_size], dtype=np.float32).reshape(1, 2)
         boxes, scores, indices = sess.run(None, {input_name: image_data, "image_shape": img_size})
-        out_boxes, out_scores, out_classes, length = yolov3_tiny_runner._postprocess_tiny_yolov3(boxes, scores, indices, class_names)
+        out_boxes, out_scores, out_classes = yolov3_tiny_runner._postprocess_tiny_yolov3(boxes, scores, indices, class_names)
 
         out_boxes = yolov3_tiny_runner._remove_padding(out_boxes, w, h, nw, nh, dw, dh)
 
@@ -77,25 +77,8 @@ class yolov3_tiny_runner(NDUCameraRunner):
             return image_padded, gt_boxes
 
     @staticmethod
-    def _postprocess_yolov3(boxes, scores, indices, class_names):
-        objects_identified = indices.shape[0]
-        length = 0
-        out_boxes, out_scores, out_classes = [], [], []
-        if objects_identified > 0:
-            for idx_ in indices:
-                class_index = idx_[1]
-                # if class_index==0 or class_index==67: #person - cell phone
-                out_classes.append(class_names[class_index])
-                out_scores.append(scores[tuple(idx_)])
-                idx_1 = (idx_[0], idx_[2])
-                out_boxes.append(boxes[idx_1])
-                length = length + 1
-        return out_boxes, out_scores, out_classes, length
-
-    @staticmethod
     def _postprocess_tiny_yolov3(boxes, scores, indices, class_names):
         objects_identified = indices.shape[0]
-        length = 0
         out_boxes, out_scores, out_classes = [], [], []
         if objects_identified > 0:
             for idx_0 in indices:
@@ -105,12 +88,10 @@ class yolov3_tiny_runner(NDUCameraRunner):
                     out_scores.append(scores[tuple(idx_)])
                     idx_1 = (idx_[0], idx_[2])
                     out_boxes.append(boxes[idx_1])
-                    length = length + 1
-        return out_boxes, out_scores, out_classes, length
+        return out_boxes, out_scores, out_classes
 
     def postprocess_tiny_yoloV3(boxes, scores, indices, class_names):
         objects_identified = indices.shape[0]
-        len = 0
         out_boxes, out_scores, out_classes = [], [], []
         if objects_identified > 0:
             for idx_0 in indices:
@@ -120,8 +101,7 @@ class yolov3_tiny_runner(NDUCameraRunner):
                     out_scores.append(scores[tuple(idx_)])
                     idx_1 = (idx_[0], idx_[2])
                     out_boxes.append(boxes[idx_1])
-                    len = len + 1;
-        return out_boxes, out_scores, out_classes, len
+        return out_boxes, out_scores, out_classes
 
     @staticmethod
     def _remove_padding(bboxes, w, h, nw, nh, dw, dh):

@@ -1,13 +1,10 @@
-import errno
-import os
-import time
-from os import path
+import numpy as np
 import cv2
+import onnxruntime as rt
+import os
 
-from ndu_gate_camera.detectors.vision.ssd.config.fd_config import define_img_size
-from ndu_gate_camera.detectors.vision.ssd.mb_tiny_RFB_fd import create_Mb_Tiny_RFB_fd, create_Mb_Tiny_RFB_fd_predictor
-
-# from ndu_gate_camera.utility.constants import NDU_GATE_MODEL_FOLDER
+import errno
+from os import path
 
 
 from ndu_gate_camera.api.ndu_camera_runner import NDUCameraRunner, log
@@ -17,70 +14,30 @@ from ndu_gate_camera.utility import constants
 class face_detector_runner(NDUCameraRunner):
     def __init__(self, config, connector_type):
         super().__init__()
-        self.__config = config
         self.__threshold = config.get("threshold", 0.8)
-        self.__candidate_size = config.get("candidate_size", 1000)
 
-        self.label_path = path.dirname(path.abspath(__file__)) + "/data/voc-model-labels.txt"
-        self.face_model_path = path.dirname(path.abspath(__file__)) + "/data/version-RFB-640.pth"
+        onnx_fn = path.dirname(path.abspath(__file__)) + "/data/version-RFB-640.onnx"
+        class_names_fn = path.dirname(path.abspath(__file__)) + "/data/voc-model-labels.txt"
 
-        # TODO  koray sil
-        # from torch.autograd import Variable
+        if not path.isfile(onnx_fn):
+            raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), onnx_fn)
+        if not path.isfile(class_names_fn):
+            raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), class_names_fn)
+
+        self.__onnx_sess, self.__onnx_input_name, self.__onnx_class_names = face_detector_runner._create_session(onnx_fn, class_names_fn)
+
+        ## onnx export örneği
+        # self.__candidate_size = config.get("candidate_size", 1000)
         # import torch.onnx
         # import torchvision
-        import torch
-        #
-        # dummy_input = Variable(torch.randn(1, 3, 256, 256))
-        # state_dict = torch.load(self.face_model_path)
-        # model = load_state_dict(state_dict)
-        # torch.onnx.export(model, dummy_input, "moment-in-time.onnx")
-        #
+        # import torch
         # from torch.autograd import Variable
-        #
-        # # Load the trained model from file
-        #
-        # from torch.testing._internal.data.network2 import Net
-        # trained_model = Net()
-        # trained_model.load_state_dict(torch.load(self.face_model_path))
-        #
-        # # Export the trained model to ONNX
-        # dummy_input = Variable(torch.randn(1, 1, 28, 28))  # one black and white 28 x 28 picture will be the input to the model
-        # torch.onnx.export(trained_model, dummy_input, "face_detection.onnx")
-
-
-
-
-
-
-
-
-        if not path.isfile(self.label_path):
-            raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), self.label_path)
-
-        if not path.isfile(self.face_model_path):
-            raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), self.face_model_path)
-
-        define_img_size(480)
-        test_device = "cpu"
-
-        self.__class_names = [name.strip() for name in open(self.label_path).readlines()]
-        self.faceNetModel = create_Mb_Tiny_RFB_fd(len(self.__class_names), is_test=True, device=test_device)
-        self.facePredictor = create_Mb_Tiny_RFB_fd_predictor(self.faceNetModel, candidate_size=self.__candidate_size, device=test_device)
-        self.faceNetModel.load(self.face_model_path)
-
-        # # TODO koray - onnx export denemesi
-        # from torch.autograd import Variable
-        # dummy_input = Variable(torch.randn(16, 3, 3, 3))  # one black and white 28 x 28 picture will be the input to the model
-        # torch.onnx.export(self.faceNetModel, dummy_input, "face_detection.onnx")
-        # # export(model, args, f, export_params=True, verbose=False, training=TrainingMode.EVAL,
-        # #        input_names=None, output_names=None, aten=False, export_raw_ir=False,
-        # #        operator_export_type=None, opset_version=None, _retain_param_name=True,
-        # #        do_constant_folding=True, example_outputs=None, strip_doc_string=True,
-        # #        dynamic_axes=None, keep_initializers_as_inputs=None, custom_opsets=None,
-        # #        enable_onnx_checker=True, use_external_data_format=False):
+        # model = create_Mb_Tiny_RFB_fd(len(self.__class_names), is_test=False, device=test_device)
+        # # self.facePredictor = create_Mb_Tiny_RFB_fd_predictor(self.faceNetModel, candidate_size=self.__candidate_size, device=test_device)
+        # model.load(self.face_model_path)
+        # dummy_input = Variable(torch.randn(16, 3, 3, 3))
+        # torch.onnx.export(model, dummy_input, "/Users/korhun/Documents/temp/version-RFB-640.onnx")
         # pass
-
-
 
     def get_name(self):
         return "facedetector"
@@ -91,39 +48,131 @@ class face_detector_runner(NDUCameraRunner):
 
     def process_frame(self, frame, extra_data=None):
         super().process_frame(frame)
-        return self._face_detector3(frame)
+        return self._predict(self.__onnx_sess, self.__onnx_input_name, self.__onnx_class_names, frame, self.__threshold)
 
-    # @staticmethod
-    # def _predict(sess, input_name, input_size, class_names, frame):
-    #     img_processed, w, h, nw, nh, dw, dh = yolov3_runner._image_preprocess(np.copy(frame), [input_size, input_size])
-    #     image_data = img_processed[np.newaxis, ...].astype(np.float32)
-    #     image_data = np.transpose(image_data, [0, 3, 1, 2])
-    #
-    #     # yolov3-tiny için özel kısım
-    #     img_size = np.array([input_size, input_size], dtype=np.float32).reshape(1, 2)
-    #     boxes, scores, indices = sess.run(None, {input_name: image_data, "image_shape": img_size})
-    #     out_boxes, out_scores, out_classes, length = yolov3_runner._postprocess_yolov3(boxes, scores, indices, class_names)
-    #
-    #     out_boxes = yolov3_runner._remove_padding(out_boxes, w, h, nw, nh, dw, dh)
-    #
-    #     res = []
-    #     for i in range(len(out_boxes)):
-    #         res.append({constants.RESULT_KEY_RECT: out_boxes[i], constants.RESULT_KEY_SCORE: out_scores[i], constants.RESULT_KEY_CLASS_NAME: out_classes[i]})
-    #     return res
+    @staticmethod
+    def _predict(sess, input_name, class_names, frame, threshold):
+        nw = 640
+        nh = 480
+        h, w = frame.shape[:2]
 
-    def _face_detector3(self, frame):
-        time_time = time.time()
-        (h, w) = frame.shape[:2]
         image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        boxes, labels, probs = self.facePredictor.predict(image, self.__candidate_size / 2, self.__threshold)
+        image = cv2.resize(image, (nw, nh))
+        image_mean = np.array([127, 127, 127])
+        image = (image - image_mean) / 128
+        image = np.transpose(image, [2, 0, 1])
+        image = np.expand_dims(image, axis=0)
+        image = image.astype(np.float32)
+        confidences, boxes = sess.run(None, {input_name: image})
+        out_boxes, out_classes, out_scores = face_detector_runner._predict_faces(w, h, confidences, boxes, threshold, class_names)
 
         res = []
-        for i in range(boxes.size(0)):
-            box = boxes[i, :]
-            (startX, startY) = (max(0, int(box[0]) - 10), max(0, int(box[1]) - 10))
-            (endX, endY) = (min(w - 1, int(box[2]) + 10), min(h - 1, int(box[3]) + 10))
-            # face_list.append(frame[startY:endY, startX:endX])
-            rect = [startY, startX, endY, endX]
-            res.append({constants.RESULT_KEY_RECT: rect})
-
+        for i in range(len(out_boxes)):
+            res.append({constants.RESULT_KEY_RECT: out_boxes[i], constants.RESULT_KEY_SCORE: out_scores[i], constants.RESULT_KEY_CLASS_NAME: out_classes[i]})
         return res
+
+
+    @staticmethod
+    def _predict_faces(width, height, confidences, boxes, prob_threshold, class_names, iou_threshold=0.3, top_k=-1):
+        #https://github.com/Linzaer/Ultra-Light-Fast-Generic-Face-Detector-1MB/blob/master/run_video_face_detect_onnx.py
+        boxes = boxes[0]
+        confidences = confidences[0]
+        out_boxes = []
+        out_names = []
+        out_scores = []
+        for class_index in range(1, confidences.shape[1]):
+            probs = confidences[:, class_index]
+            mask = probs > prob_threshold
+            probs = probs[mask]
+            if probs.shape[0] == 0:
+                continue
+            subset_boxes = boxes[mask, :]
+            box_probs = np.concatenate([subset_boxes, probs.reshape(-1, 1)], axis=1)
+            box_probs = face_detector_runner._hard_nms(box_probs,
+                                                       iou_threshold=iou_threshold,
+                                                       top_k=top_k,
+                                                       )
+            for box_prob in box_probs:
+                y1 = int(box_prob[0] * width)
+                x1 = int(box_prob[1] * height)
+                y2 = int(box_prob[2] * width)
+                x2 = int(box_prob[3] * height)
+                out_boxes.append([x1, y1, x2, y2])
+                out_scores.append(box_prob[4])
+                out_names.append(class_names[class_index])
+
+        return out_boxes, out_names, out_scores
+
+
+    @staticmethod
+    def _hard_nms(box_scores, iou_threshold, top_k=-1, candidate_size=200):
+        # import vision.utils.box_utils_numpy as box_utils
+        def iou_of(boxes0, boxes1, eps=1e-5):
+            def area_of(left_top, right_bottom):
+                """
+                Compute the areas of rectangles given two corners.
+                Args:
+                    left_top (N, 2): left top corner.
+                    right_bottom (N, 2): right bottom corner.
+                Returns:
+                    area (N): return the area.
+                """
+                hw = np.clip(right_bottom - left_top, 0.0, None)
+                return hw[..., 0] * hw[..., 1]
+
+            """
+            Return intersection-over-union (Jaccard index) of boxes.
+            Args:
+                boxes0 (N, 4): ground truth boxes.
+                boxes1 (N or 1, 4): predicted boxes.
+                eps: a small number to avoid 0 as denominator.
+            Returns:
+                iou (N): IoU values.
+            """
+            overlap_left_top = np.maximum(boxes0[..., :2], boxes1[..., :2])
+            overlap_right_bottom = np.minimum(boxes0[..., 2:], boxes1[..., 2:])
+
+            overlap_area = area_of(overlap_left_top, overlap_right_bottom)
+            area0 = area_of(boxes0[..., :2], boxes0[..., 2:])
+            area1 = area_of(boxes1[..., :2], boxes1[..., 2:])
+            return overlap_area / (area0 + area1 - overlap_area + eps)
+
+        """
+        Perform hard non-maximum-supression to filter out boxes with iou greater
+        than threshold
+        Args:
+            box_scores (N, 5): boxes in corner-form and probabilities.
+            iou_threshold: intersection over union threshold.
+            top_k: keep top_k results. If k <= 0, keep all the results.
+            candidate_size: only consider the candidates with the highest scores.
+        Returns:
+            picked: a list of indexes of the kept boxes
+        """
+        scores = box_scores[:, -1]
+        boxes = box_scores[:, :-1]
+        picked = []
+        indexes = np.argsort(scores)
+        indexes = indexes[-candidate_size:]
+        while len(indexes) > 0:
+            current = indexes[-1]
+            picked.append(current)
+            if 0 < top_k == len(picked) or len(indexes) == 1:
+                break
+            current_box = boxes[current, :]
+            indexes = indexes[:-1]
+            rest_boxes = boxes[indexes, :]
+            iou = iou_of(
+                rest_boxes,
+                np.expand_dims(current_box, axis=0),
+            )
+            indexes = indexes[iou <= iou_threshold]
+
+        return box_scores[picked, :]
+
+    @staticmethod
+    def _create_session(onnx_fn, classes_filename):
+        class_names = [line.rstrip('\n') for line in open(classes_filename)]
+
+        sess = rt.InferenceSession(onnx_fn)
+        input_name = sess.get_inputs()[0].name  # "input.1
+        return sess, input_name, class_names

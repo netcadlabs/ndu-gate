@@ -18,7 +18,7 @@ video_source:
 ##  url: https://www.youtube.com/watch?v=3FXUw98rrUY
 #  url: https://youtu.be/8pXFktAbx5Y
 #  show_preview: True
-##  write_preview: True
+#  write_preview: True
 #  write_preview_file_name: /Users/korhun/Documents/temp/preview.mov
 #  mirror: True
 ##  sleep: 0.1
@@ -36,16 +36,16 @@ result_handler:
     host: 127.0.0.1
 
 runners:
-  - name: Person 1
-    type: personcounter
-    configuration: personcounter.json
-    class: PersonCounterRunner
-    priority: 100
-  - name: yolov3 - Object detection with 80 classes
-    type: yolov3
-    configuration: yolov3.json
-    class: yolov3_runner
-    priority: 10
+#  - name: Person 1
+#    type: personcounter
+#    configuration: personcounter.json
+#    class: PersonCounterRunner
+#    priority: 100
+#  - name: yolov3 - Object detection with 80 classes
+#    type: yolov3
+#    configuration: yolov3.json
+#    class: yolov3_runner
+#    priority: 10
 #  - name: yolov3-tiny - Fast object detection with 80 classes
 #    type: yolov3-tiny
 #    configuration: yolov3-tiny.json

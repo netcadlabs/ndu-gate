@@ -339,7 +339,7 @@ class NDUCameraService:
     def _write_frame(self, frame):
         try:
             self.__out.write(frame)
-        except:
+        except:  # daha iyi bir yolunu bulursanız, bana da gösterin -> korhun :)
             shape = frame.shape[1], frame.shape[0]
             fourcc = cv2.VideoWriter_fourcc(*'MP4V')
             self.__out = cv2.VideoWriter(self.__write_preview_file_name, fourcc, 24.0, shape)
@@ -398,7 +398,7 @@ class NDUCameraService:
                         text_type = elapsed_time + " " + text_type
                     if len(text) > 0:
                         text_type = text_type + text + " "
-                if len(text_type)>0:
+                if len(text_type) > 0:
                     current_line[1] = current_line[1] + line_height
                     put_text(image, text_type, current_line)
 
