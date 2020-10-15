@@ -55,9 +55,12 @@ class NDUCameraService:
         if self.SOURCE_CONFIG.get("show_preview", None) is None:
             self.SOURCE_CONFIG["show_preview"] = NDUUtility.is_debug_mode()
         self.__show_preview = self.SOURCE_CONFIG.get("show_preview", False)
-        self.__write_preview = self.SOURCE_CONFIG.get("write_preview", False)
-        if self.__write_preview:
-            self.__write_preview_file_name = self.SOURCE_CONFIG.get("write_preview_file_name", "")
+        if self.__show_preview:
+            self.__last_data = []
+            self.__last_data_count = 0
+            self.__write_preview = self.SOURCE_CONFIG.get("write_preview", False)
+            if self.__write_preview:
+                self.__write_preview_file_name = self.SOURCE_CONFIG.get("write_preview_file_name", "")
 
         logging_error = None
         logging_config_file = self._ndu_gate_config_dir + "logs.conf"
@@ -345,8 +348,7 @@ class NDUCameraService:
             self.__out = cv2.VideoWriter(self.__write_preview_file_name, fourcc, 24.0, shape)
             self.__out.write(frame)
 
-    @staticmethod
-    def _get_preview(image, results):
+    def _get_preview(self, image, results):
         def put_text(img, text, center, color=None, font_scale=0.5):
             if color is None:
                 color = [255, 255, 255]
@@ -361,11 +363,13 @@ class NDUCameraService:
             cv2.rectangle(img, (c1[0], c1[1]), (c2[0], c2[1]), color=[0, 0, 0], thickness=3)
             cv2.rectangle(img, (c1[0], c1[1]), (c2[0], c2[1]), color=[255, 255, 255], thickness=2)
 
+        line_height = 20
+        current_line = [20, 0]
+        data_added = []
         if results is not None:
-            line_height = 20
-            current_line = [20, 0]
             for result in results:
                 text_type = ""
+                has_data = False
                 for item in result:
                     values = {}
                     elapsed_time = values["elapsed_time"] = item.get("elapsed_time", None)
@@ -385,7 +389,10 @@ class NDUCameraService:
                         if key not in values:
                             text = text + str(item[key])
                     if data is not None:
-                        text = text + " data: " + str(data)
+                        add_txt = " data: " + str(data)
+                        data_added.append(add_txt)
+                        text = text + add_txt
+                        has_data = True
                     if rect is not None:
                         c = np.array(rect[:4], dtype=np.int32)
                         c1, c2 = [c[1], c[0]], (c[3], c[2])
@@ -400,7 +407,20 @@ class NDUCameraService:
                         text_type = text_type + text + " "
                 if len(text_type) > 0:
                     current_line[1] = current_line[1] + line_height
-                    put_text(image, text_type, current_line)
+                    if not has_data:
+                        put_text(image, text_type, current_line)
+                    else:
+                        put_text(image, text_type, current_line, color=[0, 0, 255])
+
+        if len(data_added) > 0:
+            self.__last_data = data_added
+            self.__last_data_count = 15
+        else:
+            if self.__last_data_count > 0:
+                self.__last_data_count -= 1
+                for last_data in self.__last_data:
+                    current_line[1] += line_height
+                    put_text(image, last_data, current_line, color=[0, 255, 255])
 
         return image
 

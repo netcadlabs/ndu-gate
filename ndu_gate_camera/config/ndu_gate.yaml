@@ -1,32 +1,39 @@
-video_source:
-  type: YOUTUBE # VIDEO_FILE, PI_CAMERA, CAMERA, IP_CAMERA, VIDEO_URL, YOUTUBE
-  file_path: duygu2.mp4
-  data_folder: /etc/ndu-gate/data/video
-  replay: False # not implemented
-  url: https://www.youtube.com/watch?v=3FXUw98rrUY
-  show_preview: True
-  cam_gear_options:
-    CAP_PROP_FRAME_WIDTH: 320
-    CAP_PROP_FRAME_HEIGHT: 240
-    CAP_PROP_FPS: 10
-
 #video_source:
-#  type: VIDEO_FILE # VIDEO_FILE, PI_CAMERA, CAMERA, IP_CAMERA, VIDEO_URL, YOUTUBE
-##  file_path: iett_1.avi
-#  file_path: iett_2.avi
-#  data_folder: /Users/korhun/Documents/test_data/
+#  type: YOUTUBE # VIDEO_FILE, PI_CAMERA, CAMERA, IP_CAMERA, VIDEO_URL, YOUTUBE
+#  file_path: duygu2.mp4
+#  data_folder: /etc/ndu-gate/data/video
 #  replay: False # not implemented
-##  url: https://www.youtube.com/watch?v=3FXUw98rrUY
-#  url: https://youtu.be/8pXFktAbx5Y
+#  url: https://www.youtube.com/watch?v=3FXUw98rrUY
 #  show_preview: True
-#  write_preview: True
-#  write_preview_file_name: /Users/korhun/Documents/temp/preview.mov
-#  mirror: True
-##  sleep: 0.1
 #  cam_gear_options:
 #    CAP_PROP_FRAME_WIDTH: 320
 #    CAP_PROP_FRAME_HEIGHT: 240
 #    CAP_PROP_FPS: 10
+
+video_source:
+  type: VIDEO_FILE # VIDEO_FILE, PI_CAMERA, CAMERA, IP_CAMERA, VIDEO_URL, YOUTUBE
+#  file_path: iett_1.avi
+#  file_path: iett_2.avi
+#  file_path: smoke_film.mp4
+#  file_path: smoke_women.mp4
+#  file_path: smoking_anti.mp4
+#  file_path: smoking.mp4
+#  file_path: smoking2.mp4
+  file_path: vertical_smoking.mov
+#  file_path: duygu2.mp4
+  data_folder: /Users/korhun/Documents/test_data/
+  replay: False # not implemented
+#  url: https://www.youtube.com/watch?v=3FXUw98rrUY
+  url: https://youtu.be/8pXFktAbx5Y
+  show_preview: True
+  write_preview: True
+  write_preview_file_name: /Users/korhun/Documents/temp/preview.mov
+  mirror: True
+#  sleep: 0.1
+  cam_gear_options:
+    CAP_PROP_FRAME_WIDTH: 320
+    CAP_PROP_FRAME_HEIGHT: 240
+    CAP_PROP_FPS: 10
 
 
 result_handler:
@@ -62,6 +69,7 @@ runners:
     configuration: drivermonitor.json
     class: driver_monitor_runner
     priority: 100
+
 
 #  - name: Social Distance
 #    type: socialdistance
