@@ -1,5 +1,6 @@
 {
-  "interval": 3,
-  "camera_x": 2,
-  "camera_y": 4
+  "detect_talking_to_cellphone": true,
+  "detect_wearing_mask": false,
+  "detect_smoking": false,
+  "detect_distracted": false
 }

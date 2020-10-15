@@ -385,7 +385,7 @@ class NDUCameraService:
                         if key not in values:
                             text = text + str(item[key])
                     if data is not None:
-                        text = text + str(data)
+                        text = text + " data: " + str(data)
                     if rect is not None:
                         c = np.array(rect[:4], dtype=np.int32)
                         c1, c2 = [c[1], c[0]], (c[3], c[2])

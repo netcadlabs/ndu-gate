@@ -114,10 +114,10 @@ class yolov3_tiny_runner(NDUCameraRunner):
             h2 = bbox[2]
             w2 = bbox[3]
 
-            bbox[0] = (h1 - dh) * rh
-            bbox[1] = (w1 - dw) * rw
-            bbox[2] = (h2 - dh) * rh
-            bbox[3] = (w2 - dw) * rw
+            bbox[0] = int((h1 - dh) * rh)
+            bbox[1] = int((w1 - dw) * rw)
+            bbox[2] = int((h2 - dh) * rh)
+            bbox[3] = int((w2 - dw) * rw)
 
         return bboxes
 

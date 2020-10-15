@@ -74,7 +74,7 @@ class face_detector_runner(NDUCameraRunner):
 
     @staticmethod
     def _predict_faces(width, height, confidences, boxes, prob_threshold, class_names, iou_threshold=0.3, top_k=-1):
-        #https://github.com/Linzaer/Ultra-Light-Fast-Generic-Face-Detector-1MB/blob/master/run_video_face_detect_onnx.py
+        # https://github.com/Linzaer/Ultra-Light-Fast-Generic-Face-Detector-1MB/blob/master/run_video_face_detect_onnx.py
         boxes = boxes[0]
         confidences = confidences[0]
         out_boxes = []
