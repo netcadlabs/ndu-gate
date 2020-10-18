@@ -1,0 +1,5 @@
+{
+  "onnx_fn": "/data/ssd_mobilenet_v1_10.onnx",
+  "classes_filename": "/data/mscoco_label_map.pbtxt.json"
+}
+

@@ -276,6 +276,8 @@ class NDUCameraService:
 
             results = []
             if skip <= 0:
+                if self.__show_preview:
+                    start_total = time.time()
                 pedestrian_boxes = None
                 num_pedestrians = None
                 person_image_list = None
@@ -305,7 +307,7 @@ class NDUCameraService:
                         start = time.time()
                         result = self.available_runners[runner_unique_key].process_frame(frame, extra_data=extra_data)
                         elapsed = time.time() - start
-                        if self.__show_preview:
+                        if self.__show_preview and result is not None:
                             result.append({"elapsed_time": f'{runner_conf["type"]}: {elapsed:.4f}sn'})
                         extra_data["results"][runner_unique_key] = result
                         log.debug("result : %s", result)
@@ -321,6 +323,8 @@ class NDUCameraService:
                     skip = skip - 1
                     preview = frame
                 else:
+                    total_elapsed_time = time.time() - start_total
+                    results.append([{"total_elapsed_time": f'{total_elapsed_time*1000:.0f}msec'}])
                     preview = self._get_preview(frame, results)
                 cv2.imshow("ndu_gate_camera preview", preview)
                 k = cv2.waitKey(1)
@@ -363,6 +367,7 @@ class NDUCameraService:
             cv2.rectangle(img, (c1[0], c1[1]), (c2[0], c2[1]), color=[0, 0, 0], thickness=3)
             cv2.rectangle(img, (c1[0], c1[1]), (c2[0], c2[1]), color=[255, 255, 255], thickness=2)
 
+        h, w, *_ = image.shape
         line_height = 20
         current_line = [20, 0]
         data_added = []
@@ -371,6 +376,11 @@ class NDUCameraService:
                 text_type = ""
                 has_data = False
                 for item in result:
+                    total_elapsed_time = item.get("total_elapsed_time", None)
+                    if total_elapsed_time is not None:
+                        put_text(image, total_elapsed_time, [w - 100, h - 30], color=[200, 200, 128], font_scale=0.4)
+                        continue
+
                     values = {}
                     elapsed_time = values["elapsed_time"] = item.get("elapsed_time", None)
                     class_name = values[constants.RESULT_KEY_CLASS_NAME] = item.get(constants.RESULT_KEY_CLASS_NAME, None)

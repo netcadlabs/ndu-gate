@@ -1,0 +1,1 @@
+ONNX-Model Zoo'dan alınmıştır.

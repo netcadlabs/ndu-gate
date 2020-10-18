@@ -11,22 +11,25 @@
 #    CAP_PROP_FPS: 10
 
 video_source:
-  type: VIDEO_FILE # VIDEO_FILE, PI_CAMERA, CAMERA, IP_CAMERA, VIDEO_URL, YOUTUBE
+  type: YOUTUBE # VIDEO_FILE, PI_CAMERA, CAMERA, IP_CAMERA, VIDEO_URL, YOUTUBE
 #  file_path: iett_1.avi
-#  file_path: iett_2.avi
+  file_path: iett_2.avi
 #  file_path: smoke_film.mp4
 #  file_path: smoke_women.mp4
 #  file_path: smoking_anti.mp4
 #  file_path: smoking.mp4
 #  file_path: smoking2.mp4
-  file_path: vertical_smoking.mov
+#  file_path: vertical_smoking.mov
 #  file_path: duygu2.mp4
   data_folder: /Users/korhun/Documents/test_data/
   replay: False # not implemented
 #  url: https://www.youtube.com/watch?v=3FXUw98rrUY
-  url: https://youtu.be/8pXFktAbx5Y
+#  url: https://youtu.be/8pXFktAbx5Y
+#  url: https://youtu.be/NyLF8nHIquM
+  url: https://youtu.be/N9JtUC8hl8o
+#  url: https://www.youtube.com/watch?v=0wNgUXGTKdg
   show_preview: True
-  write_preview: True
+#  write_preview: True
   write_preview_file_name: /Users/korhun/Documents/temp/preview.mov
   mirror: True
 #  sleep: 0.1
@@ -44,31 +47,42 @@ result_handler:
     host: 127.0.0.1
 
 runners:
-#  - name: Person 1
-#    type: personcounter
-#    configuration: personcounter.json
-#    class: PersonCounterRunner
-#    priority: 100
-  - name: yolov3 - Object detection with 80 classes
-    type: yolov3
-    configuration: yolov3.json
-    class: yolov3_runner
-    priority: 10
+#  - name: yolov3 - Object detection with 80 classes
+#    type: yolov3
+#    configuration: yolov3.json
+#    class: yolov3_runner
+#    priority: 10
+
 #  - name: yolov3-tiny - Fast object detection with 80 classes
 #    type: yolov3-tiny
 #    configuration: yolov3-tiny.json
 #    class: yolov3_tiny_runner
 #    priority: 10
-  - name: Face Detector
-    type: facedetector
-    configuration: facedetector.json
-    class: face_detector_runner
+
+  - name: ssd_mobilenet - Fast object detection with 80 classes
+    type: ssd_mobilenet
+    configuration: ssd_mobilenet.json
+    class: ssd_mobilenet_runner
     priority: 10
-  - name: Driver Monitor
-    type: drivermonitor
-    configuration: drivermonitor.json
-    class: driver_monitor_runner
+
+#  - name: Face Detector
+#    type: facedetector
+#    configuration: facedetector.json
+#    class: face_detector_runner
+#    priority: 10
+
+  - name: Person Counter
+    type: personcounter
+    configuration: person_counter.json
+    class: person_counter_runner
     priority: 100
+
+
+#  - name: Driver Monitor
+#    type: drivermonitor
+#    configuration: drivermonitor.json
+#    class: driver_monitor_runner
+#    priority: 100
 
 
 #  - name: Social Distance
@@ -76,10 +90,6 @@ runners:
 #    configuration: socialdistance.json
 #    class: SocialDistanceRunner
 #    priority: 75
-#  - name: Person 2
-#    type: personcounter
-#    configuration: personcounter2.json
-#    class: PersonCounterRunner
 #  - name: Driver Monitor 2 with emo.conf
 #    type: drivermonitor
 #    configuration: emotionanalysis.json

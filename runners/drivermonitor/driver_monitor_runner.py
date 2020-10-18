@@ -35,7 +35,7 @@ class driver_monitor_runner(Thread, NDUCameraRunner):
             raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), onnx_fn)
         if not path.isfile(class_names_fn):
             raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), class_names_fn)
-        self.__onnx_sess, self.__onnx_input_name, self.__onnx_class_names, self.__onnx_output_name = driver_monitor_runner._create_session(onnx_fn, class_names_fn)
+        self.__onnx_sess, self.__onnx_input_name, self.__onnx_class_names, self.__onnx_output_name = self._create_session(onnx_fn, class_names_fn)
 
     def get_name(self):
         return "DriverMonitorRunner"

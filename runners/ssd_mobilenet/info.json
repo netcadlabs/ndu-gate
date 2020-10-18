@@ -1,6 +1,6 @@
 {
     "connector_config": {
-      "class": "person_counter_runner"
+      "class": "ssd_mobilenet_runner"
     },
     "copy": []
 }
