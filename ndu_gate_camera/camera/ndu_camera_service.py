@@ -1,3 +1,4 @@
+import random
 import time
 from os import path, uname
 import logging
@@ -324,7 +325,7 @@ class NDUCameraService:
                     preview = frame
                 else:
                     total_elapsed_time = time.time() - start_total
-                    results.append([{"total_elapsed_time": f'{total_elapsed_time*1000:.0f}msec'}])
+                    results.append([{"total_elapsed_time": f'{total_elapsed_time * 1000:.0f}msec'}])
                     preview = self._get_preview(frame, results)
                 cv2.imshow("ndu_gate_camera preview", preview)
                 k = cv2.waitKey(1)
@@ -363,9 +364,20 @@ class NDUCameraService:
                         fontFace=cv2.FONT_HERSHEY_COMPLEX, fontScale=font_scale, color=color,
                         lineType=cv2.LINE_AA, thickness=1)
 
-        def draw_rect(img, c1, c2):
+        def draw_rect(obj, img, c1, c2, class_name):
+            color = [255, 255, 255]
+            if class_name is not None:
+                if not hasattr(obj, "__colors"):
+                    # obj.__colors = {}
+                    setattr(obj, "__colors", {})
+                dic = getattr(obj, "__colors")
+                if class_name in dic:
+                    color = dic[class_name]
+                else:
+                    color = dic[class_name] = [random.randint(50, 255), random.randint(50, 255), random.randint(50, 255)]
+
             cv2.rectangle(img, (c1[0], c1[1]), (c2[0], c2[1]), color=[0, 0, 0], thickness=3)
-            cv2.rectangle(img, (c1[0], c1[1]), (c2[0], c2[1]), color=[255, 255, 255], thickness=2)
+            cv2.rectangle(img, (c1[0], c1[1]), (c2[0], c2[1]), color=color, thickness=2)
 
         h, w, *_ = image.shape
         line_height = 20
@@ -406,7 +418,7 @@ class NDUCameraService:
                     if rect is not None:
                         c = np.array(rect[:4], dtype=np.int32)
                         c1, c2 = [c[1], c[0]], (c[3], c[2])
-                        draw_rect(image, c1, c2)
+                        draw_rect(self, image, c1, c2, class_name)
                         if len(text) > 0:
                             c1[1] = c1[1] + line_height
                             put_text(image, text, c1)

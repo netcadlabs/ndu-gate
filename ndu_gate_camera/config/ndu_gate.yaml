@@ -11,7 +11,7 @@
 #    CAP_PROP_FPS: 10
 
 video_source:
-  type: YOUTUBE # VIDEO_FILE, PI_CAMERA, CAMERA, IP_CAMERA, VIDEO_URL, YOUTUBE
+  type: VIDEO_FILE # VIDEO_FILE, PI_CAMERA, CAMERA, IP_CAMERA, VIDEO_URL, YOUTUBE
 #  file_path: iett_1.avi
   file_path: iett_2.avi
 #  file_path: smoke_film.mp4
@@ -47,11 +47,11 @@ result_handler:
     host: 127.0.0.1
 
 runners:
-#  - name: yolov3 - Object detection with 80 classes
-#    type: yolov3
-#    configuration: yolov3.json
-#    class: yolov3_runner
-#    priority: 10
+  - name: yolov3 - Object detection with 80 classes
+    type: yolov3
+    configuration: yolov3.json
+    class: yolov3_runner
+    priority: 10
 
 #  - name: yolov3-tiny - Fast object detection with 80 classes
 #    type: yolov3-tiny
@@ -59,30 +59,29 @@ runners:
 #    class: yolov3_tiny_runner
 #    priority: 10
 
-  - name: ssd_mobilenet - Fast object detection with 80 classes
-    type: ssd_mobilenet
-    configuration: ssd_mobilenet.json
-    class: ssd_mobilenet_runner
-    priority: 10
-
-#  - name: Face Detector
-#    type: facedetector
-#    configuration: facedetector.json
-#    class: face_detector_runner
+#  - name: ssd_mobilenet - Fast object detection with 80 classes
+#    type: ssd_mobilenet
+#    configuration: ssd_mobilenet.json
+#    class: ssd_mobilenet_runner
 #    priority: 10
 
-  - name: Person Counter
-    type: personcounter
-    configuration: person_counter.json
-    class: person_counter_runner
-    priority: 100
+  - name: Face Detector
+    type: facedetector
+    configuration: facedetector.json
+    class: face_detector_runner
+    priority: 10
 
-
-#  - name: Driver Monitor
-#    type: drivermonitor
-#    configuration: drivermonitor.json
-#    class: driver_monitor_runner
+#  - name: Person Counter
+#    type: personcounter
+#    configuration: person_counter.json
+#    class: person_counter_runner
 #    priority: 100
+
+  - name: Driver Monitor
+    type: drivermonitor
+    configuration: drivermonitor.json
+    class: driver_monitor_runner
+    priority: 100
 
 
 #  - name: Social Distance
