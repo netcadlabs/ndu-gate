@@ -40,11 +40,16 @@ person, bicycle, car, motorbike, aeroplane, bus, train, truck, boat, traffic lig
 Performans ölçümü https://youtu.be/N9JtUC8hl8o videosunun ilk sahnesi kullanılarak Macbook'ta yapılmıştır
 #### yolov3
 En yüksek bulma başarısına sahip modeldir. ***210 msec***
+
+Not: 
 #### ssd_mobilenet
 İyi bulma başarısına sahip, performansı yüksek bir modeldir. ***38 msec***
 #### yolov3-tiny
 En düşük bulma başarısına sahip, en hızlı çalışan modeldir.  ***25 msec***
 
+Not: yolo-darknet'in geliştiricisi v3 sonrasında computer vision işlerinden çekilmeye karar vermiş. 
+Yaptığım denemelerde yolov4 onnx daha başarılı sonuçlar vermedi. Bu yüzden 
+yolov4 ve v5 olduğu söyleyenen modelleri eklemedik veya denemedik.
 ### Face Detection
 #### facedetector
 Yüz rectangle ve score bulur. Config dosyasından toleransı ayarlanabilir. ***33 msec***

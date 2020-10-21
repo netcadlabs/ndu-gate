@@ -11,16 +11,17 @@
 #    CAP_PROP_FPS: 10
 
 video_source:
-  type: CAMERA # VIDEO_FILE, PI_CAMERA, CAMERA, IP_CAMERA, VIDEO_URL, YOUTUBE
+  type: VIDEO_FILE # VIDEO_FILE, PI_CAMERA, CAMERA, IP_CAMERA, VIDEO_URL, YOUTUBE
 #  file_path: iett_1.avi
 #  file_path: iett_2.avi
 #  file_path: smoke_film.mp4
 #  file_path: smoke_women.mp4
 #  file_path: smoking_anti.mp4
 #  file_path: smoking.mp4
-#  file_path: smoking2.mp4
+#  file_path: smoking2.mp4q
 #  file_path: vertical_smoking.mov
-  file_path: duygu2.mp4
+#  file_path: duygu2.mp4
+  file_path: crowded_720x.mp4
   data_folder: /Users/korhun/Documents/test_data/
   replay: False # not implemented
 #  url: https://www.youtube.com/watch?v=3FXUw98rrUY
@@ -29,10 +30,11 @@ video_source:
 #  url: https://youtu.be/N9JtUC8hl8o
 #  url: https://www.youtube.com/watch?v=0wNgUXGTKdg
 #  url: https://youtu.be/embYkODkzcs  #emotion
-  url: https://youtu.be/LdQw8PSV2P8  #emotion
-#  url: https://youtu.be/lAWGyy7Y2Uo
+#  url: https://youtu.be/LdQw8PSV2P8  #emotion
+#  url: https://www.youtube.com/watch?v=g-dyHadto2Y  #mask
+  url: https://youtu.be/TlInDQgg2G4  #mask
   show_preview: True
-#  write_preview: True
+  write_preview: True
   write_preview_file_name: /Users/korhun/Documents/temp/preview.mov
   mirror: True
 #  sleep: 0.1
@@ -86,10 +88,16 @@ runners:
 #    class: driver_monitor_runner
 #    priority: 100
 
-  - name: Emotion
-    type: emotion
-    configuration: emotion.json
-    class: emotion_runner
+#  - name: Emotion
+#    type: emotion
+#    configuration: emotion.json
+#    class: emotion_runner
+#    priority: 100
+
+  - name: Face Mask Detection
+    type: facemask
+    configuration: facemask.json
+    class: face_mask_runner
     priority: 100
 
 

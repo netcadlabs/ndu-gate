@@ -55,14 +55,12 @@ class emotion_runner(Thread, NDUCameraRunner):
         if extra_data is not None:
             results = extra_data.get("results", None)
             if results is not None:
-                # rect_faces = []
                 for runner_name, result in results.items():
                     for item in result:
                         class_name = item.get(constants.RESULT_KEY_CLASS_NAME, None)
                         if class_name == "face":
                             rect_face = item.get(constants.RESULT_KEY_RECT, None)
                             if rect_face is not None:
-                                # rect_faces.append(rect_face)
                                 bbox = rect_face
                                 y1 = max(int(bbox[0]), 0)
                                 x1 = max(int(bbox[1]), 0)
@@ -72,7 +70,6 @@ class emotion_runner(Thread, NDUCameraRunner):
 
                                 input_shape = (1, 1, 64, 64)
                                 image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-                                # image = cv2.resize(image, (64, 64))
                                 image =  cv2.resize(image, (64, 64), interpolation = cv2.INTER_AREA)
                                 img_data = np.array(image).astype(np.float32)
                                 img_data = np.resize(img_data, input_shape)
@@ -94,10 +91,10 @@ class emotion_runner(Thread, NDUCameraRunner):
                                 score = preds[index]
                                 emotion_name = self.__onnx_class_names[index]
 
-                                ####koray sil test
-                                item.pop(constants.RESULT_KEY_CLASS_NAME)
-                                item.pop(constants.RESULT_KEY_SCORE)
-                                item.pop(constants.RESULT_KEY_RECT)
+                                # #test
+                                # item.pop(constants.RESULT_KEY_CLASS_NAME)
+                                # item.pop(constants.RESULT_KEY_SCORE)
+                                # item.pop(constants.RESULT_KEY_RECT)
 
                                 res.append({constants.RESULT_KEY_RECT: rect_face, constants.RESULT_KEY_CLASS_NAME: emotion_name})
 
