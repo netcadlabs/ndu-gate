@@ -49,9 +49,9 @@ Yüz rectangle ve score bulur. Config dosyasından toleransı ayarlanabilir. ***
 
 ## Priority = 100 Runners
 ###personcounter
-Kişileri sayar. 
-Dummy bir runner'dır, gelen result içersinden class_name "person" olan değerleri sayar.
-"person" class_name dönen herhangi bir düşük priority değerine sahip runner ile birlikte çalıştırılmalıdır. **ssd_mobilenet** runner'ı ile optimum başarı/performans ile çalışıyor. 
+Kişileri sayar. Dummy bir runner'dır, gelen result içersinden class_name "person" olan değerleri sayar.
+"person" class_name dönen herhangi bir düşük priority değerine sahip runner ile birlikte çalıştırılmalıdır. 
+**ssd_mobilenet** runner'ı ile optimum başarı/performans ile çalışıyor. 
 
 ###drivermonitor
 Birlikte çalıştığı runnerlar: yolov3, facedetector
@@ -60,3 +60,9 @@ Telefonla konuşma: face detector'un bulduğu "face" dikdörtgenlerine dokunan, 
 Emniyet kemeri: yolov3'ün bulduğu "person" dikdörgenini crop eder ve googlenet-9 classification
 modeli ile emniyet kemeri bulmaya çalışır.
 
+###emotion
+"face" rectangle dönen bir runner ile çalışır. (facedetector)
+Çıktısı face rectangle ve o face için bulunan duygu adıdır. Duygular: 
+```
+neutral, happiness, surprise, sadness, anger, disgust, fear, contempt
+```
