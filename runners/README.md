@@ -1,5 +1,8 @@
 # Runner Listesi
 
+Runnerların kullandığı modeller github'a eklenmemiştir. 
+Onları şuradan indirebilirsiniz: https://drive.google.com/drive/u/1/folders/1JU5SIONJypgZAFJHesOaGCGsdRDrIume
+
 Çalışması istenen runnerlar için **ndu_gate.yaml** içerisine tanımlarının eklenmesi gerekir.
 
 Örnek:
