@@ -268,6 +268,7 @@ class NDUCameraService:
         if self.video_source is None:
             log.error("video source is not set!")
             exit(102)
+        start_total = None
         skip = 0
         # TODO - çalıştırma sırasına göre sonuçlar bir sonraki runnera aktarılabilir
         # TODO - runner dependency ile kimin çıktısı kimn giridisi olacak şeklinde de olabilir

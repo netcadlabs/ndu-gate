@@ -11,23 +11,26 @@
 #    CAP_PROP_FPS: 10
 
 video_source:
-  type: VIDEO_FILE # VIDEO_FILE, PI_CAMERA, CAMERA, IP_CAMERA, VIDEO_URL, YOUTUBE
+  type: CAMERA # VIDEO_FILE, PI_CAMERA, CAMERA, IP_CAMERA, VIDEO_URL, YOUTUBE
 #  file_path: iett_1.avi
-  file_path: iett_2.avi
+#  file_path: iett_2.avi
 #  file_path: smoke_film.mp4
 #  file_path: smoke_women.mp4
 #  file_path: smoking_anti.mp4
 #  file_path: smoking.mp4
 #  file_path: smoking2.mp4
 #  file_path: vertical_smoking.mov
-#  file_path: duygu2.mp4
+  file_path: duygu2.mp4
   data_folder: /Users/korhun/Documents/test_data/
   replay: False # not implemented
 #  url: https://www.youtube.com/watch?v=3FXUw98rrUY
 #  url: https://youtu.be/8pXFktAbx5Y
 #  url: https://youtu.be/NyLF8nHIquM
-  url: https://youtu.be/N9JtUC8hl8o
+#  url: https://youtu.be/N9JtUC8hl8o
 #  url: https://www.youtube.com/watch?v=0wNgUXGTKdg
+#  url: https://youtu.be/embYkODkzcs  #emotion
+  url: https://youtu.be/LdQw8PSV2P8  #emotion
+#  url: https://youtu.be/lAWGyy7Y2Uo
   show_preview: True
 #  write_preview: True
   write_preview_file_name: /Users/korhun/Documents/temp/preview.mov
@@ -47,11 +50,11 @@ result_handler:
     host: 127.0.0.1
 
 runners:
-  - name: yolov3 - Object detection with 80 classes
-    type: yolov3
-    configuration: yolov3.json
-    class: yolov3_runner
-    priority: 10
+#  - name: yolov3 - Object detection with 80 classes
+#    type: yolov3
+#    configuration: yolov3.json
+#    class: yolov3_runner
+#    priority: 10
 
 #  - name: yolov3-tiny - Fast object detection with 80 classes
 #    type: yolov3-tiny
@@ -77,10 +80,16 @@ runners:
 #    class: person_counter_runner
 #    priority: 100
 
-  - name: Driver Monitor
-    type: drivermonitor
-    configuration: drivermonitor.json
-    class: driver_monitor_runner
+#  - name: Driver Monitor
+#    type: drivermonitor
+#    configuration: drivermonitor.json
+#    class: driver_monitor_runner
+#    priority: 100
+
+  - name: Emotion
+    type: emotion
+    configuration: emotion.json
+    class: emotion_runner
     priority: 100
 
 

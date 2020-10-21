@@ -53,3 +53,10 @@ Kişileri sayar.
 Dummy bir runner'dır, gelen result içersinden class_name "person" olan değerleri sayar.
 "person" class_name dönen herhangi bir düşük priority değerine sahip runner ile birlikte çalıştırılmalıdır. **ssd_mobilenet** runner'ı ile optimum başarı/performans ile çalışıyor. 
 
+###drivermonitor
+Birlikte çalıştığı runnerlar: yolov3, facedetector
+Telefonla konuşma: face detector'un bulduğu "face" dikdörtgenlerine dokunan, yolov3'ün bulduğu 
+"cell phone" dikdörtgeni varsa telefonla konuşuluyor kararı alır.
+Emniyet kemeri: yolov3'ün bulduğu "person" dikdörgenini crop eder ve googlenet-9 classification
+modeli ile emniyet kemeri bulmaya çalışır.
+

@@ -1,0 +1,6 @@
+{
+    "connector_config": {
+      "class": "emotion_runner"
+    },
+    "copy": []
+}

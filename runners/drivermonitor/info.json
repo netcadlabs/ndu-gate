@@ -1,6 +1,6 @@
 {
     "connector_config": {
-      "class": "DriverMonitorRunner"
+      "class": "driver_monitor_runner"
     },
     "copy": []
 }

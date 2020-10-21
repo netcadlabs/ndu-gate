@@ -25,7 +25,7 @@ class SocialDistanceRunner(Thread, NDUCameraRunner):
                     'person': True}
         return settings
 
-    def process_frame(self, frame, extra_data):
+    def process_frame(self, frame, extra_data=None):
         super().process_frame(frame)
         result = {
             "time": 1224124124,
