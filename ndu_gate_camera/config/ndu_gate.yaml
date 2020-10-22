@@ -11,7 +11,7 @@
 #    CAP_PROP_FPS: 10
 
 video_source:
-  type: YOUTUBE # VIDEO_FILE, PI_CAMERA, CAMERA, IP_CAMERA, VIDEO_URL, YOUTUBE
+  type: VIDEO_FILE # VIDEO_FILE, PI_CAMERA, CAMERA, IP_CAMERA, VIDEO_URL, YOUTUBE
 #  file_path: iett_1.avi
 #  file_path: iett_2.avi
 #  file_path: smoke_film.mp4
@@ -21,7 +21,8 @@ video_source:
 #  file_path: smoking2.mp4q
 #  file_path: vertical_smoking.mov
 #  file_path: duygu2.mp4
-  file_path: crowded_720x.mp4
+#  file_path: crowded_720x.mp4
+  file_path: vid_short.mp4
   data_folder: /Users/korhun/Documents/test_data/
   replay: False # not implemented
 #  url: https://www.youtube.com/watch?v=3FXUw98rrUY
@@ -34,7 +35,7 @@ video_source:
 #  url: https://www.youtube.com/watch?v=g-dyHadto2Y  #mask
 #  url: https://youtu.be/TlInDQgg2G4  #mask
   show_preview: True
-  write_preview: True
+#  write_preview: True
   write_preview_file_name: /Users/korhun/Documents/temp/preview.mov
   mirror: True
 #  sleep: 0.1
@@ -52,11 +53,11 @@ result_handler:
     host: 127.0.0.1
 
 runners:
-#  - name: yolov3 - Object detection with 80 classes
-#    type: yolov3
-#    configuration: yolov3.json
-#    class: yolov3_runner
-#    priority: 10
+  - name: yolov3 - Object detection with 80 classes
+    type: yolov3
+    configuration: yolov3.json
+    class: yolov3_runner
+    priority: 10
 
 #  - name: yolov3-tiny - Fast object detection with 80 classes
 #    type: yolov3-tiny
@@ -94,18 +95,18 @@ runners:
 #    class: emotion_runner
 #    priority: 100
 
-  - name: Face Mask Detection
-    type: facemask
-    configuration: facemask.json
-    class: face_mask_runner
+#  - name: Face Mask Detection
+#    type: facemask
+#    configuration: facemask.json
+#    class: face_mask_runner
+#    priority: 100
+
+  - name: Social Distance
+    type: socialdistance
+    configuration: socialdistance.json
+    class: social_distance_runner
     priority: 100
 
-
-#  - name: Social Distance
-#    type: socialdistance
-#    configuration: socialdistance.json
-#    class: SocialDistanceRunner
-#    priority: 75
 #  - name: Driver Monitor 2 with emo.conf
 #    type: drivermonitor
 #    configuration: emotionanalysis.json

@@ -17,6 +17,8 @@ class face_mask_runner(Thread, NDUCameraRunner):
         self.__config = config
         self.__connector_type = connector_type
 
+        self.__dont_use_face_rects = config.get("dont_use_face_rects", False)
+
         onnx_fn = path.dirname(path.abspath(__file__)) + "/data/model360.onnx"
         class_names_fn = path.dirname(path.abspath(__file__)) + "/data/face_mask.names"
         if not path.isfile(onnx_fn):
@@ -111,7 +113,7 @@ class face_mask_runner(Thread, NDUCameraRunner):
 
         res = []
         handled = False
-        if extra_data is not None:
+        if not self.__dont_use_face_rects and extra_data is not None:
             results = extra_data.get("results", None)
             if results is not None:
                 for runner_name, result in results.items():

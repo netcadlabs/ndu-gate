@@ -71,15 +71,18 @@ modeli ile emniyet kemeri bulmaya çalışır.
 ### emotion
 "face" rectangle dönen bir runner ile birlikte veya sadece kendisi çalışabilir 
 
-facedetector ile kullanılırsa: ***180 msec***
+facedetector ile kullanılırsa: ***180 msec*** (kişi sayısına göre performans değişiklik gösterir)
 
 sadece kendisi kullanılırsa: ***20 msec***
 
 Bu runner'ın kullandığı model resmi 360x360 resize etmemizi istiyor. Bu da büyük framelerdeki 
 küçük yüzlerin (kalabalık görüntüsü mesela) yakalanamamasına neden oluyor. Bu yüzden facedetector 
 ile bulunan yüzlere padding koyarak her biri için çalıştırıyoruz ve küçük yüzler de bulunabiliyor.
-Ancak performans kişi sayısı arttıkça düşüyor. Kullanılacağı ortama göre framedetector'un 
+Ancak performans kişi sayısı arttıkça düşüyor. Kullanılacağı ortama göre facedetector 
 kullanıp kullanmayacağımıza karar vermemiz gerekiyor. 
+
+facemask.json içerisine: ```"dont_use_face_rects": true``` yapılırsa (default değer false) 
+ortamda bir face detection yapan runner çalışıyor olsa bile sadece kendisi çalışır. 
 
 Çıktısı face rectangle ve o face için bulunan duygu adıdır. Duygular: 
 ```
