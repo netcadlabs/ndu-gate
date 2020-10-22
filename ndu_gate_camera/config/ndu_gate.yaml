@@ -11,7 +11,7 @@
 #    CAP_PROP_FPS: 10
 
 video_source:
-  type: VIDEO_FILE # VIDEO_FILE, PI_CAMERA, CAMERA, IP_CAMERA, VIDEO_URL, YOUTUBE
+  type: YOUTUBE # VIDEO_FILE, PI_CAMERA, CAMERA, IP_CAMERA, VIDEO_URL, YOUTUBE
 #  file_path: iett_1.avi
 #  file_path: iett_2.avi
 #  file_path: smoke_film.mp4
@@ -27,12 +27,12 @@ video_source:
 #  url: https://www.youtube.com/watch?v=3FXUw98rrUY
 #  url: https://youtu.be/8pXFktAbx5Y
 #  url: https://youtu.be/NyLF8nHIquM
-#  url: https://youtu.be/N9JtUC8hl8o
+  url: https://youtu.be/N9JtUC8hl8o #benchmark
 #  url: https://www.youtube.com/watch?v=0wNgUXGTKdg
 #  url: https://youtu.be/embYkODkzcs  #emotion
 #  url: https://youtu.be/LdQw8PSV2P8  #emotion
 #  url: https://www.youtube.com/watch?v=g-dyHadto2Y  #mask
-  url: https://youtu.be/TlInDQgg2G4  #mask
+#  url: https://youtu.be/TlInDQgg2G4  #mask
   show_preview: True
   write_preview: True
   write_preview_file_name: /Users/korhun/Documents/temp/preview.mov
@@ -70,11 +70,11 @@ runners:
 #    class: ssd_mobilenet_runner
 #    priority: 10
 
-  - name: Face Detector
-    type: facedetector
-    configuration: facedetector.json
-    class: face_detector_runner
-    priority: 10
+#  - name: Face Detector
+#    type: facedetector
+#    configuration: facedetector.json
+#    class: face_detector_runner
+#    priority: 10
 
 #  - name: Person Counter
 #    type: personcounter

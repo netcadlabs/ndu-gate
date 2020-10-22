@@ -109,13 +109,44 @@ class face_mask_runner(Thread, NDUCameraRunner):
     def process_frame(self, frame, extra_data=None):
         super().process_frame(frame)
 
-        conf_thresh = 0.5
-        # conf_thresh = 0.2
-        iou_thresh = 0.4
+        res = []
+        handled = False
+        if extra_data is not None:
+            results = extra_data.get("results", None)
+            if results is not None:
+                for runner_name, result in results.items():
+                    for item in result:
+                        class_name = item.get(constants.RESULT_KEY_CLASS_NAME, None)
+                        if class_name == "face":
+                            rect_face = item.get(constants.RESULT_KEY_RECT, None)
+                            if rect_face is not None:
+                                bbox = rect_face
+                                y1 = max(int(bbox[0]), 0)
+                                x1 = max(int(bbox[1]), 0)
+                                y2 = max(int(bbox[2]), 0)
+                                x2 = max(int(bbox[3]), 0)
+                                w = x2 - x1
+                                h = y2 - y1
+                                dw = int(w * 0.25)
+                                dh = int(h * 0.25)
+                                x1 -= dw
+                                x2 += dw
+                                y1 -= dh
+                                y2 += dh
+                                y1 = max(y1, 0)
+                                x1 = max(x1, 0)
+                                y2 = max(y2, 0)
+                                x2 = max(x2, 0)
 
-        target_shape = (360, 360)
-        # target_shape = (160, 160)
+                                image = frame[y1:y2, x1:x2]
+                                self._process(image, res, x1, y1)
+                                handled = True
+        if not handled:
+            self._process(frame, res, 0, 0)
 
+        return res
+
+    def _process(self, image, res, x1, y1):
         def decode_bbox(anchors, raw_outputs):
             variances = [0.1, 0.1, 0.2, 0.2]
             '''
@@ -197,82 +228,54 @@ class face_mask_runner(Thread, NDUCameraRunner):
 
             return conf_keep_idx[pick]
 
-        res = []
+        conf_thresh = 0.5
+        # conf_thresh = 0.2
+        iou_thresh = 0.4
 
-        if extra_data is not None:
-            results = extra_data.get("results", None)
-            if results is not None:
-                for runner_name, result in results.items():
-                    for item in result:
-                        class_name = item.get(constants.RESULT_KEY_CLASS_NAME, None)
-                        if class_name == "face":
-                            rect_face = item.get(constants.RESULT_KEY_RECT, None)
-                            if rect_face is not None:
-                                bbox = rect_face
-                                y1 = max(int(bbox[0]), 0)
-                                x1 = max(int(bbox[1]), 0)
-                                y2 = max(int(bbox[2]), 0)
-                                x2 = max(int(bbox[3]), 0)
-                                w = x2 - x1
-                                h = y2 - y1
-                                dw = int(w * 0.25)
-                                dh = int(h * 0.25)
-                                x1 -= dw
-                                x2 += dw
-                                y1 -= dh
-                                y2 += dh
-                                y1 = max(y1, 0)
-                                x1 = max(x1, 0)
-                                y2 = max(y2, 0)
-                                x2 = max(x2, 0)
+        target_shape = (360, 360)
+        # target_shape = (160, 160)
 
-                                image = frame[y1:y2, x1:x2]
 
-                                height, width, _ = image.shape
+        height, width, _ = image.shape
 
-                                image = cv2.cvtColor(image,cv2.COLOR_BGR2RGB)
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
-                                image_resized = cv2.resize(image, target_shape, interpolation=cv2.INTER_AREA).astype(np.float32)
-                                image_np = image_resized / 255.0
-                                image_exp = np.expand_dims(image_np, axis=0)
+        image_resized = cv2.resize(image, target_shape, interpolation=cv2.INTER_AREA).astype(np.float32)
+        image_np = image_resized / 255.0
+        image_exp = np.expand_dims(image_np, axis=0)
 
-                                image_transposed = image_exp.transpose((0, 3, 1, 2))
+        image_transposed = image_exp.transpose((0, 3, 1, 2))
 
-                                y_bboxes_output, y_cls_output = self.__onnx_sess.run(self.__onnx_output_names, {self.__onnx_input_name: image_transposed})
+        y_bboxes_output, y_cls_output = self.__onnx_sess.run(self.__onnx_output_names, {self.__onnx_input_name: image_transposed})
 
-                                # remove the batch dimension, for batch is always 1 for inference.
-                                y_bboxes = decode_bbox(self.__anchors_exp, y_bboxes_output)[0]
-                                y_cls = y_cls_output[0]
-                                # To speed up, do single class NMS, not multiple classes NMS.
-                                bbox_max_scores = np.max(y_cls, axis=1)
-                                bbox_max_score_classes = np.argmax(y_cls, axis=1)
+        # remove the batch dimension, for batch is always 1 for inference.
+        y_bboxes = decode_bbox(self.__anchors_exp, y_bboxes_output)[0]
+        y_cls = y_cls_output[0]
+        # To speed up, do single class NMS, not multiple classes NMS.
+        bbox_max_scores = np.max(y_cls, axis=1)
+        bbox_max_score_classes = np.argmax(y_cls, axis=1)
 
-                                # keep_idx is the alive bounding box after nms.
-                                keep_idxs = single_class_non_max_suppression(y_bboxes,
-                                                                             bbox_max_scores,
-                                                                             conf_thresh=conf_thresh,
-                                                                             iou_thresh=iou_thresh,
-                                                                             )
+        # keep_idx is the alive bounding box after nms.
+        keep_idxs = single_class_non_max_suppression(y_bboxes,
+                                                     bbox_max_scores,
+                                                     conf_thresh=conf_thresh,
+                                                     iou_thresh=iou_thresh,
+                                                     )
 
-                                # # #test
-                                # item.pop(constants.RESULT_KEY_CLASS_NAME)
-                                # item.pop(constants.RESULT_KEY_SCORE)
-                                # item.pop(constants.RESULT_KEY_RECT)
+        # # #test
+        # item.pop(constants.RESULT_KEY_CLASS_NAME)
+        # item.pop(constants.RESULT_KEY_SCORE)
+        # item.pop(constants.RESULT_KEY_RECT)
 
-                                for idx in keep_idxs:
-                                    score = float(bbox_max_scores[idx])
-                                    class_id = bbox_max_score_classes[idx]
-                                    bbox = y_bboxes[idx]
+        for idx in keep_idxs:
+            score = float(bbox_max_scores[idx])
+            class_id = bbox_max_score_classes[idx]
+            bbox = y_bboxes[idx]
 
-                                    xmin = max(0, int(bbox[0] * width)) + x1
-                                    ymin = max(0, int(bbox[1] * height)) + y1
-                                    xmax = min(int(bbox[2] * width), width) + x1
-                                    ymax = min(int(bbox[3] * height), height) + y1
+            xmin = max(0, int(bbox[0] * width)) + x1
+            ymin = max(0, int(bbox[1] * height)) + y1
+            xmax = min(int(bbox[2] * width), width) + x1
+            ymax = min(int(bbox[3] * height), height) + y1
 
-                                    rect_face = [ymin, xmin, ymax, xmax]
-
-                                    res.append({constants.RESULT_KEY_RECT: rect_face, constants.RESULT_KEY_CLASS_NAME: self.__onnx_class_names[class_id], constants.RESULT_KEY_SCORE: score})
-                                    break
-
-        return res
-
+            rect_face = [ymin, xmin, ymax, xmax]
+            res.append({constants.RESULT_KEY_RECT: rect_face, constants.RESULT_KEY_CLASS_NAME: self.__onnx_class_names[class_id], constants.RESULT_KEY_SCORE: score})

@@ -69,7 +69,18 @@ Emniyet kemeri: yolov3'ün bulduğu "person" dikdörgenini crop eder ve googlene
 modeli ile emniyet kemeri bulmaya çalışır.
 
 ### emotion
-"face" rectangle dönen bir runner ile çalışır. (facedetector)
+"face" rectangle dönen bir runner ile birlikte veya sadece kendisi çalışabilir 
+
+facedetector ile kullanılırsa: ***180 msec***
+
+sadece kendisi kullanılırsa: ***20 msec***
+
+Bu runner'ın kullandığı model resmi 360x360 resize etmemizi istiyor. Bu da büyük framelerdeki 
+küçük yüzlerin (kalabalık görüntüsü mesela) yakalanamamasına neden oluyor. Bu yüzden facedetector 
+ile bulunan yüzlere padding koyarak her biri için çalıştırıyoruz ve küçük yüzler de bulunabiliyor.
+Ancak performans kişi sayısı arttıkça düşüyor. Kullanılacağı ortama göre framedetector'un 
+kullanıp kullanmayacağımıza karar vermemiz gerekiyor. 
+
 Çıktısı face rectangle ve o face için bulunan duygu adıdır. Duygular: 
 ```
 neutral, happiness, surprise, sadness, anger, disgust, fear, contempt
