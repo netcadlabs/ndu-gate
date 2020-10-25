@@ -137,6 +137,10 @@ class NDUCameraService:
             for runner in self.__ndu_gate_config['runners']:
                 log.debug("runner config : %s", runner)
                 try:
+                    if runner.get("status", 1) is 0: # runner status default value is 1
+                        log.debug("runner is not active %s", runner)
+                        continue
+
                     runner_type = runner.get("type", None)
                     if runner_type is None:
                         log.warning("type not found for %s", runner)
