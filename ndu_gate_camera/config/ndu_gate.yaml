@@ -1,5 +1,5 @@
 #video_source:
-#  type: YOUTUBE # VIDEO_FILE, PI_CAMERA, CAMERA, IP_CAMERA, VIDEO_URL, YOUTUBE
+#  type: YOUTUBE # VIDEO_FILE, PI_CAMERA, CAMERA, IP_CAMERA, VIDEO_URL, YOUTUBE, IMAGE_FILE
 #  file_path: duygu2.mp4
 #  data_folder: /etc/ndu-gate/data/video
 #  replay: False # not implemented
@@ -11,7 +11,11 @@
 #    CAP_PROP_FPS: 10
 
 video_source:
-  type: VIDEO_FILE # VIDEO_FILE, PI_CAMERA, CAMERA, IP_CAMERA, VIDEO_URL, YOUTUBE
+#  type: IMAGE_FILE # VIDEO_FILE, PI_CAMERA, CAMERA, IP_CAMERA, VIDEO_URL, YOUTUBE
+  type: YOUTUBE
+#  type: VIDEO_FILE
+#  type: CAMERA
+
 #  file_path: iett_1.avi
 #  file_path: iett_2.avi
 #  file_path: smoke_film.mp4
@@ -21,17 +25,30 @@ video_source:
 #  file_path: smoking2.mp4q
 #  file_path: vertical_smoking.mov
 #  file_path: duygu2.mp4
-#  file_path: crowded_720x.mp4
-  file_path: vid_short.mp4
+  file_path: crowded_720x.mp4
+#  file_path: vid_short.mp4 #pedestrians
+
+#  image_path: _emotion.jpg
+#  image_path: _emotion_mask.jpg
+#  image_path: faces_age_gender.jpg
+  image_path: faces_age_gender2.jpg
+#  image_path: faces_age_gender3.png
+#  image_path: faces.jpg
+#  image_path: _emotion_mask2.jpg
+#  image_path: _emotion7.jpg
+
   data_folder: /Users/korhun/Documents/test_data/
   replay: False # not implemented
-#  url: https://www.youtube.com/watch?v=3FXUw98rrUY
-#  url: https://youtu.be/8pXFktAbx5Y
-#  url: https://youtu.be/NyLF8nHIquM
-  url: https://youtu.be/N9JtUC8hl8o #benchmark
-#  url: https://www.youtube.com/watch?v=0wNgUXGTKdg
+#  url: https://www.youtube.com/watch?v=3FXUw98rrUY #sahil
+#  url: https://youtu.be/8pXFktAbx5Y #kalabalık
+#  url: https://youtu.be/NyLF8nHIquM #london street
+  url: https://youtu.be/szZWplKlQNI #istanbul
+#  url: https://youtu.be/N9JtUC8hl8o #benchmark
+#  url: https://www.youtube.com/watch?v=0wNgUXGTKdg #street
 #  url: https://youtu.be/embYkODkzcs  #emotion
 #  url: https://youtu.be/LdQw8PSV2P8  #emotion
+#  url: https://www.youtube.com/watch?v=TVkrmWkDIxA  #emotion long mask
+#  url: https://www.youtube.com/watch?v=R3JK2xqYK1o  #emotion
 #  url: https://www.youtube.com/watch?v=g-dyHadto2Y  #mask
 #  url: https://youtu.be/TlInDQgg2G4  #mask
   show_preview: True
@@ -53,11 +70,11 @@ result_handler:
     host: 127.0.0.1
 
 runners:
-  - name: yolov3 - Object detection with 80 classes
-    type: yolov3
-    configuration: yolov3.json
-    class: yolov3_runner
-    priority: 10
+#  - name: yolov3 - Object detection with 80 classes
+#    type: yolov3
+#    configuration: yolov3.json
+#    class: yolov3_runner
+#    priority: 10
 
 #  - name: yolov3-tiny - Fast object detection with 80 classes
 #    type: yolov3-tiny
@@ -71,11 +88,11 @@ runners:
 #    class: ssd_mobilenet_runner
 #    priority: 10
 
-#  - name: Face Detector
-#    type: facedetector
-#    configuration: facedetector.json
-#    class: face_detector_runner
-#    priority: 10
+  - name: Face Detector
+    type: facedetector
+    configuration: facedetector.json
+    class: face_detector_runner
+    priority: 10
 
 #  - name: Person Counter
 #    type: personcounter
@@ -101,11 +118,19 @@ runners:
 #    class: face_mask_runner
 #    priority: 100
 
-  - name: Social Distance
-    type: socialdistance
-    configuration: socialdistance.json
-    class: social_distance_runner
+#  - name: Social Distance
+#    type: socialdistance
+#    configuration: socialdistance.json
+#    class: social_distance_runner
+#    priority: 100
+
+  - name: Gender and Age Detection
+    type: gender_age
+    configuration: gender_age.json
+    class: gender_age_runner
     priority: 100
+
+
 
 #  - name: Driver Monitor 2 with emo.conf
 #    type: drivermonitor

@@ -9,6 +9,7 @@ from os import path
 
 from ndu_gate_camera.api.ndu_camera_runner import NDUCameraRunner, log
 from ndu_gate_camera.utility import constants
+from ndu_gate_camera.utility.image_helper import resize_best_quality
 
 
 class face_detector_runner(NDUCameraRunner):
@@ -24,7 +25,18 @@ class face_detector_runner(NDUCameraRunner):
         if not path.isfile(class_names_fn):
             raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), class_names_fn)
 
-        self.__onnx_sess, self.__onnx_input_name, self.__onnx_class_names = face_detector_runner._create_session(onnx_fn, class_names_fn)
+        # self.__onnx_sess, self.__onnx_input_name, self.__onnx_class_names = face_detector_runner._create_session(onnx_fn, class_names_fn)
+        def _create_session(onnx_fn, classes_fn):
+            sess = rt.InferenceSession(onnx_fn)
+            input_name = sess.get_inputs()[0].name
+            outputs = sess.get_outputs()
+            output_names = []
+            for output in outputs:
+                output_names.append(output.name)
+            class_names = [line.rstrip('\n') for line in open(classes_fn)]
+            return sess, input_name, output_names, class_names
+
+        self.__onnx_sess, self.__onnx_input_name, self.__onnx_output_names, self.__onnx_class_names = _create_session(onnx_fn, class_names_fn)
 
         ## onnx export örneği
         # self.__candidate_size = config.get("candidate_size", 1000)
@@ -48,29 +60,28 @@ class face_detector_runner(NDUCameraRunner):
 
     def process_frame(self, frame, extra_data=None):
         super().process_frame(frame)
-        return self._predict(self.__onnx_sess, self.__onnx_input_name, self.__onnx_class_names, frame, self.__threshold)
 
-    @staticmethod
-    def _predict(sess, input_name, class_names, frame, threshold):
         nw = 640
         nh = 480
         h, w = frame.shape[:2]
 
         image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        image = cv2.resize(image, (nw, nh))
+        # image = cv2.resize(image, (nw, nh))
+        # image = cv2.resize(image, (nw, nh), interpolation=cv2.INTER_CUBIC)
+        image = resize_best_quality(image, (nw, nh))
         image_mean = np.array([127, 127, 127])
         image = (image - image_mean) / 128
         image = np.transpose(image, [2, 0, 1])
         image = np.expand_dims(image, axis=0)
         image = image.astype(np.float32)
-        confidences, boxes = sess.run(None, {input_name: image})
-        out_boxes, out_classes, out_scores = face_detector_runner._predict_faces(w, h, confidences, boxes, threshold, class_names)
+        confidences, boxes = self.__onnx_sess.run(self.__onnx_output_names, {self.__onnx_input_name: image})
+
+        out_boxes, out_classes, out_scores = face_detector_runner._predict_faces(w, h, confidences, boxes, self.__threshold, self.__onnx_class_names)
 
         res = []
         for i in range(len(out_boxes)):
             res.append({constants.RESULT_KEY_RECT: out_boxes[i], constants.RESULT_KEY_SCORE: out_scores[i], constants.RESULT_KEY_CLASS_NAME: out_classes[i]})
         return res
-
 
     @staticmethod
     def _predict_faces(width, height, confidences, boxes, prob_threshold, class_names, iou_threshold=0.3, top_k=-1):
@@ -168,11 +179,3 @@ class face_detector_runner(NDUCameraRunner):
             indexes = indexes[iou <= iou_threshold]
 
         return box_scores[picked, :]
-
-    @staticmethod
-    def _create_session(onnx_fn, classes_filename):
-        class_names = [line.rstrip('\n') for line in open(classes_filename)]
-
-        sess = rt.InferenceSession(onnx_fn)
-        input_name = sess.get_inputs()[0].name  # "input.1
-        return sess, input_name, class_names

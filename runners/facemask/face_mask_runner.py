@@ -9,6 +9,7 @@ from os import path
 
 from ndu_gate_camera.api.ndu_camera_runner import NDUCameraRunner, log
 from ndu_gate_camera.utility import constants
+from ndu_gate_camera.utility.image_helper import resize_best_quality
 
 
 class face_mask_runner(Thread, NDUCameraRunner):
@@ -242,7 +243,8 @@ class face_mask_runner(Thread, NDUCameraRunner):
 
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
-        image_resized = cv2.resize(image, target_shape, interpolation=cv2.INTER_AREA).astype(np.float32)
+        # image_resized = cv2.resize(image, target_shape, interpolation=cv2.INTER_AREA).astype(np.float32)
+        image_resized = resize_best_quality(image, target_shape).astype(np.float32)
         image_np = image_resized / 255.0
         image_exp = np.expand_dims(image_np, axis=0)
 

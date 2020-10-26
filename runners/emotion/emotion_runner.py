@@ -13,6 +13,7 @@ from os import path
 from ndu_gate_camera.api.ndu_camera_runner import NDUCameraRunner, log
 from ndu_gate_camera.utility import constants
 from ndu_gate_camera.utility.ndu_utility import NDUUtility
+from ndu_gate_camera.utility.image_helper import resize_best_quality
 
 
 class emotion_runner(Thread, NDUCameraRunner):
@@ -68,9 +69,43 @@ class emotion_runner(Thread, NDUCameraRunner):
                                 x2 = max(int(bbox[3]), 0)
                                 image = frame[y1:y2, x1:x2]
 
+                                # # padding_ratio = 0.05
+                                # padding_ratio = -0.2
+                                # bbox = rect_face
+                                # y1 = max(int(bbox[0]), 0)
+                                # x1 = max(int(bbox[1]), 0)
+                                # y2 = max(int(bbox[2]), 0)
+                                # x2 = max(int(bbox[3]), 0)
+                                # w = x2 - x1
+                                # h = y2 - y1
+                                # dw = int(w * padding_ratio)
+                                # dh = int(h * padding_ratio)
+                                # x1 -= dw
+                                # x2 += dw
+                                # y1 -= dh
+                                # y2 += dh
+                                # y1 = max(y1, 0)
+                                # x1 = max(x1, 0)
+                                # y2 = max(y2, 0)
+                                # x2 = max(x2, 0)
+                                # image = frame[y1:y2, x1:x2]
+
+
+
+
+
+
+
+
+                                # input_shape = (1, 1, 64, 64)
+                                # image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+                                # image =  cv2.resize(image, (64, 64), interpolation = cv2.INTER_AREA)
+                                # img_data = np.array(image).astype(np.float32)
+                                # img_data = np.resize(img_data, input_shape)
+
                                 input_shape = (1, 1, 64, 64)
                                 image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-                                image =  cv2.resize(image, (64, 64), interpolation = cv2.INTER_AREA)
+                                image = resize_best_quality(image, (64, 64))
                                 img_data = np.array(image).astype(np.float32)
                                 img_data = np.resize(img_data, input_shape)
 
@@ -82,7 +117,6 @@ class emotion_runner(Thread, NDUCameraRunner):
                                 # img = img.resize((64, 64), Image.ANTIALIAS)
                                 # img_data = np.array(img).astype(np.float32)
                                 # img_data = np.resize(img_data, input_shape)
-
 
                                 preds0 = self.__onnx_sess.run(self.__onnx_output_names, {self.__onnx_input_name: img_data})
                                 preds = preds0[0][0]
