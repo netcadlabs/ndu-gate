@@ -21,11 +21,8 @@ setup(
     python_requires=">=3.5",
     packages=['ndu_gate_camera', 'ndu_gate_camera.api', 'ndu_gate_camera.camera',
               'ndu_gate_camera.camera.video_sources', 'ndu_gate_camera.camera.result_handlers',
-              'ndu_gate_camera.utility', 'ndu_gate_camera.detectors',
-              'ndu_gate_camera.detectors.model', 'ndu_gate_camera.detectors.vision',
-              'ndu_gate_camera.detectors.vision.nn', 'ndu_gate_camera.detectors.vision.ssd',
-              'ndu_gate_camera.detectors.vision.ssd.config', 'ndu_gate_camera.detectors.vision.utils',
-              'ndu_gate_camera.detectors.vision.datasets', 'ndu_gate_camera.detectors.vision.transforms'],
+              'ndu_gate_camera.runners',
+              'ndu_gate_camera.utility'],
     url='https://github.com/netcadlabs/ndu-gate',
     download_url='https://github.com/netcadlabs/ndu-gate/archive/%s.tar.gz' % VERSION,
     install_requires=[

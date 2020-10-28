@@ -19,8 +19,6 @@ from ndu_gate_camera.camera.video_sources.file_video_source import FileVideoSour
 from ndu_gate_camera.camera.video_sources.ip_camera_video_source import IPCameraVideoSource
 from ndu_gate_camera.camera.video_sources.pi_camera_video_source import PiCameraVideoSource
 from ndu_gate_camera.camera.video_sources.youtube_video_source import YoutubeVideoSource
-from ndu_gate_camera.detectors.face_detector import FaceDetector
-from ndu_gate_camera.detectors.person_detector import PersonDetector
 from ndu_gate_camera.utility import constants
 from ndu_gate_camera.utility.ndu_utility import NDUUtility
 
@@ -94,22 +92,6 @@ class NDUCameraService:
             self.__result_handler = ResultHandlerSocket(result_hand_conf.get("socket", 60060))
         else:
             self.__result_handler = ResultHandlerFile(result_hand_conf.get("file_path", default_result_file_path))
-
-        self.PRE_FIND_PERSON = False
-        self.PRE_FIND_FACES = False
-        self.__personDetector = None
-        self.__faceDetector = None
-        try:
-            self.__personDetector = PersonDetector()
-        except Exception as e:
-            log.error("Can not create person detector")
-            log.error(e, stack_info=True)
-            print(e)
-        try:
-            self.__faceDetector = FaceDetector()
-        except Exception as e:
-            log.error("Can not create face detector")
-            log.error(e, stack_info=True)
 
         self.default_runners = DEFAULT_RUNNERS
         self.runners_configs = []
@@ -223,11 +205,6 @@ class NDUCameraService:
                     runner = self.implemented_runners[runner_key](runner_config["config"], runner_type)
                     # runner.setName(runner_config["name"])
                     settings = runner.get_settings()
-                    if settings is not None:
-                        if settings.get("person", False):
-                            self.PRE_FIND_PERSON = True
-                        if settings.get("face", False):
-                            self.PRE_FIND_FACES = True
                     self.available_runners[runner_unique_key] = runner
 
             except Exception as e:
@@ -280,25 +257,8 @@ class NDUCameraService:
             if skip <= 0:
                 if self.__show_preview:
                     start_total = time.time()
-                pedestrian_boxes = None
-                num_pedestrians = None
-                person_image_list = None
-                face_list = None
-
-                if self.PRE_FIND_PERSON:
-                    pedestrian_boxes, num_pedestrians, person_image_list = self.__personDetector.find_person(frame)
-                if self.PRE_FIND_FACES:
-                    if len(person_image_list) > 0:
-                        face_list = self.__faceDetector.face_detector3(frame, num_pedestrians)
-                        # for face in face_list:
-                        #     res = self._get_emotions_analysis(face)
-                        #     log.debug(res)
 
                 extra_data = {
-                    "pedestrian_boxes": pedestrian_boxes,
-                    "num_pedestrians": num_pedestrians,
-                    "person_image_list": person_image_list,
-                    "face_list": face_list,
                     "results": {}
                 }
 
