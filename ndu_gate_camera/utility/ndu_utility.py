@@ -30,9 +30,10 @@ class NDUUtility:
             if NDUUtility.is_debug_mode():
                 extensions_paths.append(path.abspath(file_dir + '/../runners/'.replace('/', path.sep) + extension_type.lower()))
 
-            if package_uuids:
+            if package_uuids and len(package_uuids) > 0:
                 for uuid in package_uuids:
-                    extensions_paths.append('/var/lib/ndu_gate/runners/'.replace('/', path.sep) + 'Pack_' + uuid)
+                    if uuid and type(uuid) is str:
+                        extensions_paths.append('/var/lib/ndu_gate/runners/'.replace('/', path.sep) + 'Pack_' + uuid)
 
             try:
                 for extension_path in extensions_paths:
