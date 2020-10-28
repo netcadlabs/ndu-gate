@@ -7,6 +7,8 @@ NDU_GATE_MODEL_FOLDER = "/etc/ndu-gate/data"
 RESULT_KEY_RECT = "rect"
 # string
 RESULT_KEY_CLASS_NAME = "class_name"
+# string - used for debug previewing
+RESULT_KEY_PREVIEW_KEY = "preview_key"
 # 0-1 arasında float olasılık değeri.
 RESULT_KEY_SCORE = "score"
 # Platform'a gönderilmesi istenen veri. İçeriği dictionary olmalıdır.

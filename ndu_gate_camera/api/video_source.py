@@ -28,3 +28,4 @@ class VideoSourceType(Enum):
     IP_CAMERA = 4
     VIDEO_URL = 5
     YOUTUBE = 6
+    IMAGE_FILE = 7

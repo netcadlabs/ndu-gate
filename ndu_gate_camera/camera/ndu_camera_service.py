@@ -19,6 +19,7 @@ from ndu_gate_camera.camera.video_sources.file_video_source import FileVideoSour
 from ndu_gate_camera.camera.video_sources.ip_camera_video_source import IPCameraVideoSource
 from ndu_gate_camera.camera.video_sources.pi_camera_video_source import PiCameraVideoSource
 from ndu_gate_camera.camera.video_sources.youtube_video_source import YoutubeVideoSource
+from ndu_gate_camera.camera.video_sources.image_video_source import ImageVideoSource
 from ndu_gate_camera.utility import constants
 from ndu_gate_camera.utility.ndu_utility import NDUUtility
 
@@ -119,6 +120,10 @@ class NDUCameraService:
             for runner in self.__ndu_gate_config['runners']:
                 log.debug("runner config : %s", runner)
                 try:
+                    if runner.get("status", 1) is 0:  # runner status default value is 1
+                        log.debug("runner is not active %s", runner)
+                        continue
+
                     runner_type = runner.get("type", None)
                     if runner_type is None:
                         log.warning("type not found for %s", runner)
@@ -149,6 +154,16 @@ class NDUCameraService:
                     else:
                         log.error("config file is not found %s", config_file)
                         runner_conf = {"name": runner["name"]}
+
+                    runner_custom_conf = {}
+                    custom_config_file = self._ndu_gate_config_dir + runner_type + "_custom.json";
+                    if path.isfile(custom_config_file):
+                        with open(custom_config_file, 'r', encoding="UTF-8") as conf_file:
+                            runner_custom_conf = load(conf_file)
+                    else:
+                        log.error("custom config file is not found %s", custom_config_file)
+
+                    runner_conf["custom_config"] = runner_custom_conf;
 
                     runner_unique_key = self.__get_runner_configuration_key(runner_type, class_name, configuration_name)
 
@@ -234,6 +249,8 @@ class NDUCameraService:
                 self.video_source = CameraVideoSource(self.SOURCE_CONFIG)
             elif self.SOURCE_TYPE is VideoSourceType.YOUTUBE:
                 self.video_source = YoutubeVideoSource(self.SOURCE_CONFIG)
+            elif self.SOURCE_TYPE is VideoSourceType.IMAGE_FILE:
+                self.video_source = ImageVideoSource(self.SOURCE_CONFIG)
             else:
                 log.error("Video source type is not supported : %s ", self.SOURCE_TYPE.value)
                 exit(101)
@@ -325,17 +342,17 @@ class NDUCameraService:
                         fontFace=cv2.FONT_HERSHEY_COMPLEX, fontScale=font_scale, color=color,
                         lineType=cv2.LINE_AA, thickness=1)
 
-        def draw_rect(obj, img, c1, c2, class_name):
+        def draw_rect(obj, img, c1, c2, class_preview_key):
             color = [255, 255, 255]
-            if class_name is not None:
+            if class_preview_key is not None:
                 if not hasattr(obj, "__colors"):
                     # obj.__colors = {}
                     setattr(obj, "__colors", {})
                 dic = getattr(obj, "__colors")
-                if class_name in dic:
-                    color = dic[class_name]
+                if class_preview_key in dic:
+                    color = dic[class_preview_key]
                 else:
-                    color = dic[class_name] = [random.randint(50, 255), random.randint(50, 255), random.randint(50, 255)]
+                    color = dic[class_preview_key] = [random.randint(50, 255), random.randint(50, 255), random.randint(50, 255)]
 
             cv2.rectangle(img, (c1[0], c1[1]), (c2[0], c2[1]), color=[0, 0, 0], thickness=3)
             cv2.rectangle(img, (c1[0], c1[1]), (c2[0], c2[1]), color=color, thickness=2)
@@ -357,6 +374,7 @@ class NDUCameraService:
                     values = {}
                     elapsed_time = values["elapsed_time"] = item.get("elapsed_time", None)
                     class_name = values[constants.RESULT_KEY_CLASS_NAME] = item.get(constants.RESULT_KEY_CLASS_NAME, None)
+                    class_preview_key = values[constants.RESULT_KEY_PREVIEW_KEY] = item.get(constants.RESULT_KEY_PREVIEW_KEY, class_name)
                     score = values[constants.RESULT_KEY_SCORE] = item.get(constants.RESULT_KEY_SCORE, None)
                     rect = values[constants.RESULT_KEY_RECT] = item.get(constants.RESULT_KEY_RECT, None)
                     data = values[constants.RESULT_KEY_DATA] = item.get(constants.RESULT_KEY_DATA, None)
@@ -379,7 +397,7 @@ class NDUCameraService:
                     if rect is not None:
                         c = np.array(rect[:4], dtype=np.int32)
                         c1, c2 = [c[1], c[0]], (c[3], c[2])
-                        draw_rect(self, image, c1, c2, class_name)
+                        draw_rect(self, image, c1, c2, class_preview_key)
                         if len(text) > 0:
                             c1[1] = c1[1] + line_height
                             put_text(image, text, c1)

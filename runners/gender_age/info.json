@@ -1,0 +1,6 @@
+{
+    "connector_config": {
+      "class": "gender_age_runner"
+    },
+    "copy": []
+}

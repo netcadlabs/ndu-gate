@@ -9,6 +9,7 @@ from os import path
 
 from ndu_gate_camera.api.ndu_camera_runner import NDUCameraRunner, log
 from ndu_gate_camera.utility import constants
+from ndu_gate_camera.utility.image_helper import resize_best_quality
 
 
 class face_mask_runner(Thread, NDUCameraRunner):
@@ -16,6 +17,8 @@ class face_mask_runner(Thread, NDUCameraRunner):
         super().__init__()
         self.__config = config
         self.__connector_type = connector_type
+
+        self.__dont_use_face_rects = config.get("dont_use_face_rects", False)
 
         onnx_fn = path.dirname(path.abspath(__file__)) + "/data/model360.onnx"
         class_names_fn = path.dirname(path.abspath(__file__)) + "/data/face_mask.names"
@@ -111,7 +114,7 @@ class face_mask_runner(Thread, NDUCameraRunner):
 
         res = []
         handled = False
-        if extra_data is not None:
+        if not self.__dont_use_face_rects and extra_data is not None:
             results = extra_data.get("results", None)
             if results is not None:
                 for runner_name, result in results.items():
@@ -240,7 +243,8 @@ class face_mask_runner(Thread, NDUCameraRunner):
 
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
-        image_resized = cv2.resize(image, target_shape, interpolation=cv2.INTER_AREA).astype(np.float32)
+        # image_resized = cv2.resize(image, target_shape, interpolation=cv2.INTER_AREA).astype(np.float32)
+        image_resized = resize_best_quality(image, target_shape).astype(np.float32)
         image_np = image_resized / 255.0
         image_exp = np.expand_dims(image_np, axis=0)
 

@@ -5,6 +5,7 @@ import os
 
 from ndu_gate_camera.api.ndu_camera_runner import NDUCameraRunner, log
 from ndu_gate_camera.utility import constants
+from ndu_gate_camera.utility.image_helper import resize_best_quality
 
 
 class yolov3_runner(NDUCameraRunner):
@@ -61,7 +62,7 @@ class yolov3_runner(NDUCameraRunner):
 
         scale = min(iw / w, ih / h)
         nw, nh = int(scale * w), int(scale * h)
-        image_resized = cv2.resize(image, (nw, nh))
+        image_resized = resize_best_quality(image, (nw, nh))
 
         image_padded = np.full(shape=[ih, iw, 3], fill_value=128.0)
         dw, dh = (iw - nw) // 2, (ih - nh) // 2
