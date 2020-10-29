@@ -1,4 +1,4 @@
-from ndu_gate_camera.detectors.model.network_model import NetworkModel
+from ndu_gate_camera.detectors_old_sil.model.network_model import NetworkModel
 
 
 class PersonDetector:

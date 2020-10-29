@@ -4,8 +4,8 @@ import time
 from os import path
 import cv2
 
-from ndu_gate_camera.detectors.vision.ssd.config.fd_config import define_img_size
-from ndu_gate_camera.detectors.vision.ssd.mb_tiny_RFB_fd import create_Mb_Tiny_RFB_fd, create_Mb_Tiny_RFB_fd_predictor
+from ndu_gate_camera.detectors_old_sil.vision.ssd.config.fd_config import define_img_size
+from ndu_gate_camera.detectors_old_sil.vision.ssd.mb_tiny_RFB_fd import create_Mb_Tiny_RFB_fd, create_Mb_Tiny_RFB_fd_predictor
 from ndu_gate_camera.utility.constants import NDU_GATE_MODEL_FOLDER
 
 

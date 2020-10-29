@@ -6,7 +6,7 @@ import tensorflow as tf
 import cv2
 import numpy as np
 
-from ndu_gate_camera.detectors.model.backbone import set_model
+from ndu_gate_camera.detectors_old_sil.model.backbone import set_model
 
 
 class NetworkModel:

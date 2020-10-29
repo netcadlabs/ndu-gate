@@ -13,7 +13,7 @@ from os import path
 from ndu_gate_camera.api.ndu_camera_runner import NDUCameraRunner, log
 from ndu_gate_camera.utility import constants
 from ndu_gate_camera.utility.ndu_utility import NDUUtility
-from ndu_gate_camera.utility.image_helper import resize_best_quality
+from ndu_gate_camera.utility.image_helper import image_helper
 
 
 class emotion_runner(Thread, NDUCameraRunner):
@@ -105,7 +105,7 @@ class emotion_runner(Thread, NDUCameraRunner):
 
                                 input_shape = (1, 1, 64, 64)
                                 image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-                                image = resize_best_quality(image, (64, 64))
+                                image = image_helper.resize_best_quality(image, (64, 64))
                                 img_data = np.array(image).astype(np.float32)
                                 img_data = np.resize(img_data, input_shape)
 

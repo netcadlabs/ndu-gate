@@ -5,7 +5,7 @@ from typing import List, Tuple
 
 import numpy as np
 
-from ndu_gate_camera.detectors.vision.utils import box_utils
+from ndu_gate_camera.detectors_old_sil.vision.utils import box_utils
 
 GraphPath = namedtuple("GraphPath", ['s0', 'name', 's1'])
 

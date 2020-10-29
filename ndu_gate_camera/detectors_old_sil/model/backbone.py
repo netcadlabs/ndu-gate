@@ -8,7 +8,7 @@ from logging import getLogger
 import tensorflow as tf
 from os import path
 
-from ndu_gate_camera.detectors.model import label_map_util
+from ndu_gate_camera.detectors_old_sil.model import label_map_util
 from ndu_gate_camera.utility.constants import NDU_GATE_MODEL_FOLDER
 
 # pylint: disable=protected-access

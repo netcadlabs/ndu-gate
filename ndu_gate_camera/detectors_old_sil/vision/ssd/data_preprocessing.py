@@ -1,4 +1,4 @@
-from ndu_gate_camera.detectors.vision.transforms.transforms import ConvertFromInts, RandomSampleCrop_v2, RandomMirror, ToPercentCoords, Resize, SubtractMeans, ToTensor, Compose, PhotometricDistort
+from ndu_gate_camera.detectors_old_sil.vision.transforms.transforms import ConvertFromInts, RandomSampleCrop_v2, RandomMirror, ToPercentCoords, Resize, SubtractMeans, ToTensor, Compose, PhotometricDistort
 
 
 class TrainAugmentation:

@@ -23,7 +23,7 @@ class social_distance_runner(Thread, NDUCameraRunner):
         self.__M = None
 
     def get_name(self):
-        return "SocialDistanceRunner"
+        return "social_distance_runner"
 
     def get_settings(self):
         return {}
@@ -64,6 +64,7 @@ class social_distance_runner(Thread, NDUCameraRunner):
                     cv2.destroyWindow("image")
                     break
                 self.__mouse_pts = mouse_pts
+            # self.__mouse_pts = select_points(frame, 6, self.get_name())
 
         # draw polygon of ROI
         pts = np.array(

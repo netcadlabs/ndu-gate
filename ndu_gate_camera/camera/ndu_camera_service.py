@@ -21,6 +21,7 @@ from ndu_gate_camera.camera.video_sources.pi_camera_video_source import PiCamera
 from ndu_gate_camera.camera.video_sources.youtube_video_source import YoutubeVideoSource
 from ndu_gate_camera.camera.video_sources.image_video_source import ImageVideoSource
 from ndu_gate_camera.utility import constants
+from ndu_gate_camera.utility.image_helper import image_helper
 from ndu_gate_camera.utility.ndu_utility import NDUUtility
 
 name = uname()
@@ -61,7 +62,7 @@ class NDUCameraService:
             self.__write_preview = self.SOURCE_CONFIG.get("write_preview", False)
             if self.__write_preview:
                 self.__write_preview_file_name = self.SOURCE_CONFIG.get("write_preview_file_name", "")
-
+        self.__max_frame_dim = self.SOURCE_CONFIG.get("max_frame_dim", None)
         logging_error = None
         logging_config_file = self._ndu_gate_config_dir + "logs.conf"
         try:
@@ -93,6 +94,7 @@ class NDUCameraService:
             self.__result_handler = ResultHandlerSocket(result_hand_conf.get("socket", 60060))
         else:
             self.__result_handler = ResultHandlerFile(result_hand_conf.get("file_path", default_result_file_path))
+
 
         self.default_runners = DEFAULT_RUNNERS
         self.runners_configs = []
@@ -155,16 +157,6 @@ class NDUCameraService:
                         log.error("config file is not found %s", config_file)
                         runner_conf = {"name": runner["name"]}
 
-                    runner_custom_conf = {}
-                    custom_config_file = self._ndu_gate_config_dir + runner_type + "_custom.json";
-                    if path.isfile(custom_config_file):
-                        with open(custom_config_file, 'r', encoding="UTF-8") as conf_file:
-                            runner_custom_conf = load(conf_file)
-                    else:
-                        log.error("custom config file is not found %s", custom_config_file)
-
-                    runner_conf["custom_config"] = runner_custom_conf;
-
                     runner_unique_key = self.__get_runner_configuration_key(runner_type, class_name, configuration_name)
 
                     runner_priority = runner.get("priority", None)
@@ -219,7 +211,6 @@ class NDUCameraService:
                 else:
                     runner = self.implemented_runners[runner_key](runner_config["config"], runner_type)
                     # runner.setName(runner_config["name"])
-                    settings = runner.get_settings()
                     self.available_runners[runner_unique_key] = runner
 
             except Exception as e:
@@ -266,15 +257,22 @@ class NDUCameraService:
         skip = 0
         # TODO - çalıştırma sırasına göre sonuçlar bir sonraki runnera aktarılabilir
         # TODO - runner dependency ile kimin çıktısı kimn giridisi olacak şeklinde de olabilir
+        if self.__show_preview:
+            winname = "ndu_gate_camera preview"
+            cv2.namedWindow(winname)  # Create a named window
+            cv2.moveWindow(winname, 40, 30)
+
         for i, frame in self.video_source.get_frames():
             if i % 100 == 0:
                 log.debug("frame count %s ", i)
+
+            if self.__max_frame_dim is not None:
+                frame = image_helper.resize_if_larger(frame, self.__max_frame_dim)
 
             results = []
             if skip <= 0:
                 if self.__show_preview:
                     start_total = time.time()
-
                 extra_data = {
                     "results": {}
                 }
@@ -305,7 +303,7 @@ class NDUCameraService:
                     total_elapsed_time = time.time() - start_total
                     results.append([{"total_elapsed_time": f'{total_elapsed_time * 1000:.0f}msec'}])
                     preview = self._get_preview(frame, results)
-                cv2.imshow("ndu_gate_camera preview", preview)
+                cv2.imshow(winname, preview)
                 k = cv2.waitKey(1)
                 if k & 0xFF == ord("q"):
                     break
@@ -328,19 +326,23 @@ class NDUCameraService:
         except:  # daha iyi bir yolunu bulursanız, bana da gösterin -> korhun :)
             shape = frame.shape[1], frame.shape[0]
             fourcc = cv2.VideoWriter_fourcc(*'MP4V')
+            # fourcc = cv2.VideoWriter_fourcc(*'XVID')
             self.__out = cv2.VideoWriter(self.__write_preview_file_name, fourcc, 24.0, shape)
             self.__out.write(frame)
 
     def _get_preview(self, image, results):
-        def put_text(img, text, center, color=None, font_scale=0.5):
+        def put_text(img, text, center, color=None, font_scale=0.5, thickness=1):
             if color is None:
                 color = [255, 255, 255]
-            cv2.putText(img=img, text=text, org=(center[0] + 5, center[1]),
-                        fontFace=cv2.FONT_HERSHEY_COMPLEX, fontScale=font_scale, color=[0, 0, 0], lineType=cv2.LINE_AA,
-                        thickness=2)
-            cv2.putText(img=img, text=text, org=(center[0] + 5, center[1]),
-                        fontFace=cv2.FONT_HERSHEY_COMPLEX, fontScale=font_scale, color=color,
-                        lineType=cv2.LINE_AA, thickness=1)
+            y = center[1]
+            # font = cv2.FONT_HERSHEY_COMPLEX
+            font = cv2.FONT_HERSHEY_DUPLEX
+            cv2.putText(img=img, text=text, org=(center[0] + 5, y),
+                        fontFace=font, fontScale=font_scale, color=[0, 0, 0], lineType=cv2.LINE_AA,
+                        thickness=2 * thickness)
+            cv2.putText(img=img, text=text, org=(center[0] + 5, y),
+                        fontFace=font, fontScale=font_scale, color=color,
+                        lineType=cv2.LINE_AA, thickness=1 * thickness)
 
         def draw_rect(obj, img, c1, c2, class_preview_key):
             color = [255, 255, 255]
@@ -359,10 +361,12 @@ class NDUCameraService:
 
         h, w, *_ = image.shape
         line_height = 20
+        font_scale = 0.5
         current_line = [20, 0]
         data_added = []
         if results is not None:
             for result in results:
+                debug_texts = []
                 text_type = ""
                 has_data = False
                 for item in result:
@@ -378,6 +382,10 @@ class NDUCameraService:
                     score = values[constants.RESULT_KEY_SCORE] = item.get(constants.RESULT_KEY_SCORE, None)
                     rect = values[constants.RESULT_KEY_RECT] = item.get(constants.RESULT_KEY_RECT, None)
                     data = values[constants.RESULT_KEY_DATA] = item.get(constants.RESULT_KEY_DATA, None)
+                    debug_text = values[constants.RESULT_KEY_DEBUG] = item.get(constants.RESULT_KEY_DEBUG, None)
+
+                    if debug_text is not None:
+                        debug_texts.append(debug_text)
 
                     text = ""
                     if class_name is not None:
@@ -409,9 +417,13 @@ class NDUCameraService:
                 if len(text_type) > 0:
                     current_line[1] = current_line[1] + line_height
                     if not has_data:
-                        put_text(image, text_type, current_line)
+                        put_text(image, text_type, current_line, font_scale=font_scale)
                     else:
-                        put_text(image, text_type, current_line, color=[0, 0, 255])
+                        put_text(image, text_type, current_line, color=[0, 0, 255], font_scale=font_scale)
+                if len(debug_texts) > 0:
+                    for debug_text in debug_texts:
+                        current_line[1] = current_line[1] + line_height * 2
+                        put_text(image, debug_text, current_line, color=[255, 255, 50], font_scale=font_scale * 2, thickness=2)
 
         if len(data_added) > 0:
             self.__last_data = data_added

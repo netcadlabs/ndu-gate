@@ -10,7 +10,7 @@ from os import path
 from ndu_gate_camera.api.ndu_camera_runner import NDUCameraRunner, log
 from ndu_gate_camera.utility import constants
 from ndu_gate_camera.utility.ndu_utility import NDUUtility
-from ndu_gate_camera.utility.image_helper import resize_best_quality
+from ndu_gate_camera.utility.image_helper import image_helper
 
 
 class gender_age_runner(Thread, NDUCameraRunner):
@@ -58,7 +58,8 @@ class gender_age_runner(Thread, NDUCameraRunner):
                             # x2 = max(int(bbox[3]), 0)
                             # image = frame[y1:y2, x1:x2]
 
-                            padding_ratio = 0.15
+                            # padding_ratio = 0.15
+                            padding_ratio = 0.3
                             bbox = rect_face
                             y1 = max(int(bbox[0]), 0)
                             x1 = max(int(bbox[1]), 0)
@@ -103,13 +104,13 @@ class gender_age_runner(Thread, NDUCameraRunner):
                             # cv2.imshow("aaa", image)
                             # cv2.waitKey(100)
 
-                            # # test koray
-                            # item.pop(constants.RESULT_KEY_CLASS_NAME)
-                            # item.pop(constants.RESULT_KEY_SCORE)
-                            # item.pop(constants.RESULT_KEY_RECT)
+                            # test koray
+                            item.pop(constants.RESULT_KEY_CLASS_NAME)
+                            item.pop(constants.RESULT_KEY_SCORE)
+                            item.pop(constants.RESULT_KEY_RECT)
 
                             input_shape = (1, 64, 64, 3)
-                            image = resize_best_quality(image, (64, 64))
+                            image = image_helper.resize_best_quality(image, (64, 64))
                             img_data = np.array(image).astype(np.float32)
                             img_data = np.resize(img_data, input_shape)
 
@@ -119,8 +120,8 @@ class gender_age_runner(Thread, NDUCameraRunner):
                             ages = np.arange(0, 101).reshape(101, 1)
                             predicted_age = pred[1].dot(ages).flatten()
 
-                            preview_key = "F" if predicted_gender[0] > 0.5 else "M"
-                            name = "{}, {}".format(int(predicted_age), preview_key)
+                            preview_key = "KADIN" if predicted_gender[0] > 0.5 else "ERKEK"
+                            name = "{}-{}".format(preview_key, int(predicted_age))
 
                             res.append({constants.RESULT_KEY_RECT: rect_face, constants.RESULT_KEY_CLASS_NAME: name, constants.RESULT_KEY_PREVIEW_KEY: preview_key})
 

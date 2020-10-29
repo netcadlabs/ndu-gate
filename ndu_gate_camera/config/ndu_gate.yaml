@@ -12,8 +12,8 @@
 
 video_source:
 #  type: IMAGE_FILE # VIDEO_FILE, PI_CAMERA, CAMERA, IP_CAMERA, VIDEO_URL, YOUTUBE
-  type: YOUTUBE
-#  type: VIDEO_FILE
+#  type: YOUTUBE
+  type: VIDEO_FILE
 #  type: CAMERA
 
 #  file_path: iett_1.avi
@@ -22,11 +22,17 @@ video_source:
 #  file_path: smoke_women.mp4
 #  file_path: smoking_anti.mp4
 #  file_path: smoking.mp4
-#  file_path: smoking2.mp4q
-#  file_path: vertical_smoking.mov
+#  file_path: smoking2.mp4
 #  file_path: duygu2.mp4
-  file_path: crowded_720x.mp4
+#  file_path: crowded_720x.mp4
+#  file_path: pedestrian_survaillance.mp4
+#  file_path: vehicle_survaillance.mp4
 #  file_path: vid_short.mp4 #pedestrians
+#  file_path: çanakkale.mp4 #car - pedestrians
+#  file_path: çanakkale0.mp4 #pedestrians
+  file_path: çanakkale_yaya.mp4 #pedestrians
+#  file_path: çanakkale_araba.mp4 #pedestrians
+#  file_path: çanakkale_hızlı.mp4 #pedestrians
 
 #  image_path: _emotion.jpg
 #  image_path: _emotion_mask.jpg
@@ -42,7 +48,10 @@ video_source:
 #  url: https://www.youtube.com/watch?v=3FXUw98rrUY #sahil
 #  url: https://youtu.be/8pXFktAbx5Y #kalabalık
 #  url: https://youtu.be/NyLF8nHIquM #london street
-  url: https://youtu.be/szZWplKlQNI #istanbul
+#  url: https://youtu.be/szZWplKlQNI #istiklal
+#  url: https://youtu.be/n5b_nIzdvfI #black or white
+#  url: https://youtu.be/Xygk7UjKM2g #faces around world
+#  url: https://youtu.be/AqFWYZsOgWY #kalabalık oturanlar
 #  url: https://youtu.be/N9JtUC8hl8o #benchmark
 #  url: https://www.youtube.com/watch?v=0wNgUXGTKdg #street
 #  url: https://youtu.be/embYkODkzcs  #emotion
@@ -51,8 +60,10 @@ video_source:
 #  url: https://www.youtube.com/watch?v=R3JK2xqYK1o  #emotion
 #  url: https://www.youtube.com/watch?v=g-dyHadto2Y  #mask
 #  url: https://youtu.be/TlInDQgg2G4  #mask
+#  url: https://youtu.be/MNn9qKG2UFI  #highway
   show_preview: True
-#  write_preview: True
+  write_preview: True
+#  max_frame_dim: 1600
   write_preview_file_name: /Users/korhun/Documents/temp/preview.mov
   mirror: True
 #  sleep: 0.1
@@ -70,11 +81,11 @@ result_handler:
     host: 127.0.0.1
 
 runners:
-#  - name: yolov3 - Object detection with 80 classes
-#    type: yolov3
-#    configuration: yolov3.json
-#    class: yolov3_runner
-#    priority: 10
+  - name: yolov3 - Object detection with 80 classes
+    type: yolov3
+    configuration: yolov3.json
+    class: yolov3_runner
+    priority: 10
 
 #  - name: yolov3-tiny - Fast object detection with 80 classes
 #    type: yolov3-tiny
@@ -88,11 +99,11 @@ runners:
 #    class: ssd_mobilenet_runner
 #    priority: 10
 
-  - name: Face Detector
-    type: facedetector
-    configuration: facedetector.json
-    class: face_detector_runner
-    priority: 10
+#  - name: Face Detector
+#    type: facedetector
+#    configuration: facedetector.json
+#    class: face_detector_runner
+#    priority: 10
 
 #  - name: Person Counter
 #    type: personcounter
@@ -124,12 +135,17 @@ runners:
 #    class: social_distance_runner
 #    priority: 100
 
-  - name: Gender and Age Detection
-    type: gender_age
-    configuration: gender_age.json
-    class: gender_age_runner
-    priority: 100
+#  - name: Gender and Age Detection
+#    type: gender_age
+#    configuration: gender_age.json
+#    class: gender_age_runner
+#    priority: 100
 
+  - name: Object Counter
+    type: object_counter
+    configuration: object_counter.json
+    class: object_counter_runner
+    priority: 100
 
 
 #  - name: Driver Monitor 2 with emo.conf

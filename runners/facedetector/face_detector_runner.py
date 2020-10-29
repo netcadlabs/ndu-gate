@@ -9,7 +9,7 @@ from os import path
 
 from ndu_gate_camera.api.ndu_camera_runner import NDUCameraRunner, log
 from ndu_gate_camera.utility import constants
-from ndu_gate_camera.utility.image_helper import resize_best_quality
+from ndu_gate_camera.utility.image_helper import image_helper
 
 
 class face_detector_runner(NDUCameraRunner):
@@ -68,7 +68,7 @@ class face_detector_runner(NDUCameraRunner):
         image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         # image = cv2.resize(image, (nw, nh))
         # image = cv2.resize(image, (nw, nh), interpolation=cv2.INTER_CUBIC)
-        image = resize_best_quality(image, (nw, nh))
+        image = image_helper.resize_best_quality(image, (nw, nh))
         image_mean = np.array([127, 127, 127])
         image = (image - image_mean) / 128
         image = np.transpose(image, [2, 0, 1])

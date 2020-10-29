@@ -1,5 +1,7 @@
 numpy
 opencv-python
+onnx
+onnxruntime
 setuptools
 vidgear
 pyzmq

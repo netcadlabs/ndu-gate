@@ -4,10 +4,10 @@ from torch.nn import Conv2d, Sequential, ModuleList, ReLU
 # from .ssd import SSD
 # from ..nn.mb_tiny_RFB import Mb_Tiny_RFB
 # from ..ssd.config import fd_config as config
-from ndu_gate_camera.detectors.vision.nn.mb_tiny_RFB import Mb_Tiny_RFB
-from ndu_gate_camera.detectors.vision.ssd.config import fd_config
-from ndu_gate_camera.detectors.vision.ssd.predictor import Predictor
-from ndu_gate_camera.detectors.vision.ssd.ssd import SSD
+from ndu_gate_camera.detectors_old_sil.vision.nn.mb_tiny_RFB import Mb_Tiny_RFB
+from ndu_gate_camera.detectors_old_sil.vision.ssd.config import fd_config
+from ndu_gate_camera.detectors_old_sil.vision.ssd.predictor import Predictor
+from ndu_gate_camera.detectors_old_sil.vision.ssd.ssd import SSD
 
 
 def SeperableConv2d(in_channels, out_channels, kernel_size=1, stride=1, padding=0):

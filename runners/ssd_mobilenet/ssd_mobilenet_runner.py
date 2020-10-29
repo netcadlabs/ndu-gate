@@ -4,6 +4,8 @@ from threading import Thread
 from random import choice
 from string import ascii_lowercase
 
+import cv2
+
 from ndu_gate_camera.api.ndu_camera_runner import NDUCameraRunner, log
 from ndu_gate_camera.utility import constants
 
@@ -63,13 +65,13 @@ class ssd_mobilenet_runner(Thread, NDUCameraRunner):
 
     def process_frame(self, frame, extra_data=None):
         super().process_frame(frame)
-
-        img_data = np.expand_dims(frame.astype(np.uint8), axis=0)
+        image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        img_data = np.expand_dims(image.astype(np.uint8), axis=0)
 
         result = self.__onnx_sess.run(self.__onnx_output_names, {self.__onnx_input_name: img_data})
 
         detection_boxes, detection_classes, detection_scores, num_detections = result
-        h, w, *_ = frame.shape
+        h, w, *_ = image.shape
         out_boxes = []
         out_classes = []
         out_scores = []

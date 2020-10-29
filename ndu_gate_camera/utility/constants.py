@@ -13,3 +13,5 @@ RESULT_KEY_PREVIEW_KEY = "preview_key"
 RESULT_KEY_SCORE = "score"
 # Platform'a gönderilmesi istenen veri. İçeriği dictionary olmalıdır.
 RESULT_KEY_DATA = "data"
+# Preview'e büyük şekilde yazılacak veri.
+RESULT_KEY_DEBUG = "debug"

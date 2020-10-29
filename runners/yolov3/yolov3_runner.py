@@ -5,7 +5,7 @@ import os
 
 from ndu_gate_camera.api.ndu_camera_runner import NDUCameraRunner, log
 from ndu_gate_camera.utility import constants
-from ndu_gate_camera.utility.image_helper import resize_best_quality
+from ndu_gate_camera.utility.image_helper import image_helper
 
 
 class yolov3_runner(NDUCameraRunner):
@@ -39,7 +39,9 @@ class yolov3_runner(NDUCameraRunner):
 
     @staticmethod
     def _predict(sess, input_name, input_size, class_names, frame):
-        img_processed, w, h, nw, nh, dw, dh = yolov3_runner._image_preprocess(np.copy(frame), [input_size, input_size])
+        image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        img_processed, w, h, nw, nh, dw, dh = yolov3_runner._image_preprocess(np.copy(image), [input_size, input_size])
+        # img_processed, w, h, nw, nh, dw, dh = yolov3_runner._image_preprocess(np.copy(frame), [input_size, input_size])
         image_data = img_processed[np.newaxis, ...].astype(np.float32)
         image_data = np.transpose(image_data, [0, 3, 1, 2])
 
@@ -62,7 +64,7 @@ class yolov3_runner(NDUCameraRunner):
 
         scale = min(iw / w, ih / h)
         nw, nh = int(scale * w), int(scale * h)
-        image_resized = resize_best_quality(image, (nw, nh))
+        image_resized = image_helper.resize_best_quality(image, (nw, nh))
 
         image_padded = np.full(shape=[ih, iw, 3], fill_value=128.0)
         dw, dh = (iw - nw) // 2, (ih - nh) // 2
