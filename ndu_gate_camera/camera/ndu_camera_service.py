@@ -157,6 +157,16 @@ class NDUCameraService:
                         log.error("config file is not found %s", config_file)
                         runner_conf = {"name": runner["name"]}
 
+                    runner_custom_conf = {}
+                    custom_config_file = self._ndu_gate_config_dir + runner_type + "_custom.json"
+                    if path.isfile(custom_config_file):
+                        with open(custom_config_file, 'r', encoding="UTF-8") as conf_file:
+                            runner_custom_conf = load(conf_file)
+                    else:
+                        log.error("custom config file is not found %s", custom_config_file)
+
+                    runner_conf["custom_config"] = runner_custom_conf
+
                     runner_unique_key = self.__get_runner_configuration_key(runner_type, class_name, configuration_name)
 
                     runner_priority = runner.get("priority", None)
