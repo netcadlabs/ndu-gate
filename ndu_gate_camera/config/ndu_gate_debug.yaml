@@ -12,8 +12,8 @@
 
 video_source:
 #  type: IMAGE_FILE # VIDEO_FILE, PI_CAMERA, CAMERA, IP_CAMERA, VIDEO_URL, YOUTUBE
-  type: YOUTUBE
-#  type: VIDEO_FILE
+#  type: YOUTUBE
+  type: VIDEO_FILE
 #  type: CAMERA
 
 #  file_path: iett_1.avi
@@ -32,8 +32,8 @@ video_source:
 #  file_path: çanakkale0.mp4 #pedestrians
 #  file_path: çanakkale_yaya.mp4 #pedestrians
 #  file_path: çanakkale_araba.mp4 #pedestrians
-#  file_path: çanakkale_hızlı.mp4 #pedestrians
-  file_path: çanakkale0/kavsak1.mp4 #pedestrians
+  file_path: çanakkale_hızlı.mp4 #pedestrians
+#  file_path: çanakkale0/kavsak1.mp4 #pedestrians
 
 #  image_path: _emotion.jpg
 #  image_path: _emotion_mask.jpg
