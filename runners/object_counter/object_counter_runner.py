@@ -4,8 +4,6 @@ import numpy as np
 import cv2
 
 from threading import Thread
-from random import choice
-from string import ascii_lowercase
 
 from ndu_gate_camera.api.ndu_camera_runner import NDUCameraRunner
 from ndu_gate_camera.utility import constants
@@ -17,10 +15,7 @@ class object_counter_runner(Thread, NDUCameraRunner):
         super().__init__()
         self.__classes = config.get("classes", None)
         self.__frame_num = 0
-        self.__sorts = {}
         self.__gates = []
-        self.__memory = {}
-        self.__handled_indexes = []  ####
 
     def get_name(self):
         return "object_counter_runner"
@@ -50,7 +45,7 @@ class object_counter_runner(Thread, NDUCameraRunner):
 
             cv2.imshow(window_name, frame)
             k = cv2.waitKey(1)
-            if k & 0xFF == ord("q"):
+            if k & 0xFF == ord("z"):
                 cv2.destroyWindow(window_name)
                 break
             if len(line) == 2:
@@ -91,6 +86,18 @@ class object_counter_runner(Thread, NDUCameraRunner):
         Y = p[1]
         return ((Bx - Ax) * (Y - Ay) - (By - Ay) * (X - Ax)) > 0
 
+    def rotate_line(self, line, center, deg=-90):
+        def rotate_point(point, angle, center_point=(0, 0)):
+            angle_rad = math.radians(angle % 360)
+            new_point = (point[0] - center_point[0], point[1] - center_point[1])
+            new_point = (new_point[0] * math.cos(angle_rad) - new_point[1] * math.sin(angle_rad),
+                         new_point[0] * math.sin(angle_rad) + new_point[1] * math.cos(angle_rad))
+            new_point = (new_point[0] + center_point[0], new_point[1] + center_point[1])
+            return int(new_point[0]), int(new_point[1])
+
+        line[0] = rotate_point(line[0], deg, center)
+        line[1] = rotate_point(line[1], deg, center)
+
     def process_frame(self, frame, extra_data=None):
         super().process_frame(frame)
         res = []
@@ -104,7 +111,8 @@ class object_counter_runner(Thread, NDUCameraRunner):
             for line in lines:
                 ln_counter += 1
                 # self.__gates.append({"line": line, "enter": 0, "exit": 0, "name": "Kapı" + str(ln_counter)})
-                self.__gates.append({"line": line, "classes": {}, "name": "KAPI" + str(ln_counter)})
+                self.__gates.append({"g": {"sorts": {}, "memory": {}, "handled_indexes": []},
+                                     "line": line, "classes": {}, "name": "KAPI" + str(ln_counter)})
 
         for gate in self.__gates:
             line = gate["line"]
@@ -113,7 +121,18 @@ class object_counter_runner(Thread, NDUCameraRunner):
                 line, np.int32
             )
             cv2.polylines(frame, [pts], True, (0, 255, 255), thickness=4)
-            self.put_text(frame, name, self.get_center(line), color=(0, 255, 255), font_scale=0.75)
+            center = self.get_center(line)
+            self.put_text(frame, name, center, color=(0, 255, 255), font_scale=0.75)
+
+            p0 = center
+            p1 = [line[1][0], line[1][1]]
+            p1[0] = p0[0] + (p1[0] - p0[0]) * 0.2
+            p1[1] = p0[1] + (p1[1] - p0[1]) * 0.2
+            arrow = [p0, p1]
+            self.rotate_line(arrow, arrow[0], -90)
+            cv2.arrowedLine(frame, arrow[0], arrow[1], (0, 0, 0), thickness=3)
+            cv2.arrowedLine(frame, arrow[0], arrow[1], (0, 200, 200), thickness=2)
+            self.put_text(frame, "giris", arrow[1], color=(0, 200, 200), font_scale=0.5)
 
         active_counts = {}
         class_dets = {}
@@ -133,78 +152,84 @@ class object_counter_runner(Thread, NDUCameraRunner):
                                 det = [rect[1], rect[0], rect[3], rect[2], score]
                                 class_dets[group_name].append(det)
 
-        for name, dets in class_dets.items():
-            if name not in self.__sorts:
-                # self.__sorts[name] = Sort(max_age=1, min_hits=3, iou_threshold=0.3)
-                # self.__sorts[name] = Sort()
-                # self.__sorts[name] = Sort(max_age=1, min_hits=3, iou_threshold=0.03)
-                # self.__sorts[name] = Sort(max_age=100, min_hits=1, iou_threshold=0.000001)
-                self.__sorts[name] = Sort(max_age=20, min_hits=1, iou_threshold=0.001)
+        for gate in self.__gates:
+            g = gate.get("g")
+            g_sorts = g.get("sorts")
+            g_memory = g.get("memory")
+            g_handled_indexes = g.get("handled_indexes")
+            for name, dets in class_dets.items():
+                if name not in g_sorts:
+                    # g_sorts[name] = Sort(max_age=1, min_hits=3, iou_threshold=0.3)
+                    # g_sorts[name] = Sort()
+                    # g_sorts[name] = Sort(max_age=1, min_hits=3, iou_threshold=0.03)
+                    g_sorts[name] = Sort(max_age=100, min_hits=1, iou_threshold=0.000001)
+                    # g_sorts[name] = Sort(max_age=20, min_hits=1, iou_threshold=0.001)
+                    # g_sorts[name] = Sort(max_age=25, min_hits=1, iou_threshold=0.001)
 
-            sort = self.__sorts[name]  # https://github.com/abewley/sort   https://github.com/HodenX/python-traffic-counter-with-yolo-and-sort
-            dets = np.array(dets)
-            tracks = sort.update(dets)
+                sort = g_sorts[name]  # https://github.com/abewley/sort   https://github.com/HodenX/python-traffic-counter-with-yolo-and-sort
+                dets1 = np.array(dets)
+                tracks = sort.update(dets1)
 
-            ######
-            # info = f"{name}: {len(tracks)}"
-            # res.append({constants.RESULT_KEY_CLASS_NAME: info})
-            active_counts[name] = len(tracks)
+                ######
+                # info = f"{name}: {len(tracks)}"
+                # res.append({constants.RESULT_KEY_CLASS_NAME: info})
+                active_counts[name] = len(tracks)
 
-            # #########
-            boxes = []
-            indexIDs = []
-            c = []
-            previous = self.__memory.copy()
-            self.__memory = {}
+                # #########
+                boxes = []
+                indexIDs = []
+                c = []
+                previous = g_memory.copy()
+                g_memory = {}
 
-            for track in tracks:
-                # boxes.append([track[0], track[1], track[2], track[3]])
-                boxes.append([track[0], track[1], track[2], track[3], track[4]])
-                index_id = int(track[4])
-                indexIDs.append(int(track[4]))
-                ##### self.__memory[indexIDs[-1]] = boxes[-1]
-                if index_id in previous:
-                    track0 = previous[index_id]
-                    dist = (math.fabs(track[0] - track0[0]) + math.fabs(track[1] - track0[1]) + math.fabs(track[2] - track0[2]) + math.fabs(track[3] - track0[3])) / 4.0
-                    if dist > 30:
-                        self.__memory[indexIDs[-1]] = boxes[-1]
+                for track in tracks:
+                    # boxes.append([track[0], track[1], track[2], track[3]])
+                    boxes.append([track[0], track[1], track[2], track[3], track[4]])
+                    index_id = int(track[4])
+                    indexIDs.append(int(track[4]))
+                    ##### g_memory[indexIDs[-1]] = boxes[-1]
+                    if index_id in previous:
+                        track0 = previous[index_id]
+                        dist = (math.fabs(track[0] - track0[0]) + math.fabs(track[1] - track0[1]) + math.fabs(track[2] - track0[2]) + math.fabs(track[3] - track0[3])) / 4.0
+                        if dist > 30:
+                            g_memory[indexIDs[-1]] = boxes[-1]
+                        else:
+                            g_memory[indexIDs[-1]] = track0
                     else:
-                        self.__memory[indexIDs[-1]] = track0
-                else:
-                    self.__memory[indexIDs[-1]] = boxes[-1]
+                        g_memory[indexIDs[-1]] = boxes[-1]
 
-            if len(boxes) > 0:
-                i = int(0)
-                for box in boxes:
-                    # extract the bounding box coordinates
-                    (x, y) = (int(box[0]), int(box[1]))
-                    (w, h) = (int(box[2]), int(box[3]))
+                if len(boxes) > 0:
+                    i = int(0)
+                    for box in boxes:
+                        # extract the bounding box coordinates
+                        (x, y) = (int(box[0]), int(box[1]))
+                        (w, h) = (int(box[2]), int(box[3]))
 
-                    # color = [int(c) for c in COLORS[indexIDs[i] % len(COLORS)]]
-                    # cv2.rectangle(frame, (x, y), (w, h), color, 2)
+                        # color = [int(c) for c in COLORS[indexIDs[i] % len(COLORS)]]
+                        # cv2.rectangle(frame, (x, y), (w, h), color, 2)
 
-                    index_id = indexIDs[i]
-                    # if index_id in previous:
-                    if index_id not in self.__handled_indexes and index_id in previous:  #####################################################
-                        previous_box = previous.get(indexIDs[i], None)
-                        if previous_box is not None:
-                            (x2, y2) = (int(previous_box[0]), int(previous_box[1]))
-                            (w2, h2) = (int(previous_box[2]), int(previous_box[3]))
+                        index_id = indexIDs[i]
+                        # if index_id in previous:
+                        if index_id not in g_handled_indexes and index_id in previous:  #####################################################
+                            previous_box = previous.get(indexIDs[i], None)
+                            if previous_box is not None:
+                                (x2, y2) = (int(previous_box[0]), int(previous_box[1]))
+                                (w2, h2) = (int(previous_box[2]), int(previous_box[3]))
 
-                            # p0 = (int(x + (w - x) / 2), int(y + (h - y) / 2))
-                            # p1 = (int(x2 + (w2 - x2) / 2), int(y2 + (h2 - y2) / 2))
-                            p0 = (int(x + (w - x) / 2), int(y + (h - y)))
-                            p1 = (int(x2 + (w2 - x2) / 2), int(y2 + (h2 - y2)))
+                                p0 = (int(x + (w - x) / 2), int(y + (h - y) / 2))
+                                p1 = (int(x2 + (w2 - x2) / 2), int(y2 + (h2 - y2) / 2))
+                                # p0 = (int(x + (w - x) / 2), int(y + (h - y)))
+                                # p1 = (int(x2 + (w2 - x2) / 2), int(y2 + (h2 - y2)))
 
-                            # cv2.line(frame, p0, p1, [0, 0, 255], 3)
-                            cv2.line(frame, p0, p0, [0, 0, 255], 3)
+                                cv2.line(frame, p0, p1, [0, 0, 255], 3)
+                                # cv2.line(frame, p0, p0, [0, 0, 255], 3)
 
-                            handled = False  ####
-                            for gate in self.__gates:
+                                handled = False  ####
+
                                 line = gate["line"]
                                 if self.intersect(p0, p1, line[0], line[1]):
                                     handled = True
-                                    self.__handled_indexes.append(index_id)  ####
+                                    g_handled_indexes.append(index_id)  ####
                                     classes = gate["classes"]
                                     if name not in classes:
                                         classes[name] = {"enter": 0, "exit": 0}
@@ -212,14 +237,20 @@ class object_counter_runner(Thread, NDUCameraRunner):
                                         classes[name]["enter"] += 1
                                     else:
                                         classes[name]["exit"] += 1
-                            if not handled:  ##############
-                                # self.__memory[index_id] = box##############
-                                self.__memory[index_id] = previous_box  ##############
 
-                    # # text = "{}: {:.4f}".format(LABELS[classIDs[i]], confidences[i])
-                    # text = "{}".format(indexIDs[i])
-                    # cv2.putText(frame, text, (x, y - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
-                    i += 1
+                                if not handled:  ##############
+                                    # g_memory[index_id] = box##############
+                                    g_memory[index_id] = previous_box  ##############
+
+                        # # text = "{}: {:.4f}".format(LABELS[classIDs[i]], confidences[i])
+                        # text = "{}".format(indexIDs[i])
+                        # cv2.putText(frame, text, (x, y - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
+                        i += 1
+            g["sorts"] = g_sorts
+            g["memory"] = g_memory
+            g["handled_indexes"] = g_handled_indexes
+            gate["g"] = g
+
         debug_texts = []
         for gate in self.__gates:
             for name, val in gate["classes"].items():
@@ -228,16 +259,12 @@ class object_counter_runner(Thread, NDUCameraRunner):
 
                 enter = val["enter"]
                 exit = val["exit"]
-                # info = { "counts": f"{name}: Giriş:{enter} Çıkış:{exit}"}
-                debug_text += f"{name}: Giren:{enter} Cikan:{exit}"
-
-                # if name in active_counts:
-                #     debug_text += f" Aktif:{active_counts[name]}"
+                debug_text += f"{name} - Giren:{enter} Cikan:{exit}"
 
                 debug_texts.append(debug_text)
 
         for name, value in active_counts.items():
-            debug_texts.append(f"Aktif '{name}': {value}")
+            debug_texts.append(f"gorunen '{name}': {value}")
 
         for debug_text in debug_texts:
             # res.append({constants.RESULT_KEY_DEBUG: debug_text})

@@ -4,16 +4,10 @@
       "person"
     ],
     "arac": [
-      "car"
-    ],
-    "motosiklet": [
+      "car",
       "bicycle",
-      "motorbike"
-    ],
-    "kamyon": [
-      "truck"
-    ],
-    "otobüs": [
+      "motorbike",
+      "truck",
       "bus"
     ]
   }

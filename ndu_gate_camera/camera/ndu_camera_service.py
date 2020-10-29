@@ -1,3 +1,4 @@
+import os
 import random
 import time
 from os import path, uname
@@ -87,7 +88,6 @@ class NDUCameraService:
                 "type": "FILE",
                 "file_path": default_result_file_path
             }
-
         if str(result_hand_conf.get("type", "FILE")) == str("SOCKET"):
             self.__result_handler = ResultHandlerSocket(result_hand_conf.get("socket", {}))
         else:
@@ -340,28 +340,37 @@ class NDUCameraService:
         log.info("Video source is finished")
 
     def _write_frame(self, frame):
+        def get_free_file_name(fn):
+            if os.path.exists(fn):
+                filename, file_extension = os.path.splitext(fn)
+                i = 1
+                while os.path.exists(fn):
+                    fn = f"{filename}{i}{file_extension}"
+                    i += 1
+            return fn
         try:
             self.__out.write(frame)
         except:  # daha iyi bir yolunu bulursanız, bana da gösterin -> korhun :)
             shape = frame.shape[1], frame.shape[0]
             fourcc = cv2.VideoWriter_fourcc(*'MP4V')
             # fourcc = cv2.VideoWriter_fourcc(*'XVID')
+            self.__write_preview_file_name = get_free_file_name(self.__write_preview_file_name)
             self.__out = cv2.VideoWriter(self.__write_preview_file_name, fourcc, 24.0, shape)
             self.__out.write(frame)
 
     def _get_preview(self, image, results):
-        def put_text(img, text, center, color=None, font_scale=0.5, thickness=1):
+        def put_text(img, text, center, color=None, font_scale=0.5, thickness=1, back_color=[0, 0, 0]):
             if color is None:
                 color = [255, 255, 255]
             y = center[1]
             # font = cv2.FONT_HERSHEY_COMPLEX
             font = cv2.FONT_HERSHEY_DUPLEX
             cv2.putText(img=img, text=text, org=(center[0] + 5, y),
-                        fontFace=font, fontScale=font_scale, color=[0, 0, 0], lineType=cv2.LINE_AA,
-                        thickness=2 * thickness)
+                        fontFace=font, fontScale=font_scale, color=back_color, lineType=cv2.LINE_AA,
+                        thickness=3 * thickness)
             cv2.putText(img=img, text=text, org=(center[0] + 5, y),
                         fontFace=font, fontScale=font_scale, color=color,
-                        lineType=cv2.LINE_AA, thickness=1 * thickness)
+                        lineType=cv2.LINE_AA, thickness=thickness)
 
         def draw_rect(obj, img, c1, c2, class_preview_key):
             color = [255, 255, 255]
@@ -378,10 +387,15 @@ class NDUCameraService:
             cv2.rectangle(img, (c1[0], c1[1]), (c2[0], c2[1]), color=[0, 0, 0], thickness=3)
             cv2.rectangle(img, (c1[0], c1[1]), (c2[0], c2[1]), color=color, thickness=2)
 
+        show_debug_texts = True
+        show_runner_info = False
+        show_score = False
+
         h, w, *_ = image.shape
         line_height = 20
-        font_scale = 0.5
+        font_scale = 0.4
         current_line = [20, 0]
+        current_line_bottom = [20, h]
         data_added = []
         if results is not None:
             for result in results:
@@ -389,10 +403,11 @@ class NDUCameraService:
                 text_type = ""
                 has_data = False
                 for item in result:
-                    total_elapsed_time = item.get("total_elapsed_time", None)
-                    if total_elapsed_time is not None:
-                        put_text(image, total_elapsed_time, [w - 100, h - 30], color=[200, 200, 128], font_scale=0.4)
-                        continue
+                    if show_runner_info:
+                        total_elapsed_time = item.get("total_elapsed_time", None)
+                        if total_elapsed_time is not None:
+                            put_text(image, total_elapsed_time, [w - 100, h - 30], color=[200, 200, 128], font_scale=0.4)
+                            continue
 
                     values = {}
                     elapsed_time = values["elapsed_time"] = item.get("elapsed_time", None)
@@ -409,9 +424,9 @@ class NDUCameraService:
                     text = ""
                     if class_name is not None:
                         text = str(class_name) + " "
-                        if score is not None:
+                        if show_score and score is not None:
                             text = f"{text} - %{score * 100:.2f} "
-                    elif score is not None:
+                    elif show_score and score is not None:
                         text = f"%{score * 100:.2f} "
                     for key in item:
                         if key not in values:
@@ -433,16 +448,16 @@ class NDUCameraService:
                         text_type = elapsed_time + " " + text_type
                     if len(text) > 0:
                         text_type = text_type + text + " "
-                if len(text_type) > 0:
-                    current_line[1] = current_line[1] + line_height
+                if show_runner_info and len(text_type) > 0:
+                    current_line[1] += line_height
                     if not has_data:
                         put_text(image, text_type, current_line, font_scale=font_scale)
                     else:
                         put_text(image, text_type, current_line, color=[0, 0, 255], font_scale=font_scale)
-                if len(debug_texts) > 0:
+                if show_debug_texts and len(debug_texts) > 0:
                     for debug_text in debug_texts:
-                        current_line[1] = current_line[1] + line_height * 2
-                        put_text(image, debug_text, current_line, color=[255, 255, 50], font_scale=font_scale * 2, thickness=2)
+                        current_line_bottom[1] -= line_height * 2
+                        put_text(image, debug_text, current_line_bottom, color=[255, 250, 99], font_scale=font_scale * 2.75, thickness=2, back_color=[0, 0, 0])
 
         if len(data_added) > 0:
             self.__last_data = data_added

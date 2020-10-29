@@ -12,8 +12,8 @@
 
 video_source:
 #  type: IMAGE_FILE # VIDEO_FILE, PI_CAMERA, CAMERA, IP_CAMERA, VIDEO_URL, YOUTUBE
-#  type: YOUTUBE
-  type: VIDEO_FILE
+  type: YOUTUBE
+#  type: VIDEO_FILE
 #  type: CAMERA
 
 #  file_path: iett_1.avi
@@ -30,9 +30,10 @@ video_source:
 #  file_path: vid_short.mp4 #pedestrians
 #  file_path: çanakkale.mp4 #car - pedestrians
 #  file_path: çanakkale0.mp4 #pedestrians
-  file_path: çanakkale_yaya.mp4 #pedestrians
+#  file_path: çanakkale_yaya.mp4 #pedestrians
 #  file_path: çanakkale_araba.mp4 #pedestrians
 #  file_path: çanakkale_hızlı.mp4 #pedestrians
+  file_path: çanakkale0/kavsak1.mp4 #pedestrians
 
 #  image_path: _emotion.jpg
 #  image_path: _emotion_mask.jpg
@@ -60,10 +61,10 @@ video_source:
 #  url: https://www.youtube.com/watch?v=R3JK2xqYK1o  #emotion
 #  url: https://www.youtube.com/watch?v=g-dyHadto2Y  #mask
 #  url: https://youtu.be/TlInDQgg2G4  #mask
-#  url: https://youtu.be/MNn9qKG2UFI  #highway
+  url: https://youtu.be/MNn9qKG2UFI  #highway
   show_preview: True
   write_preview: True
-#  max_frame_dim: 1600
+  max_frame_dim: 1600
   write_preview_file_name: /Users/korhun/Documents/temp/preview.mov
   mirror: True
 #  sleep: 0.1
@@ -73,9 +74,17 @@ video_source:
     CAP_PROP_FPS: 10
 
 
+#result_handler:
+#  type: SOCKET # FILE, SOCKET
+#  file_path: /var/lib/thingsboard_gateway/extensions/camera/
+#  socket:
+#    port: 60060
+#    host: 127.0.0.1
+
+#koray
 result_handler:
-  type: SOCKET # FILE, SOCKET
-  file_path: /var/lib/thingsboard_gateway/extensions/camera/
+  type: FILE
+  file_path: /Users/korhun/Documents/temp/
   socket:
     port: 60060
     host: 127.0.0.1
