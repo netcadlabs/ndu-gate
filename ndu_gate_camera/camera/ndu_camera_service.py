@@ -80,6 +80,7 @@ class NDUCameraService:
         log.info("NDU-Gate logging config file: %s", logging_config_file)
         log.info("NDU-Gate logging service level: %s", log.level)
 
+        self.frame_send_interval = self.__ndu_gate_config.get("frame_send_interval", 1000)
         result_hand_conf = self.__ndu_gate_config.get("result_handler", None)
         default_result_file_path = "/var/lib/thingsboard_gateway/extensions/camera/"
         if result_hand_conf is None:
@@ -89,7 +90,7 @@ class NDUCameraService:
             }
 
         if str(result_hand_conf.get("type", "FILE")) == str("SOCKET"):
-            self.__result_handler = ResultHandlerSocket(result_hand_conf.get("socket", 60060))
+            self.__result_handler = ResultHandlerSocket(result_hand_conf.get("socket", {}))
         else:
             self.__result_handler = ResultHandlerFile(result_hand_conf.get("file_path", default_result_file_path))
 
@@ -275,11 +276,12 @@ class NDUCameraService:
             if i % 100 == 0:
                 log.debug("frame count %s ", i)
 
-            if not self.frame_sent and i > 2:
+            if i % self.frame_send_interval == 0:
                 try:
                     camera_capture_base64 = image_helper.frame2base64(frame)
+                    log.info("CAMERA_CAPTURE size : %s",len(camera_capture_base64))
                     self.__result_handler.save_result([{"data": {"CAMERA_CAPTURE": camera_capture_base64}}], data_type='attribute')
-                    self.frame_sent = True
+                    # self.frame_sent = True
                 except Exception as e:
                     log.exception(e)
                     log.error("can not create CAMERA_CAPTURE")

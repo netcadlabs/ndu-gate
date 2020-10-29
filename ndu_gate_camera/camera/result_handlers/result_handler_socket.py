@@ -37,7 +37,6 @@ class ResultHandlerSocket:
             log.error(e)
 
     def __send_item(self, item, runner_name, data_type):
-        print("Sending telemetry data [ %s ]" % item)
         data = {
             data_type: item,
             "runner": runner_name
