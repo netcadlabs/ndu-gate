@@ -47,10 +47,20 @@ class image_helper:
             return cv2.resize(image, dim, interpolation=interpolation)
 
     @staticmethod
+    def rescale_frame(frame, percent=75):
+        width = int(frame.shape[1] * percent / 100)
+        height = int(frame.shape[0] * percent / 100)
+        dim = (width, height)
+        return cv2.resize(frame, dim, interpolation=cv2.INTER_AREA)
+
+    @staticmethod
     def frame2base64(frame):
-        res, frame = cv2.imencode('.png', frame)  # from image to binary buffer
+        scaled_frame = image_helper.rescale_frame(frame, 60)
+        res, frame = cv2.imencode('.png', scaled_frame)  # from image to binary buffer
         base64_data = base64.b64encode(frame)
         return base64_data.decode('utf-8')
+
+
 # def select_points(frame, count, window_name):
 #     mouse_pts = []
 #

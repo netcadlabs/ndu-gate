@@ -277,8 +277,8 @@ class NDUCameraService:
 
             if not self.frame_sent and i > 2:
                 try:
-                    CAMERA_CAPTURE = image_helper.frame2base64(frame)
-                    self.__result_handler.save_result([{"data": {"CAMERA_CAPTURE": CAMERA_CAPTURE}}], data_type='attr')
+                    camera_capture_base64 = image_helper.frame2base64(frame)
+                    self.__result_handler.save_result([{"data": {"CAMERA_CAPTURE": camera_capture_base64}}], data_type='attribute')
                     self.frame_sent = True
                 except Exception as e:
                     log.exception(e)
