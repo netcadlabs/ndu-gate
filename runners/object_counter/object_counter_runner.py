@@ -1,0 +1,247 @@
+import math
+
+import numpy as np
+import cv2
+
+from threading import Thread
+from random import choice
+from string import ascii_lowercase
+
+from ndu_gate_camera.api.ndu_camera_runner import NDUCameraRunner
+from ndu_gate_camera.utility import constants
+from sort import Sort
+
+
+class object_counter_runner(Thread, NDUCameraRunner):
+    def __init__(self, config, connector_type):
+        super().__init__()
+        self.__classes = config.get("classes", None)
+        self.__frame_num = 0
+        self.__sorts = {}
+        self.__gates = []
+        self.__memory = {}
+        self.__handled_indexes = []  ####
+
+    def get_name(self):
+        return "object_counter_runner"
+
+    def get_settings(self):
+        settings = {}
+        return settings
+
+    def _select_lines(self, frame, window_name):
+        lines = []
+        line = []
+
+        def get_mouse_points(event, x, y, flags, param):
+            if event == cv2.EVENT_LBUTTONDOWN:
+                if len(line) < 2:
+                    cv2.circle(frame, (x, y), 10, (0, 255, 255), 10)
+                    line.append((x, y))
+
+        cv2.namedWindow(window_name)
+        cv2.moveWindow(window_name, 40, 30)
+        cv2.setMouseCallback(window_name, get_mouse_points)
+
+        while True:
+            for ln in lines:
+                pts = np.array(ln, np.int32)
+                cv2.polylines(frame, [pts], True, (0, 255, 255), thickness=4)
+
+            cv2.imshow(window_name, frame)
+            k = cv2.waitKey(1)
+            if k & 0xFF == ord("q"):
+                cv2.destroyWindow(window_name)
+                break
+            if len(line) == 2:
+                lines.append(line)
+                line = []
+
+        return lines
+
+    def put_text(self, img, text, center, color=None, font_scale=0.5):
+        if color is None:
+            color = [255, 255, 255]
+        cv2.putText(img=img, text=text, org=(int(center[0]) + 5, int(center[1])),
+                    fontFace=cv2.FONT_HERSHEY_DUPLEX, fontScale=font_scale, color=[0, 0, 0], lineType=cv2.LINE_AA,
+                    thickness=2)
+        cv2.putText(img=img, text=text, org=(int(center[0]) + 5, int(center[1])),
+                    fontFace=cv2.FONT_HERSHEY_DUPLEX, fontScale=font_scale, color=color,
+                    lineType=cv2.LINE_AA, thickness=1)
+
+    def intersect(self, A, B, C, D):
+        # Return true if line segments AB and CD intersect
+        def ccw(A, B, C):
+            return (C[1] - A[1]) * (B[0] - A[0]) > (B[1] - A[1]) * (C[0] - A[0])
+
+        return ccw(A, C, D) != ccw(B, C, D) and ccw(A, B, C) != ccw(A, B, D)
+
+    def get_center(self, line):
+        return [(line[0][0] + line[1][0]) * 0.5, (line[0][1] + line[1][1]) * 0.5]
+
+    def distance(self, p1, p2):
+        return math.sqrt((p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2)
+
+    def on_left(self, line, p):
+        Ax = line[0][0]
+        Ay = line[0][1]
+        Bx = line[1][0]
+        By = line[1][1]
+        X = p[0]
+        Y = p[1]
+        return ((Bx - Ax) * (Y - Ay) - (By - Ay) * (X - Ax)) > 0
+
+    def process_frame(self, frame, extra_data=None):
+        super().process_frame(frame)
+        res = []
+        if self.__classes is None:
+            return res
+
+        self.__frame_num += 1
+        if len(self.__gates) == 0 and self.__frame_num == 1:
+            lines = self._select_lines(frame, self.get_name())
+            ln_counter = 0
+            for line in lines:
+                ln_counter += 1
+                # self.__gates.append({"line": line, "enter": 0, "exit": 0, "name": "Kapı" + str(ln_counter)})
+                self.__gates.append({"line": line, "classes": {}, "name": "KAPI" + str(ln_counter)})
+
+        for gate in self.__gates:
+            line = gate["line"]
+            name = gate["name"]
+            pts = np.array(
+                line, np.int32
+            )
+            cv2.polylines(frame, [pts], True, (0, 255, 255), thickness=4)
+            self.put_text(frame, name, self.get_center(line), color=(0, 255, 255), font_scale=0.75)
+
+        active_counts = {}
+        class_dets = {}
+        results = extra_data.get("results", None)
+        if results is not None:
+            for runner_name, result in results.items():
+                for item in result:
+                    class_name = item.get(constants.RESULT_KEY_CLASS_NAME, None)
+                    for group_name, sub_classes in self.__classes.items():
+                        if class_name in sub_classes:
+                            rect = item.get(constants.RESULT_KEY_RECT, None)
+                            if rect is not None:
+                                if not group_name in class_dets:
+                                    class_dets[group_name] = []
+                                score = item.get(constants.RESULT_KEY_SCORE, 0.9)
+                                # det = [rect[0], rect[1], rect[2], rect[3], score]
+                                det = [rect[1], rect[0], rect[3], rect[2], score]
+                                class_dets[group_name].append(det)
+
+        for name, dets in class_dets.items():
+            if name not in self.__sorts:
+                # self.__sorts[name] = Sort(max_age=1, min_hits=3, iou_threshold=0.3)
+                # self.__sorts[name] = Sort()
+                # self.__sorts[name] = Sort(max_age=1, min_hits=3, iou_threshold=0.03)
+                # self.__sorts[name] = Sort(max_age=100, min_hits=1, iou_threshold=0.000001)
+                self.__sorts[name] = Sort(max_age=20, min_hits=1, iou_threshold=0.001)
+
+            sort = self.__sorts[name]  # https://github.com/abewley/sort   https://github.com/HodenX/python-traffic-counter-with-yolo-and-sort
+            dets = np.array(dets)
+            tracks = sort.update(dets)
+
+            ######
+            # info = f"{name}: {len(tracks)}"
+            # res.append({constants.RESULT_KEY_CLASS_NAME: info})
+            active_counts[name] = len(tracks)
+
+            # #########
+            boxes = []
+            indexIDs = []
+            c = []
+            previous = self.__memory.copy()
+            self.__memory = {}
+
+            for track in tracks:
+                # boxes.append([track[0], track[1], track[2], track[3]])
+                boxes.append([track[0], track[1], track[2], track[3], track[4]])
+                index_id = int(track[4])
+                indexIDs.append(int(track[4]))
+                ##### self.__memory[indexIDs[-1]] = boxes[-1]
+                if index_id in previous:
+                    track0 = previous[index_id]
+                    dist = (math.fabs(track[0] - track0[0]) + math.fabs(track[1] - track0[1]) + math.fabs(track[2] - track0[2]) + math.fabs(track[3] - track0[3])) / 4.0
+                    if dist > 30:
+                        self.__memory[indexIDs[-1]] = boxes[-1]
+                    else:
+                        self.__memory[indexIDs[-1]] = track0
+                else:
+                    self.__memory[indexIDs[-1]] = boxes[-1]
+
+            if len(boxes) > 0:
+                i = int(0)
+                for box in boxes:
+                    # extract the bounding box coordinates
+                    (x, y) = (int(box[0]), int(box[1]))
+                    (w, h) = (int(box[2]), int(box[3]))
+
+                    # color = [int(c) for c in COLORS[indexIDs[i] % len(COLORS)]]
+                    # cv2.rectangle(frame, (x, y), (w, h), color, 2)
+
+                    index_id = indexIDs[i]
+                    # if index_id in previous:
+                    if index_id not in self.__handled_indexes and index_id in previous:  #####################################################
+                        previous_box = previous.get(indexIDs[i], None)
+                        if previous_box is not None:
+                            (x2, y2) = (int(previous_box[0]), int(previous_box[1]))
+                            (w2, h2) = (int(previous_box[2]), int(previous_box[3]))
+
+                            # p0 = (int(x + (w - x) / 2), int(y + (h - y) / 2))
+                            # p1 = (int(x2 + (w2 - x2) / 2), int(y2 + (h2 - y2) / 2))
+                            p0 = (int(x + (w - x) / 2), int(y + (h - y)))
+                            p1 = (int(x2 + (w2 - x2) / 2), int(y2 + (h2 - y2)))
+
+                            # cv2.line(frame, p0, p1, [0, 0, 255], 3)
+                            cv2.line(frame, p0, p0, [0, 0, 255], 3)
+
+                            handled = False  ####
+                            for gate in self.__gates:
+                                line = gate["line"]
+                                if self.intersect(p0, p1, line[0], line[1]):
+                                    handled = True
+                                    self.__handled_indexes.append(index_id)  ####
+                                    classes = gate["classes"]
+                                    if name not in classes:
+                                        classes[name] = {"enter": 0, "exit": 0}
+                                    if not self.on_left(line, p0):
+                                        classes[name]["enter"] += 1
+                                    else:
+                                        classes[name]["exit"] += 1
+                            if not handled:  ##############
+                                # self.__memory[index_id] = box##############
+                                self.__memory[index_id] = previous_box  ##############
+
+                    # # text = "{}: {:.4f}".format(LABELS[classIDs[i]], confidences[i])
+                    # text = "{}".format(indexIDs[i])
+                    # cv2.putText(frame, text, (x, y - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
+                    i += 1
+        debug_texts = []
+        for gate in self.__gates:
+            for name, val in gate["classes"].items():
+                gate_name = gate["name"]
+                debug_text = gate_name + ": "
+
+                enter = val["enter"]
+                exit = val["exit"]
+                # info = { "counts": f"{name}: Giriş:{enter} Çıkış:{exit}"}
+                debug_text += f"{name}: Giren:{enter} Cikan:{exit}"
+
+                # if name in active_counts:
+                #     debug_text += f" Aktif:{active_counts[name]}"
+
+                debug_texts.append(debug_text)
+
+        for name, value in active_counts.items():
+            debug_texts.append(f"Aktif '{name}': {value}")
+
+        for debug_text in debug_texts:
+            # res.append({constants.RESULT_KEY_DEBUG: debug_text})
+            res.append({constants.RESULT_KEY_DEBUG: debug_text})
+
+        # res.append({constants.RESULT_KEY_RECT: rect_face, constants.RESULT_KEY_CLASS_NAME: name, constants.RESULT_KEY_PREVIEW_KEY: preview_key})
+        return res
