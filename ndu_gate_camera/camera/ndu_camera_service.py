@@ -56,12 +56,10 @@ class NDUCameraService:
         if self.SOURCE_CONFIG.get("show_preview", None) is None:
             self.SOURCE_CONFIG["show_preview"] = NDUUtility.is_debug_mode()
         self.__show_preview = self.SOURCE_CONFIG.get("show_preview", False)
-        if self.__show_preview:
-            self.__last_data = []
-            self.__last_data_count = 0
-            self.__write_preview = self.SOURCE_CONFIG.get("write_preview", False)
-            if self.__write_preview:
-                self.__write_preview_file_name = self.SOURCE_CONFIG.get("write_preview_file_name", "")
+        self.__write_preview = self.SOURCE_CONFIG.get("write_preview", False)
+        self.__last_data = []
+        self.__last_data_count = 0
+        self.__write_preview_file_name = self.SOURCE_CONFIG.get("write_preview_file_name", "")
         self.__max_frame_dim = self.SOURCE_CONFIG.get("max_frame_dim", None)
         logging_error = None
         logging_config_file = self._ndu_gate_config_dir + "logs.conf"
