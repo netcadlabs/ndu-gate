@@ -17,12 +17,13 @@ class ResultHandlerSocket:
         time.sleep(.5)
         log.info("ResultHandlerSocket %s:%s", self.__socket_host, self.__socket_port)
 
-    def save_result(self, result, runner_name=None):
+    def save_result(self, result, runner_name=None, data_type='telem'):
         """
 
         :param self:
         :param result: {"key" : "telem-key", "value": 1, "ts" : timestamp }
         :param runner_name:
+        :param data_type: telem or attr
         :return:
         """
         try:
@@ -30,18 +31,18 @@ class ResultHandlerSocket:
                 for item in result:
                     data = item.get(constants.RESULT_KEY_DATA, None)
                     if data is not None:
-                        self.__send_item(data, runner_name)
+                        self.__send_item(data, runner_name, data_type)
 
         except Exception as e:
             log.error(e)
 
-    def __send_item(self, item, runner_name):
+    def __send_item(self, item, runner_name, data_type):
         print("Sending telemetry data [ %s ]" % item)
         if not item.get("ts"):
             item["ts"] = int(time.time())
         # self.socket.send_json(item)
         data = {
-            "telem": item,
+            data_type: item,
             "runner": runner_name
         }
 

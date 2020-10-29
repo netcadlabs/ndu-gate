@@ -1,5 +1,5 @@
 import cv2
-
+import base64
 
 class image_helper:
     @staticmethod
@@ -46,6 +46,11 @@ class image_helper:
         else:
             return cv2.resize(image, dim, interpolation=interpolation)
 
+    @staticmethod
+    def frame2base64(frame):
+        res, frame = cv2.imencode('.png', frame)  # from image to binary buffer
+        base64_data = base64.b64encode(frame)
+        return base64_data.decode('utf-8')
 # def select_points(frame, count, window_name):
 #     mouse_pts = []
 #

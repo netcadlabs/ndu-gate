@@ -23,7 +23,7 @@ class ResultHandlerFile(ResultHandler):
 
         log.info("ResultHandlerFile %s", self.__telemetry_file)
 
-    def save_result(self, result, runner_name=None):
+    def save_result(self, result, runner_name=None, data_type='telem'):
         """
         Verilen ölçümleri serviceTelemetry.txt dosyasına yazar.
         :param self:

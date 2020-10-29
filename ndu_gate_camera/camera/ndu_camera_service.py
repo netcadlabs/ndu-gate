@@ -95,6 +95,7 @@ class NDUCameraService:
         else:
             self.__result_handler = ResultHandlerFile(result_hand_conf.get("file_path", default_result_file_path))
 
+        self.frame_sent = False
 
         self.default_runners = DEFAULT_RUNNERS
         self.runners_configs = []
@@ -275,6 +276,15 @@ class NDUCameraService:
         for i, frame in self.video_source.get_frames():
             if i % 100 == 0:
                 log.debug("frame count %s ", i)
+
+            if not self.frame_sent and i > 2:
+                try:
+                    CAMERA_CAPTURE = image_helper.frame2base64(frame)
+                    self.__result_handler.save_result([{"data": {"CAMERA_CAPTURE": CAMERA_CAPTURE}}], data_type='attr')
+                    self.frame_sent = True
+                except Exception as e:
+                    log.exception(e)
+                    log.error("can not create CAMERA_CAPTURE")
 
             if self.__max_frame_dim is not None:
                 frame = image_helper.resize_if_larger(frame, self.__max_frame_dim)
