@@ -1,160 +1,25 @@
-#video_source:
-#  type: YOUTUBE # VIDEO_FILE, PI_CAMERA, CAMERA, IP_CAMERA, VIDEO_URL, YOUTUBE, IMAGE_FILE
-#  file_path: duygu2.mp4
-#  data_folder: /etc/ndu-gate/data/video
-#  replay: False # not implemented
-#  url: https://www.youtube.com/watch?v=3FXUw98rrUY
-#  show_preview: True
-#  cam_gear_options:
-#    CAP_PROP_FRAME_WIDTH: 320
-#    CAP_PROP_FRAME_HEIGHT: 240
-#    CAP_PROP_FPS: 10
-
 video_source:
-#  type: IMAGE_FILE # VIDEO_FILE, PI_CAMERA, CAMERA, IP_CAMERA, VIDEO_URL, YOUTUBE
-#  type: YOUTUBE
-  type: VIDEO_FILE
-#  type: CAMERA
-
-#  file_path: iett_1.avi
-#  file_path: iett_2.avi
-#  file_path: smoke_film.mp4
-#  file_path: smoke_women.mp4
-#  file_path: smoking_anti.mp4
-#  file_path: smoking.mp4
-#  file_path: smoking2.mp4
-#  file_path: duygu2.mp4
-#  file_path: crowded_720x.mp4
-#  file_path: pedestrian_survaillance.mp4
-#  file_path: vehicle_survaillance.mp4
-#  file_path: vid_short.mp4 #pedestrians
-#  file_path: çanakkale.mp4 #car - pedestrians
-#  file_path: çanakkale0.mp4 #pedestrians
-  file_path: çanakkale_yaya.mp4 #pedestrians
-#  file_path: çanakkale_araba.mp4 #pedestrians
-#  file_path: çanakkale_hızlı.mp4 #pedestrians
-
-#  image_path: _emotion.jpg
-#  image_path: _emotion_mask.jpg
-#  image_path: faces_age_gender.jpg
-  image_path: faces_age_gender2.jpg
-#  image_path: faces_age_gender3.png
-#  image_path: faces.jpg
-#  image_path: _emotion_mask2.jpg
-#  image_path: _emotion7.jpg
-
-  data_folder: /Users/korhun/Documents/test_data/
+  type: PI_CAMERA # VIDEO_FILE, PI_CAMERA, CAMERA, IP_CAMERA, VIDEO_URL, YOUTUBE
+  file_path: some_file_name.mp4 #pedestrians
+  image_path: some_image_name.jpg
+  data_folder: /folder-for-video-files
   replay: False # not implemented
-#  url: https://www.youtube.com/watch?v=3FXUw98rrUY #sahil
-#  url: https://youtu.be/8pXFktAbx5Y #kalabalık
-#  url: https://youtu.be/NyLF8nHIquM #london street
-#  url: https://youtu.be/szZWplKlQNI #istiklal
-#  url: https://youtu.be/n5b_nIzdvfI #black or white
-#  url: https://youtu.be/Xygk7UjKM2g #faces around world
-#  url: https://youtu.be/AqFWYZsOgWY #kalabalık oturanlar
-#  url: https://youtu.be/N9JtUC8hl8o #benchmark
-#  url: https://www.youtube.com/watch?v=0wNgUXGTKdg #street
-#  url: https://youtu.be/embYkODkzcs  #emotion
-#  url: https://youtu.be/LdQw8PSV2P8  #emotion
-#  url: https://www.youtube.com/watch?v=TVkrmWkDIxA  #emotion long mask
-#  url: https://www.youtube.com/watch?v=R3JK2xqYK1o  #emotion
-#  url: https://www.youtube.com/watch?v=g-dyHadto2Y  #mask
-#  url: https://youtu.be/TlInDQgg2G4  #mask
-#  url: https://youtu.be/MNn9qKG2UFI  #highway
-  show_preview: True
-  write_preview: True
-#  max_frame_dim: 1600
-  write_preview_file_name: /Users/korhun/Documents/temp/preview.mov
+  show_preview: False
+  write_preview: False
+  max_frame_dim: 
+  write_preview_file_name: /file-for-video-file-to-write.mp4
   mirror: True
-#  sleep: 0.1
+  # sleep: 0.1 # ??
   cam_gear_options:
     CAP_PROP_FRAME_WIDTH: 320
     CAP_PROP_FRAME_HEIGHT: 240
     CAP_PROP_FPS: 10
 
-
 result_handler:
   type: SOCKET # FILE, SOCKET
-  file_path: /var/lib/thingsboard_gateway/extensions/camera/
+  file_path: /folder-to-write-serviceTelemetry.txt
   socket:
     port: 60060
     host: 127.0.0.1
 
 runners:
-  - name: yolov3 - Object detection with 80 classes
-    type: yolov3
-    configuration: yolov3.json
-    class: yolov3_runner
-    priority: 10
-
-#  - name: yolov3-tiny - Fast object detection with 80 classes
-#    type: yolov3-tiny
-#    configuration: yolov3-tiny.json
-#    class: yolov3_tiny_runner
-#    priority: 10
-
-#  - name: ssd_mobilenet - Fast object detection with 80 classes
-#    type: ssd_mobilenet
-#    configuration: ssd_mobilenet.json
-#    class: ssd_mobilenet_runner
-#    priority: 10
-
-#  - name: Face Detector
-#    type: facedetector
-#    configuration: facedetector.json
-#    class: face_detector_runner
-#    priority: 10
-
-#  - name: Person Counter
-#    type: personcounter
-#    configuration: person_counter.json
-#    class: person_counter_runner
-#    priority: 100
-
-#  - name: Driver Monitor
-#    type: drivermonitor
-#    configuration: drivermonitor.json
-#    class: driver_monitor_runner
-#    priority: 100
-
-#  - name: Emotion
-#    type: emotion
-#    configuration: emotion.json
-#    class: emotion_runner
-#    priority: 100
-
-#  - name: Face Mask Detection
-#    type: facemask
-#    configuration: facemask.json
-#    class: face_mask_runner
-#    priority: 100
-
-#  - name: Social Distance
-#    type: socialdistance
-#    configuration: socialdistance.json
-#    class: social_distance_runner
-#    priority: 100
-
-#  - name: Gender and Age Detection
-#    type: gender_age
-#    configuration: gender_age.json
-#    class: gender_age_runner
-#    priority: 100
-
-  - name: Object Counter
-    type: object_counter
-    configuration: object_counter.json
-    class: object_counter_runner
-    priority: 100
-
-
-#  - name: Driver Monitor 2 with emo.conf
-#    type: drivermonitor
-#    configuration: emotionanalysis.json
-#    class: DriverMonitorRunner
-#    priority: 200
-#  - name: Emotion Analysis
-#    type: emotionanalysis
-#    configuration: emotionanalysis.json
-#    class: EmotionAnalysisRunner
-#    priority: 50

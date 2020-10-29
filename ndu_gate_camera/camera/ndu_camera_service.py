@@ -36,8 +36,7 @@ DEFAULT_RUNNERS = {
 class NDUCameraService:
     def __init__(self, ndu_gate_config_file=None):
         if ndu_gate_config_file is None:
-            ndu_gate_config_file = path.dirname(path.dirname(path.abspath(__file__))) + '/config/ndu_gate.yaml'.replace(
-                '/', path.sep)
+            ndu_gate_config_file = path.dirname(path.dirname(path.abspath(__file__))) + '/config/ndu_gate.yaml'.replace('/', path.sep)
 
         with open(ndu_gate_config_file) as general_config:
             self.__ndu_gate_config = safe_load(general_config)
@@ -47,11 +46,11 @@ class NDUCameraService:
         self.SOURCE_CONFIG = None
         if self.__ndu_gate_config.get("video_source"):
             self.SOURCE_CONFIG = self.__ndu_gate_config.get("video_source")
-            type_str = self.SOURCE_CONFIG.get("type", "CAMERA")
+            type_str = self.SOURCE_CONFIG.get("type", "PI_CAMERA")
             if VideoSourceType[type_str]:
                 self.SOURCE_TYPE = VideoSourceType[type_str]
             else:
-                self.SOURCE_TYPE = VideoSourceType.CAMERA
+                self.SOURCE_TYPE = VideoSourceType.PI_CAMERA
 
         if self.SOURCE_CONFIG.get("show_preview", None) is None:
             self.SOURCE_CONFIG["show_preview"] = NDUUtility.is_debug_mode()
@@ -279,7 +278,7 @@ class NDUCameraService:
             if i % self.frame_send_interval == 0:
                 try:
                     camera_capture_base64 = image_helper.frame2base64(frame)
-                    log.info("CAMERA_CAPTURE size : %s",len(camera_capture_base64))
+                    log.info("CAMERA_CAPTURE size : %s", len(camera_capture_base64))
                     self.__result_handler.save_result([{"data": {"CAMERA_CAPTURE": camera_capture_base64}}], data_type='attribute')
                     # self.frame_sent = True
                 except Exception as e:
