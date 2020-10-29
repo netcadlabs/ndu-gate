@@ -30,9 +30,9 @@ video_source:
 #  file_path: vid_short.mp4 #pedestrians
 #  file_path: çanakkale.mp4 #car - pedestrians
 #  file_path: çanakkale0.mp4 #pedestrians
-#  file_path: çanakkale_yaya.mp4 #pedestrians
+  file_path: çanakkale_yaya.mp4 #pedestrians
 #  file_path: çanakkale_araba.mp4 #pedestrians
-  file_path: çanakkale_hızlı.mp4 #pedestrians
+#  file_path: çanakkale_hızlı.mp4 #pedestrians
 #  file_path: çanakkale0/kavsak1.mp4 #pedestrians
 
 #  image_path: _emotion.jpg

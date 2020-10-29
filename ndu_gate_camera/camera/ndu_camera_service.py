@@ -5,6 +5,7 @@ from os import path, uname
 import logging
 import logging.config
 import logging.handlers
+
 from yaml import safe_load
 from simplejson import load
 
@@ -266,6 +267,8 @@ class NDUCameraService:
         skip = 0
         # TODO - çalıştırma sırasına göre sonuçlar bir sonraki runnera aktarılabilir
         # TODO - runner dependency ile kimin çıktısı kimn giridisi olacak şeklinde de olabilir
+
+        winname = None
         if self.__show_preview:
             winname = "ndu_gate_camera preview"
             cv2.namedWindow(winname)  # Create a named window
@@ -335,6 +338,23 @@ class NDUCameraService:
 
         if self.__write_preview and self.__out is not None:
             self.__out.release()
+            import ffmpeg
+            try:
+                # pip3 install ffmpeg-python & brew install ffmpeg
+                # daha az sıkışmış, quicktime çalamıyor
+                # ffmpeg.input(self.__write_preview_file_name) \
+                #     .output(self.__write_preview_file_name + '.mp4') \
+                #     .run(capture_stdout=True, capture_stderr=True)
+
+                # süper sıkışmış ama quicktime çalamıyor!
+                ffmpeg.input(self.__write_preview_file_name) \
+                    .output(self.__write_preview_file_name + '2.mp4', vcodec='libx265', crf=24, t=5) \
+                    .run(capture_stdout=True, capture_stderr=True)
+                # os.remove(self.__write_preview_file_name)
+            except ffmpeg.Error as e:
+                print('stdout:', e.stdout.decode('utf8'))
+                print('stderr:', e.stderr.decode('utf8'))
+                raise e
 
         # TODO - set camera_perspective
         log.info("Video source is finished")
@@ -348,6 +368,7 @@ class NDUCameraService:
                     fn = f"{filename}{i}{file_extension}"
                     i += 1
             return fn
+
         try:
             self.__out.write(frame)
         except:  # daha iyi bir yolunu bulursanız, bana da gösterin -> korhun :)
@@ -359,33 +380,34 @@ class NDUCameraService:
             self.__out.write(frame)
 
     def _get_preview(self, image, results):
-        def put_text(img, text, center, color=None, font_scale=0.5, thickness=1, back_color=[0, 0, 0]):
+        def put_text(img, text_, center, color=None, font_scale=0.5, thickness=1, back_color=None):
+            if back_color is None:
+                back_color = [0, 0, 0]
             if color is None:
                 color = [255, 255, 255]
             y = center[1]
             # font = cv2.FONT_HERSHEY_COMPLEX
             font = cv2.FONT_HERSHEY_DUPLEX
-            cv2.putText(img=img, text=text, org=(center[0] + 5, y),
+            cv2.putText(img=img, text=text_, org=(center[0] + 5, y),
                         fontFace=font, fontScale=font_scale, color=back_color, lineType=cv2.LINE_AA,
                         thickness=3 * thickness)
-            cv2.putText(img=img, text=text, org=(center[0] + 5, y),
+            cv2.putText(img=img, text=text_, org=(center[0] + 5, y),
                         fontFace=font, fontScale=font_scale, color=color,
                         lineType=cv2.LINE_AA, thickness=thickness)
 
-        def draw_rect(obj, img, c1, c2, class_preview_key):
+        def draw_rect(obj, img, c1_, c2_, class_preview_key_):
             color = [255, 255, 255]
-            if class_preview_key is not None:
+            if class_preview_key_ is not None:
                 if not hasattr(obj, "__colors"):
-                    # obj.__colors = {}
                     setattr(obj, "__colors", {})
                 dic = getattr(obj, "__colors")
-                if class_preview_key in dic:
-                    color = dic[class_preview_key]
+                if class_preview_key_ in dic:
+                    color = dic[class_preview_key_]
                 else:
-                    color = dic[class_preview_key] = [random.randint(50, 255), random.randint(50, 255), random.randint(50, 255)]
+                    color = dic[class_preview_key_] = [random.randint(50, 255), random.randint(50, 255), random.randint(50, 255)]
 
-            cv2.rectangle(img, (c1[0], c1[1]), (c2[0], c2[1]), color=[0, 0, 0], thickness=3)
-            cv2.rectangle(img, (c1[0], c1[1]), (c2[0], c2[1]), color=color, thickness=2)
+            cv2.rectangle(img, (c1_[0], c1_[1]), (c2_[0], c2_[1]), color=[0, 0, 0], thickness=3)
+            cv2.rectangle(img, (c1_[0], c1_[1]), (c2_[0], c2_[1]), color=color, thickness=2)
 
         show_debug_texts = True
         show_runner_info = False

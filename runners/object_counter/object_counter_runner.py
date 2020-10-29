@@ -226,7 +226,7 @@ class object_counter_runner(Thread, NDUCameraRunner):
                                 handled = False
                                 line = gate["line"]
                                 if self.intersect(p0, p1, line[0], line[1]):
-                                    handled = True
+                                    ######handled = True
                                     g_handled_indexes.append(index_id)
                                     classes = gate["classes"]
                                     if name not in classes:
