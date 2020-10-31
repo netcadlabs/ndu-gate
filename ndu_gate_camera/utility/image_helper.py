@@ -1,7 +1,7 @@
 import math
-
 import cv2
 import base64
+import numpy as np
 
 
 class image_helper:
@@ -63,13 +63,30 @@ class image_helper:
         h1 = w1 * h / float(w)
         return image_helper.resize_best_quality(image, (int(w1), int(h1)))
 
+
+
+
+    # OpenCV mat nesnesini base64 string yapar
+    @staticmethod
+    def to_base64(image):
+        _, buffer = cv2.imencode('.jpg', image)
+        return base64.b64encode(buffer)
+
+    # base64 string'i OpenCV mat nesnesi yapar
+    @staticmethod
+    def from_base64(base64_text):
+        original = base64.b64decode(base64_text)
+        as_np = np.frombuffer(original, dtype=np.uint8)
+        return cv2.imdecode(as_np, flags=1)
+
+
+
     @staticmethod
     def rescale_frame(frame, percent):
-        width = int(frame.shape[1] * percent / 100)
-        height = int(frame.shape[0] * percent / 100)
+        width = int(frame.shape[1] * percent / 100.0)
+        height = int(frame.shape[0] * percent / 100.0)
         dim = (width, height)
-        frame = cv2.resize(frame, dim, interpolation=cv2.INTER_AREA)
-        return frame
+        return image_helper.resize_best_quality(frame, dim)
 
     @staticmethod
     def frame2base64(frame, scale=40):

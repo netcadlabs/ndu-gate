@@ -167,6 +167,9 @@ class object_counter_runner(Thread, NDUCameraRunner):
         w1, h1 = frame.shape[:2]
         size1 = w1 * h1
 
+        txt = image_helper.to_base64(frame)
+        frame = image_helper.from_base64(txt)
+
         super().process_frame(frame)
         res = []
         if self.__classes is None:
