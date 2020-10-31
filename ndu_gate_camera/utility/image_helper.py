@@ -1,7 +1,11 @@
+import math
+
 import cv2
 import base64
 
+
 class image_helper:
+    # Boyut değişikliğine en uygun interpolation yöntemi ile resize eder.
     @staticmethod
     def resize_best_quality(image, size):
         size0 = max(image.shape[0], image.shape[1])
@@ -11,6 +15,7 @@ class image_helper:
         else:
             return cv2.resize(image, size, interpolation=cv2.INTER_CUBIC)
 
+    # İmaj boyutlarından birisi max_dim'den daha büyükse küçültür, değilse aynen döner.
     @staticmethod
     def resize_if_larger(image, max_dim, interpolation=None):
         h, w = image.shape[:2]
@@ -25,13 +30,15 @@ class image_helper:
             else:
                 return image
 
+    # 'width' veya 'height yoksa en-boy oranını koruyarak resize eder. İkisi de varsa normal resize eder.
+    # 'interpolation' yoksa en uygununu seçer.
     @staticmethod
     def resize(image, width=None, height=None, interpolation=None):
-        dim = None
-        h, w = image.shape[:2]
-
         if width is None and height is None:
             return image
+
+        h, w = image.shape[:2]
+        dim = None
         if width is None:
             r = height / float(h)
             dim = (int(w * r), height)
@@ -45,6 +52,16 @@ class image_helper:
             return image_helper.resize_best_quality(image, dim)
         else:
             return cv2.resize(image, dim, interpolation=interpolation)
+
+    # total_pixel_count sonucun width * height değeridir.
+    # int yuvarlaması yüzünden sonuç w*h değer, tam total_pixel_count olmayabilir.
+    @staticmethod
+    def resize_total_pixel_count(image, total_pixel_count):
+        h, w = image.shape[:2]
+        ratio = w / float(h)
+        w1 = math.sqrt(total_pixel_count * ratio)
+        h1 = w1 * h / float(w)
+        return image_helper.resize_best_quality(image, (int(w1), int(h1)))
 
     @staticmethod
     def rescale_frame(frame, percent):
@@ -60,29 +77,3 @@ class image_helper:
         res, frame = cv2.imencode('.png', scaled_frame)
         base64_data = base64.b64encode(frame)
         return base64_data.decode('utf-8')
-
-
-# def select_points(frame, count, window_name):
-#     mouse_pts = []
-#
-#     def get_mouse_points(event, x, y, flags, param):
-#         # global mouseX, mouseY, mouse_pts
-#         if event == cv2.EVENT_LBUTTONDOWN:
-#             if len(mouse_pts) < count:
-#                 cv2.circle(frame, (x, y), 10, (0, 255, 255), 10)
-#                 mouse_pts.append((x, y))
-#
-#     cv2.namedWindow(window_name)
-#     # cv2.namedWindow(window_name, cv2.WINDOW_AUTOSIZE)
-#     # cv2.setWindowProperty('frame', cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
-#     cv2.setMouseCallback(window_name, get_mouse_points)
-#
-#     while True:
-#         cv2.imshow(window_name, frame)
-#         cv2.waitKey(1)
-#         if len(mouse_pts) == count:
-#             cv2.imshow(window_name, frame)
-#             cv2.waitKey(1000)
-#             cv2.destroyWindow(window_name)
-#             break
-#     return mouse_pts

@@ -171,8 +171,7 @@ def associate_detections_to_trackers(detections, trackers, iou_threshold=0.3):
             matched_indices = np.stack(np.where(a), axis=1)
         else:
             matched_indices = linear_assignment(-iou_matrix)
-        # #######koray
-        # matched_indices = linear_assignment(-iou_matrix)
+        # matched_indices = linear_assignment(-iou_matrix) #######koray
     else:
         matched_indices = np.empty(shape=(0, 2))
 
@@ -193,6 +192,8 @@ def associate_detections_to_trackers(detections, trackers, iou_threshold=0.3):
             unmatched_trackers.append(m[1])
         else:
             matches.append(m.reshape(1, 2))
+        # matches.append(m.reshape(1, 2))###########koray
+
     if (len(matches) == 0):
         matches = np.empty((0, 2), dtype=int)
     else:
@@ -247,16 +248,39 @@ class Sort(object):
         i = len(self.trackers)
         for trk in reversed(self.trackers):
             d = trk.get_state()[0]
-            ################koray if (trk.time_since_update < 1) and (trk.hit_streak >= self.min_hits or self.frame_count <= self.min_hits):
-            if (trk.time_since_update < 100) and (trk.hit_streak >= self.min_hits or self.frame_count <= self.min_hits):
+            # if (trk.time_since_update < 1) and (trk.hit_streak >= self.min_hits or self.frame_count <= self.min_hits):
+            # if (trk.time_since_update < 100) and (trk.hit_streak >= self.min_hits or self.frame_count <= self.min_hits):################koray
+            if (trk.time_since_update < self.max_age) and (trk.hit_streak >= self.min_hits or self.frame_count <= self.min_hits):################koray
                 ret.append(np.concatenate((d, [trk.id + 1])).reshape(1, -1))  # +1 as MOT benchmark requires positive
-            else:
-                pass
+
             i -= 1
             # remove dead tracklet
-            ################koray if (trk.time_since_update > self.max_age):
-            if (trk.time_since_update > 100):
+            if (trk.time_since_update > self.max_age):
+            # if (trk.time_since_update > 100):################koray
                 self.trackers.pop(i)
+
+        ################koray
+        if (len(ret) > 0):
+            ret = np.concatenate(ret)
+            if len(dets) > len(ret):
+                ret = []
+                i = len(self.trackers)
+                for trk in reversed(self.trackers):
+                    d = trk.get_state()[0]
+                    if (trk.time_since_update < self.max_age) and (trk.hit_streak >= 0 or self.frame_count <= 0):  ################koray
+                        ret.append(np.concatenate((d, [trk.id + 1])).reshape(1, -1))  # +1 as MOT benchmark requires positive
+                    i -= 1
+            else:
+                return ret
+        else:
+            return np.empty((0, 5))
+
+        # if len(dets) < len(ret):################koray
+        #     aaa = dets
+        #     bbb = np.concatenate(ret)
+        #     if len(dets) < len(bbb):
+        #         aaa = bbb
+
         if (len(ret) > 0):
             return np.concatenate(ret)
         return np.empty((0, 5))

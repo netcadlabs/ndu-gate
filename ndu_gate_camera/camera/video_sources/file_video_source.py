@@ -26,9 +26,9 @@ class FileVideoSource(VideoSource):
 
         self.__mirror = source_config.get("mirror", False)
         self.__sleep = source_config.get("sleep", 0)
+        self._set_capture()
         if self.__sleep > 0:
             self._calc_skip()
-        self._set_capture()
 
     def get_frames(self):
         log.debug("start video streaming..")
@@ -86,4 +86,4 @@ class FileVideoSource(VideoSource):
     def _set_capture(self):
         if path.isfile(self.__video_path) is False:
             raise ValueError("Video file is not exist")
-        self.__capture = cap = cv2.VideoCapture(self.__video_path)
+        self.__capture = cv2.VideoCapture(self.__video_path)

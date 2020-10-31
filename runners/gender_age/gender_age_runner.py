@@ -43,6 +43,8 @@ class gender_age_runner(Thread, NDUCameraRunner):
         super().process_frame(frame)
 
         res = []
+        count_female = 0
+        count_male = 0
         results = extra_data.get("results", None)
         if results is not None:
             for runner_name, result in results.items():
@@ -124,5 +126,11 @@ class gender_age_runner(Thread, NDUCameraRunner):
                             name = "{}-{}".format(preview_key, int(predicted_age))
 
                             res.append({constants.RESULT_KEY_RECT: rect_face, constants.RESULT_KEY_CLASS_NAME: name, constants.RESULT_KEY_PREVIEW_KEY: preview_key})
+                            if predicted_gender[0] > 0.5:
+                                count_female += 1
+                            else:
+                                count_male += 1
 
+        data = {'female_count': count_female, 'male_count': count_male}
+        res.append({constants.RESULT_KEY_DATA: data})
         return res

@@ -1,16 +1,6 @@
-#video_source:
-#  type: YOUTUBE # VIDEO_FILE, PI_CAMERA, CAMERA, IP_CAMERA, VIDEO_URL, YOUTUBE, IMAGE_FILE
-#  file_path: duygu2.mp4
-#  data_folder: /etc/ndu-gate/data/video
-#  replay: False # not implemented
-#  url: https://www.youtube.com/watch?v=3FXUw98rrUY
-#  show_preview: True
-#  cam_gear_options:
-#    CAP_PROP_FRAME_WIDTH: 320
-#    CAP_PROP_FRAME_HEIGHT: 240
-#    CAP_PROP_FPS: 10
-
 video_source:
+  max_frame_dim: 1600
+
 #  type: IMAGE_FILE # VIDEO_FILE, PI_CAMERA, CAMERA, IP_CAMERA, VIDEO_URL, YOUTUBE
 #  type: YOUTUBE
   type: VIDEO_FILE
@@ -27,13 +17,17 @@ video_source:
 #  file_path: crowded_720x.mp4
 #  file_path: pedestrian_survaillance.mp4
 #  file_path: vehicle_survaillance.mp4
-#  file_path: vid_short.mp4 #pedestrians
+  file_path: vid_short.mp4 #pedestrians
 #  file_path: çanakkale.mp4 #car - pedestrians
 #  file_path: çanakkale0.mp4 #pedestrians
-  file_path: çanakkale_yaya.mp4 #pedestrians
-#  file_path: çanakkale_araba.mp4 #pedestrians
-#  file_path: çanakkale_hızlı.mp4 #pedestrians
-#  file_path: çanakkale0/kavsak1.mp4 #pedestrians
+#  file_path: çanakkale_yaya.mp4 #pedestrians
+#  file_path: çanakkale_araba.mp4 #
+#  file_path: çanakkale_hızlı.mp4 #
+#  file_path: çanakkale0/kavsak1.mp4
+#  file_path: çanakkale0/kavsak2.mp4
+#  file_path: çanakkale0/kavsak7.mp4
+#  file_path: çanakkale0/meydan2.mp4
+#  file_path: çanakkale0/yaya4.mp4
 
 #  image_path: _emotion.jpg
 #  image_path: _emotion_mask.jpg
@@ -50,7 +44,7 @@ video_source:
 #  url: https://youtu.be/8pXFktAbx5Y #kalabalık
 #  url: https://youtu.be/NyLF8nHIquM #london street
 #  url: https://youtu.be/szZWplKlQNI #istiklal
-#  url: https://youtu.be/n5b_nIzdvfI #black or white
+  url: https://youtu.be/n5b_nIzdvfI #black or white
 #  url: https://youtu.be/Xygk7UjKM2g #faces around world
 #  url: https://youtu.be/AqFWYZsOgWY #kalabalık oturanlar
 #  url: https://youtu.be/N9JtUC8hl8o #benchmark
@@ -61,33 +55,32 @@ video_source:
 #  url: https://www.youtube.com/watch?v=R3JK2xqYK1o  #emotion
 #  url: https://www.youtube.com/watch?v=g-dyHadto2Y  #mask
 #  url: https://youtu.be/TlInDQgg2G4  #mask
-  url: https://youtu.be/MNn9qKG2UFI  #highway
+#  url: https://youtu.be/MNn9qKG2UFI  #highway
   show_preview: True
-  write_preview: True
-  max_frame_dim: 1600
+#  write_preview: True
   write_preview_file_name: /Users/korhun/Documents/temp/preview.mov
   mirror: True
-#  sleep: 0.1
+  sleep: 1
   cam_gear_options:
     CAP_PROP_FRAME_WIDTH: 320
     CAP_PROP_FRAME_HEIGHT: 240
     CAP_PROP_FPS: 10
 
 
-#result_handler:
-#  type: SOCKET # FILE, SOCKET
-#  file_path: /var/lib/thingsboard_gateway/extensions/camera/
-#  socket:
-#    port: 60060
-#    host: 127.0.0.1
-
-#koray
 result_handler:
-  type: FILE
-  file_path: /Users/korhun/Documents/temp/
+  type: SOCKET # FILE, SOCKET
+  file_path: /var/lib/thingsboard_gateway/extensions/camera/
   socket:
     port: 60060
     host: 127.0.0.1
+
+##koray
+#result_handler:
+#  type: FILE
+#  file_path: /Users/korhun/Documents/temp/
+#  socket:
+#    port: 60060
+#    host: 127.0.0.1
 
 runners:
   - name: yolov3 - Object detection with 80 classes

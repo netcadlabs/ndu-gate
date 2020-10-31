@@ -341,16 +341,16 @@ class NDUCameraService:
             import ffmpeg
             try:
                 # pip3 install ffmpeg-python & brew install ffmpeg
-                # daha az sıkışmış, quicktime çalamıyor
-                # ffmpeg.input(self.__write_preview_file_name) \
-                #     .output(self.__write_preview_file_name + '.mp4') \
-                #     .run(capture_stdout=True, capture_stderr=True)
-
-                # süper sıkışmış ama quicktime çalamıyor!
+                # daha az sıkışmış, quicktime çalabiliyor
                 ffmpeg.input(self.__write_preview_file_name) \
-                    .output(self.__write_preview_file_name + '2.mp4', vcodec='libx265', crf=24, t=5) \
+                    .output(self.__write_preview_file_name + '.mp4') \
                     .run(capture_stdout=True, capture_stderr=True)
-                # os.remove(self.__write_preview_file_name)
+
+                # # süper sıkışmış ama quicktime çalamıyor!
+                # ffmpeg.input(self.__write_preview_file_name) \
+                #     .output(self.__write_preview_file_name + '2.mp4', vcodec='libx265', crf=24, t=5) \
+                #     .run(capture_stdout=True, capture_stderr=True)
+                # # os.remove(self.__write_preview_file_name)
             except ffmpeg.Error as e:
                 print('stdout:', e.stdout.decode('utf8'))
                 print('stderr:', e.stderr.decode('utf8'))
