@@ -7,3 +7,4 @@ vidgear
 pyzmq
 PyYAML
 simplejson
+picamera
