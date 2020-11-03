@@ -1,4 +1,5 @@
 import math
+import sys
 
 import numpy as np
 import cv2
@@ -7,6 +8,8 @@ from threading import Thread
 
 from ndu_gate_camera.api.ndu_camera_runner import NDUCameraRunner
 from ndu_gate_camera.utility import constants
+from ndu_gate_camera.utility.geometry_helper import geometry_helper
+from ndu_gate_camera.utility.image_helper import image_helper
 from sort import Sort
 
 
@@ -18,6 +21,7 @@ class object_counter_runner(Thread, NDUCameraRunner):
         self.__frame_num = 0
         self.__gates = []
         self.__last_data = {}
+        self.__debug = True  ####koray
 
     def get_name(self):
         return "object_counter_runner"
@@ -25,48 +29,6 @@ class object_counter_runner(Thread, NDUCameraRunner):
     def get_settings(self):
         settings = {}
         return settings
-
-    @staticmethod
-    def _select_lines(frame, window_name):
-        lines = []
-        line = []
-
-        def get_mouse_points(event, x, y, _flags, _param):
-            if event == cv2.EVENT_LBUTTONDOWN:
-                if len(line) < 2:
-                    cv2.circle(frame, (x, y), 10, (0, 255, 255), 10)
-                    line.append((x, y))
-
-        cv2.namedWindow(window_name)
-        cv2.moveWindow(window_name, 40, 30)
-        cv2.setMouseCallback(window_name, get_mouse_points)
-
-        while True:
-            for ln in lines:
-                pts = np.array(ln, np.int32)
-                cv2.polylines(frame, [pts], True, (0, 255, 255), thickness=4)
-
-            cv2.imshow(window_name, frame)
-            k = cv2.waitKey(1)
-            if k & 0xFF == ord("s"):
-                cv2.destroyWindow(window_name)
-                break
-            if len(line) == 2:
-                lines.append(line)
-                line = []
-
-        return lines
-
-    @staticmethod
-    def put_text(img, text, center, color=None, font_scale=0.5):
-        if color is None:
-            color = [255, 255, 255]
-        cv2.putText(img=img, text=text, org=(int(center[0]) + 5, int(center[1])),
-                    fontFace=cv2.FONT_HERSHEY_DUPLEX, fontScale=font_scale, color=[0, 0, 0], lineType=cv2.LINE_AA,
-                    thickness=2)
-        cv2.putText(img=img, text=text, org=(int(center[0]) + 5, int(center[1])),
-                    fontFace=cv2.FONT_HERSHEY_DUPLEX, fontScale=font_scale, color=color,
-                    lineType=cv2.LINE_AA, thickness=1)
 
     @staticmethod
     def intersect(a, b, c, d):
@@ -132,10 +94,6 @@ class object_counter_runner(Thread, NDUCameraRunner):
         return (x + w / 2, y + h / 2)
 
     @staticmethod
-    def distance(p1, p2):
-        return math.sqrt((p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2)
-
-    @staticmethod
     def on_left(line, p):
         ax = line[0][0]
         ay = line[0][1]
@@ -158,18 +116,30 @@ class object_counter_runner(Thread, NDUCameraRunner):
         line[0] = rotate_point(line[0], deg, center)
         line[1] = rotate_point(line[1], deg, center)
 
+    ######koray  sil
+    @staticmethod
+    def _get_tur_name(class_name):
+        if class_name == "person":
+            class_name = "insan"
+
+        elif class_name == "car":
+            class_name = "otomobil"
+
+        elif class_name == "bicycle":
+            class_name = "bisiklet"
+
+        elif class_name == "motorbike":
+            class_name = "motosiklet"
+
+        elif class_name == "truck":
+            class_name = "kamyon"
+
+        elif class_name == "bus":
+            class_name = "otobus"
+
+        return class_name
+
     def process_frame(self, frame, extra_data=None):
-
-        w, h = frame.shape[:2]
-        new_size = 1024*768
-        from ndu_gate_camera.utility.image_helper import image_helper
-        frame = image_helper.resize_total_pixel_count(frame, new_size)
-        w1, h1 = frame.shape[:2]
-        size1 = w1 * h1
-
-        txt = image_helper.to_base64(frame)
-        frame = image_helper.from_base64(txt)
-
         super().process_frame(frame)
         res = []
         if self.__classes is None:
@@ -177,8 +147,11 @@ class object_counter_runner(Thread, NDUCameraRunner):
 
         self.__frame_num += 1
         if len(self.__gates) == 0 and self.__frame_num == 1:
-            lines = self._select_lines(frame, self.get_name())
-            # lines = [[(622, 520), (167, 500)], [(907, 535), (670, 535)], [(1468, 717), (1201, 492)]]
+            lines = image_helper.select_lines(frame, self.get_name())
+            # lines = [[(655, 497), (144, 371)]]  # vid_short.mp4
+            # lines = [[(382, 434), (1184, 362)]]  # yaya4.mp4
+            # lines = [[(75, 423), (1006, 278)]]  # araba2.mp4
+            # lines = [[(425, 1074), (259, 695)], [(1161, 611), (1552, 688)]]  # meydan2.mp4
             ln_counter = 0
             for line in lines:
                 ln_counter += 1
@@ -188,23 +161,35 @@ class object_counter_runner(Thread, NDUCameraRunner):
 
         for gate in self.__gates:
             line = gate["line"]
-            name = gate["name"]
-            pts = np.array(
-                line, np.int32
-            )
-            cv2.polylines(frame, [pts], True, (0, 255, 255), thickness=4)
-            center = self.get_center(line)
-            self.put_text(frame, name, center, color=(0, 255, 255), font_scale=0.75)
+            gate_name = gate["name"]
+            pts = np.array(line, np.int32)
 
-            p0 = center
-            p1 = [line[1][0], line[1][1]]
-            p1[0] = p0[0] + (p1[0] - p0[0]) * 0.2
-            p1[1] = p0[1] + (p1[1] - p0[1]) * 0.2
-            arrow = [p0, p1]
-            self.rotate_line(arrow, arrow[0], -90)
-            cv2.arrowedLine(frame, arrow[0], arrow[1], (0, 0, 0), thickness=3)
-            cv2.arrowedLine(frame, arrow[0], arrow[1], (0, 200, 200), thickness=2)
-            self.put_text(frame, "giris", arrow[1], color=(0, 200, 200), font_scale=0.5)
+            if self.__frame_num == 1:
+                for group_name, sub_classes in self.__classes.items():
+                    for class_name in sub_classes:
+                        ######koray  sil
+                        class_name = self._get_tur_name(class_name)
+
+                        telemetry_enter = gate_name + "_" + class_name + "_giris"
+                        telemetry_exit = gate_name + "_" + class_name + "_cikis"
+                        telemetry_inside = gate_name + "_" + class_name + "_iceridekiler"
+                        data = {telemetry_enter: 0, telemetry_exit: 0, telemetry_inside: 0}
+                        res.append({constants.RESULT_KEY_DATA: data})
+
+            if self.__debug:
+                center = self.get_center(line)
+                cv2.polylines(frame, [pts], True, (0, 255, 255), thickness=4)
+                image_helper.put_text(frame, gate_name, center, color=(0, 255, 255), font_scale=0.75)
+
+                p0 = center
+                p1 = [line[1][0], line[1][1]]
+                p1[0] = p0[0] + (p1[0] - p0[0]) * 0.2
+                p1[1] = p0[1] + (p1[1] - p0[1]) * 0.2
+                arrow = [p0, p1]
+                self.rotate_line(arrow, arrow[0], -90)
+                cv2.arrowedLine(frame, arrow[0], arrow[1], (0, 0, 0), thickness=3)
+                cv2.arrowedLine(frame, arrow[0], arrow[1], (0, 200, 200), thickness=2)
+                image_helper.put_text(frame, "giris", arrow[1], color=(0, 200, 200), font_scale=0.5)
 
         box_class_names = []
         active_counts = {}
@@ -226,23 +211,7 @@ class object_counter_runner(Thread, NDUCameraRunner):
                                 class_dets[group_name].append(det)
 
                                 ######koray  sil
-                                if class_name == "person":
-                                    class_name = "insan"
-
-                                if class_name == "car":
-                                    class_name = "otomobil"
-
-                                if class_name == "bicycle":
-                                    class_name = "bisiklet"
-
-                                if class_name == "motorbike":
-                                    class_name = "motosiklet"
-
-                                if class_name == "truck":
-                                    class_name = "kamyon"
-
-                                if class_name == "bus":
-                                    class_name = "otobus"
+                                class_name = self._get_tur_name(class_name)
 
                                 box_class_names.append({"center": self.get_box_center(det), "class_name": class_name})
 
@@ -279,7 +248,6 @@ class object_counter_runner(Thread, NDUCameraRunner):
                         track0 = previous[index_id]
                         dist = (math.fabs(track[0] - track0[0]) + math.fabs(track[1] - track0[1]) + math.fabs(track[2] - track0[2]) + math.fabs(track[3] - track0[3])) / 4.0
                         if dist > 30:
-                            # if False: #########
                             g_memory[index_id] = boxes[-1]
                         else:
                             g_memory[index_id] = track0
@@ -307,8 +275,9 @@ class object_counter_runner(Thread, NDUCameraRunner):
                                 # p0 = (int(x + (w - x) / 2), int(y + (h - y)))
                                 # p1 = (int(x2 + (w2 - x2) / 2), int(y2 + (h2 - y2)))
 
-                                # cv2.line(frame, p0, p1, [0, 0, 255], 3)
-                                # # cv2.line(frame, p0, p0, [0, 0, 255], 3)
+                                # if self.__debug:
+                                #     # cv2.line(frame, p0, p1, [0, 0, 255], 3)
+                                #     cv2.line(frame, p0, p0, [0, 0, 255], 4)
 
                                 handled = False
                                 line = gate["line"]
@@ -319,11 +288,11 @@ class object_counter_runner(Thread, NDUCameraRunner):
                                     classes = gate["classes"]
 
                                     c = self.get_box_center(box)
-                                    min_dist = 9999999999
+                                    min_dist = sys.maxsize
                                     # box_class_names.append({"center": self.get_box_center(det), "class_name": class_name})
                                     for item in box_class_names:
                                         c0 = item["center"]
-                                        dist = self.distance(c, c0)
+                                        dist = geometry_helper.distance(c, c0)
                                         if dist < min_dist:
                                             min_dist = dist
                                             name = item["class_name"]
@@ -345,37 +314,52 @@ class object_counter_runner(Thread, NDUCameraRunner):
             g["handled_indexes"] = g_handled_indexes
             gate["g"] = g
 
-        debug_texts = []
+        debug_texts = debug_text = None
+        if self.__debug:
+            debug_texts = []
         for gate in self.__gates:
+            gate_name = gate["name"]
+            all_inside = 0
+            all_enter = 0
+            all_exit = 0
+            changed = False
             for name, val in gate["classes"].items():
-                gate_name = gate["name"]
-                debug_text = gate_name + ": "
+                if self.__debug:
+                    debug_text = gate_name + ": "
 
                 enter_val = val["enter"]
                 exit_val = val["exit"]
-                debug_text += f"{name} - Giren:{enter_val} Cikan:{exit_val}"
-
-                debug_texts.append(debug_text)
-
+                count_val = enter_val - exit_val
+                all_inside += count_val
+                all_enter += enter_val
+                all_exit += exit_val
+                if self.__debug:
+                    debug_text += f"{name} - Giren:{enter_val} Cikan:{exit_val}"
+                    debug_texts.append(debug_text)
 
                 data_val = str(enter_val) + "_" + str(exit_val)
-                changed = False
                 if name not in self.__last_data or not self.__last_data[name] == data_val:
                     self.__last_data[name] = data_val
                     changed = True
-                if changed:
                     telemetry_enter = gate_name + "_" + name + "_giris"
                     telemetry_exit = gate_name + "_" + name + "_cikis"
-                    data = {telemetry_enter: enter_val, telemetry_exit: exit_val}
+                    telemetry_inside = gate_name + "_" + name + "_iceridekiler"
+                    data = {telemetry_enter: enter_val, telemetry_exit: exit_val, telemetry_inside: count_val}
                     res.append({constants.RESULT_KEY_DATA: data})
+            if changed:
+                telemetry_inside = gate_name + "_iceridekiler"
+                telemetry_enter = gate_name + "_giren"
+                telemetry_exit = gate_name + "_cikan"
+                data = {telemetry_inside: all_inside, telemetry_enter: all_enter, telemetry_exit: all_exit}
+                res.append({constants.RESULT_KEY_DATA: data})
 
-        for name, value in active_counts.items():
-            debug_texts.append(f"gorunen '{name}': {value}")
+        if self.__debug:
+            for name, value in active_counts.items():
+                debug_texts.append(f"gorunen '{name}': {value}")
 
-        for debug_text in debug_texts:
-            # res.append({constants.RESULT_KEY_DEBUG: debug_text})
-            res.append({constants.RESULT_KEY_DEBUG: debug_text})
-
+            for debug_text in debug_texts:
+                # res.append({constants.RESULT_KEY_DEBUG: debug_text})
+                res.append({constants.RESULT_KEY_DEBUG: debug_text})
 
         # res.append({constants.RESULT_KEY_RECT: rect_face, constants.RESULT_KEY_CLASS_NAME: name, constants.RESULT_KEY_PREVIEW_KEY: preview_key})
         return res

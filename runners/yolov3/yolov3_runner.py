@@ -15,7 +15,7 @@ class yolov3_runner(NDUCameraRunner):
         self.input_size = config.get("input_size", 416)
 
         # self.input_size = 256 ####koray sil
-        # self.input_size = 1024 ####koray sil
+        self.input_size = 1024 ####koray sil
 
         self.onnx_fn = config.get("onnx_fn", "yolov3.onnx")
         if not os.path.isfile(self.onnx_fn):

@@ -282,7 +282,8 @@ class NDUCameraService:
                 try:
                     camera_capture_base64 = image_helper.frame2base64(frame)
                     log.info("CAMERA_CAPTURE size : %s", len(camera_capture_base64))
-                    self.__result_handler.save_result([{"data": {"CAMERA_CAPTURE": camera_capture_base64}}], data_type='attribute')
+                    # TODO - bir ayar üzerinde enable-disable olabilir..
+                    #self.__result_handler.save_result([{"data": {"CAMERA_CAPTURE": camera_capture_base64}}], data_type='attribute')
                     # self.frame_sent = True
                 except Exception as e:
                     log.exception(e)
@@ -380,21 +381,6 @@ class NDUCameraService:
             self.__out.write(frame)
 
     def _get_preview(self, image, results):
-        def put_text(img, text_, center, color=None, font_scale=0.5, thickness=1, back_color=None):
-            if back_color is None:
-                back_color = [0, 0, 0]
-            if color is None:
-                color = [255, 255, 255]
-            y = center[1]
-            # font = cv2.FONT_HERSHEY_COMPLEX
-            font = cv2.FONT_HERSHEY_DUPLEX
-            cv2.putText(img=img, text=text_, org=(center[0] + 5, y),
-                        fontFace=font, fontScale=font_scale, color=back_color, lineType=cv2.LINE_AA,
-                        thickness=3 * thickness)
-            cv2.putText(img=img, text=text_, org=(center[0] + 5, y),
-                        fontFace=font, fontScale=font_scale, color=color,
-                        lineType=cv2.LINE_AA, thickness=thickness)
-
         def draw_rect(obj, img, c1_, c2_, class_preview_key_):
             color = [255, 255, 255]
             if class_preview_key_ is not None:
@@ -428,7 +414,7 @@ class NDUCameraService:
                     if show_runner_info:
                         total_elapsed_time = item.get("total_elapsed_time", None)
                         if total_elapsed_time is not None:
-                            put_text(image, total_elapsed_time, [w - 100, h - 30], color=[200, 200, 128], font_scale=0.4)
+                            image_helper.put_text(image, total_elapsed_time, [w - 100, h - 30], color=[200, 200, 128], font_scale=0.4)
                             continue
 
                     values = {}
@@ -462,9 +448,9 @@ class NDUCameraService:
                         c = np.array(rect[:4], dtype=np.int32)
                         c1, c2 = [c[1], c[0]], (c[3], c[2])
                         draw_rect(self, image, c1, c2, class_preview_key)
-                        if len(text) > 0:
+                        if show_runner_info and len(text) > 0:
                             c1[1] = c1[1] + line_height
-                            put_text(image, text, c1)
+                            image_helper.put_text(image, text, c1)
                             text = ""
                     if elapsed_time is not None:
                         text_type = elapsed_time + " " + text_type
@@ -472,24 +458,25 @@ class NDUCameraService:
                         text_type = text_type + text + " "
                 if show_runner_info and len(text_type) > 0:
                     current_line[1] += line_height
-                    if not has_data:
-                        put_text(image, text_type, current_line, font_scale=font_scale)
-                    else:
-                        put_text(image, text_type, current_line, color=[0, 0, 255], font_scale=font_scale)
+                    if show_runner_info:
+                        if not has_data:
+                            image_helper.put_text(image, text_type, current_line, font_scale=font_scale)
+                        else:
+                            image_helper.put_text(image, text_type, current_line, color=[0, 0, 255], font_scale=font_scale)
                 if show_debug_texts and len(debug_texts) > 0:
                     for debug_text in debug_texts:
                         current_line_bottom[1] -= line_height * 2
-                        put_text(image, debug_text, current_line_bottom, color=[255, 250, 99], font_scale=font_scale * 2.75, thickness=2, back_color=[0, 0, 0])
+                        image_helper.put_text(image, debug_text, current_line_bottom, color=[255, 250, 99], font_scale=font_scale * 2.75, thickness=2, back_color=[0, 0, 0])
 
         if len(data_added) > 0:
             self.__last_data = data_added
             self.__last_data_count = 15
         else:
-            if self.__last_data_count > 0:
+            if show_runner_info and self.__last_data_count > 0:
                 self.__last_data_count -= 1
                 for last_data in self.__last_data:
                     current_line[1] += line_height
-                    put_text(image, last_data, current_line, color=[0, 255, 255])
+                    image_helper.put_text(image, last_data, current_line, color=[0, 255, 255])
 
         return image
 

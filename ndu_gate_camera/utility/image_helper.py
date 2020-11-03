@@ -63,9 +63,6 @@ class image_helper:
         h1 = w1 * h / float(w)
         return image_helper.resize_best_quality(image, (int(w1), int(h1)))
 
-
-
-
     # OpenCV mat nesnesini base64 string yapar
     @staticmethod
     def to_base64(image):
@@ -79,7 +76,149 @@ class image_helper:
         as_np = np.frombuffer(original, dtype=np.uint8)
         return cv2.imdecode(as_np, flags=1)
 
+    @staticmethod
+    def fill_polyline_transparent(image, pnts, color, opacity, thickness=-1):
+        blk = np.zeros(image.shape, np.uint8)
+        cv2.drawContours(blk, pnts, -1, color, -1)
+        if thickness >= 0:
+            cv2.polylines(image, pnts, True, color=color, thickness=thickness)
+        res = cv2.addWeighted(image, 1.0, blk, 0.1, 0)
+        cv2.copyTo(res, None, image)
 
+    @staticmethod
+    def select_areas(frame, window_name, color=(0, 0, 255), opacity=0.3, thickness=4, max_count=None, next_area_key="n", finish_key="s"):
+        try:
+            areas = []
+            area = []
+
+            def get_mouse_points(event, x, y, _flags, _param):
+                if event == cv2.EVENT_LBUTTONDOWN:
+                    area.append((x, y))
+
+            cv2.namedWindow(window_name)
+            cv2.moveWindow(window_name, 40, 30)
+            cv2.setMouseCallback(window_name, get_mouse_points)
+
+            new_area = False
+            while True:
+                image = frame.copy()
+                for area1 in areas:
+                    pts = np.array(area1, np.int32)
+                    image_helper.fill_polyline_transparent(image, [pts], color=color, opacity=opacity, thickness=thickness)
+
+                if not new_area:
+                    if len(area) > 0:
+                        pts = np.array(area, np.int32)
+                        image_helper.fill_polyline_transparent(image, [pts], color=color, opacity=opacity, thickness=thickness)
+                        for pnt in area:
+                            cv2.circle(image, pnt, thickness * 2, color, thickness)
+                else:
+                    if len(area) > 2:
+                        areas.append(area)
+                    if max_count is not None and len(areas) == max_count:
+                        return areas
+                    else:
+                        area = []
+                        new_area = False
+
+                cv2.imshow(window_name, image)
+                k = cv2.waitKey(1)
+                if k & 0xFF == ord(finish_key):
+                    break
+                elif k & 0xFF == ord(next_area_key):
+                    new_area = True
+
+            if len(area) > 2:
+                areas.append(area)
+            return areas
+        finally:
+            cv2.destroyWindow(window_name)
+
+    @staticmethod
+    def select_lines(frame, window_name, color=(0, 255, 255), thickness=4, max_count=None, finish_key="s"):
+        try:
+            lines = []
+            line = []
+
+            def get_mouse_points(event, x, y, _flags, _param):
+                if event == cv2.EVENT_LBUTTONDOWN:
+                    line.append((x, y))
+
+            cv2.namedWindow(window_name)
+            cv2.moveWindow(window_name, 40, 30)
+            cv2.setMouseCallback(window_name, get_mouse_points)
+
+            while True:
+                image = frame.copy()
+                for line1 in lines:
+                    pts = np.array(line1, np.int32)
+                    cv2.polylines(image, [pts], False, color=color, thickness=thickness)
+                for pnt in line:
+                    cv2.circle(image, pnt, thickness * 2, color, thickness)
+                if len(line) == 2:
+                    lines.append(line)
+                    if max_count is not None and len(lines) == max_count:
+                        return lines
+                    else:
+                        line = []
+
+                cv2.imshow(window_name, image)
+                k = cv2.waitKey(1)
+                if k & 0xFF == ord(finish_key):
+                    break
+
+            return lines
+        finally:
+            cv2.destroyWindow(window_name)
+
+        #
+        #
+        #
+        # lines = []
+        # line = []
+        #
+        # def get_mouse_points(event, x, y, _flags, _param):
+        #     if event == cv2.EVENT_LBUTTONDOWN:
+        #         if len(line) < 2:
+        #             cv2.circle(frame, (x, y), 10, (0, 255, 255), 10)
+        #             line.append((x, y))
+        #
+        # cv2.namedWindow(window_name)
+        # cv2.moveWindow(window_name, 40, 30)
+        # cv2.setMouseCallback(window_name, get_mouse_points)
+        #
+        # while True:
+        #     for ln in lines:
+        #         pts = np.array(ln, np.int32)
+        #         cv2.polylines(frame, [pts], True, (0, 255, 255), thickness=4)
+        #
+        #     cv2.imshow(window_name, frame)
+        #     k = cv2.waitKey(1)
+        #     if k & 0xFF == ord("s"):
+        #         cv2.destroyWindow(window_name)
+        #         break
+        #     if len(line) == 2:
+        #         lines.append(line)
+        #         line = []
+        #
+        # return lines
+
+    @staticmethod
+    def put_text(img, text_, center, color=None, font_scale=0.5, thickness=1, back_color=None):
+        if back_color is None:
+            back_color = [0, 0, 0]
+        if color is None:
+            color = [255, 255, 255]
+        y = center[1]
+        # font = cv2.FONT_HERSHEY_COMPLEX
+        font = cv2.FONT_HERSHEY_DUPLEX
+        coor = (int(center[0] + 5), int(y))
+        cv2.putText(img=img, text=text_, org=coor,
+                    fontFace=font, fontScale=font_scale, color=back_color, lineType=cv2.LINE_AA,
+                    thickness=thickness + 2)
+        cv2.putText(img=img, text=text_, org=coor,
+                    fontFace=font, fontScale=font_scale, color=color,
+                    lineType=cv2.LINE_AA, thickness=thickness)
 
     @staticmethod
     def rescale_frame(frame, percent):

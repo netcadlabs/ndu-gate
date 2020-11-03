@@ -1,0 +1,10 @@
+{
+  "classes": [
+    "person",
+    "car",
+    "bicycle",
+    "motorbike",
+    "truck",
+    "bus"
+  ]
+}
