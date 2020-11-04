@@ -59,9 +59,10 @@ class NDUCameraService:
         self.__show_preview = self.SOURCE_CONFIG.get("show_preview", False)
         self.__write_preview = self.SOURCE_CONFIG.get("write_preview", False)
         self.__last_data = []
-        self.__last_data_count = 0
+        self.__last_data_show_count = 0
         self.__write_preview_file_name = self.SOURCE_CONFIG.get("write_preview_file_name", "")
         self.__max_frame_dim = self.SOURCE_CONFIG.get("max_frame_dim", None)
+        self.__min_frame_dim = self.SOURCE_CONFIG.get("min_frame_dim", None)
         logging_error = None
         logging_config_file = self._ndu_gate_config_dir + "logs.conf"
         try:
@@ -265,6 +266,7 @@ class NDUCameraService:
             exit(102)
         start_total = None
         skip = 0
+        pause = False
         # TODO - çalıştırma sırasına göre sonuçlar bir sonraki runnera aktarılabilir
         # TODO - runner dependency ile kimin çıktısı kimn giridisi olacak şeklinde de olabilir
 
@@ -283,7 +285,7 @@ class NDUCameraService:
                     camera_capture_base64 = image_helper.frame2base64(frame)
                     log.info("CAMERA_CAPTURE size : %s", len(camera_capture_base64))
                     # TODO - bir ayar üzerinde enable-disable olabilir..
-                    #self.__result_handler.save_result([{"data": {"CAMERA_CAPTURE": camera_capture_base64}}], data_type='attribute')
+                    # self.__result_handler.save_result([{"data": {"CAMERA_CAPTURE": camera_capture_base64}}], data_type='attribute')
                     # self.frame_sent = True
                 except Exception as e:
                     log.exception(e)
@@ -291,6 +293,8 @@ class NDUCameraService:
 
             if self.__max_frame_dim is not None:
                 frame = image_helper.resize_if_larger(frame, self.__max_frame_dim)
+            if self.__min_frame_dim is not None:
+                frame = image_helper.resize_if_smaller(frame, self.__min_frame_dim)
 
             results = []
             if skip <= 0:
@@ -327,11 +331,20 @@ class NDUCameraService:
                     results.append([{"total_elapsed_time": f'{total_elapsed_time * 1000:.0f}msec'}])
                     preview = self._get_preview(frame, results)
                 cv2.imshow(winname, preview)
-                k = cv2.waitKey(1)
-                if k & 0xFF == ord("q"):
-                    break
-                if k & 0xFF == ord("s"):
-                    skip = 10
+                # while True:
+                #     k = cv2.waitKey(100) & 0xFF
+                #     print(k)
+                while True:
+                    k = cv2.waitKey(1) & 0xFF
+                    if k == ord("q"):
+                        break
+                    elif k == ord("s"):
+                        skip = 10
+                    elif k == 32:  # space key
+                        pause = not pause
+                    if not pause:
+                        break
+
                 if self.__write_preview:
                     self._write_frame(preview)
             elif self.__write_preview:
@@ -395,6 +408,7 @@ class NDUCameraService:
             cv2.rectangle(img, (c1_[0], c1_[1]), (c2_[0], c2_[1]), color=[0, 0, 0], thickness=3)
             cv2.rectangle(img, (c1_[0], c1_[1]), (c2_[0], c2_[1]), color=color, thickness=2)
 
+        #####koray show_debug_texts = show_runner_info = show_score = True
         show_debug_texts = False
         show_runner_info = False
         show_score = False
@@ -470,13 +484,12 @@ class NDUCameraService:
 
         if len(data_added) > 0:
             self.__last_data = data_added
-            self.__last_data_count = 15
-        else:
-            if show_runner_info and self.__last_data_count > 0:
-                self.__last_data_count -= 1
-                for last_data in self.__last_data:
-                    current_line[1] += line_height
-                    image_helper.put_text(image, last_data, current_line, color=[0, 255, 255])
+            self.__last_data_show_count = 30
+        if show_runner_info and self.__last_data_show_count > 0:
+            self.__last_data_show_count -= 1
+            for last_data in self.__last_data:
+                current_line[1] += line_height
+                image_helper.put_text(image, last_data, current_line, color=[0, 255, 255])
 
         return image
 

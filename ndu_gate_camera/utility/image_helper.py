@@ -30,6 +30,21 @@ class image_helper:
             else:
                 return image
 
+    # İmaj boyutlarından "büyük olan" min_dim'den daha küçükse resize edilir, değilse aynen döner.
+    @staticmethod
+    def resize_if_smaller(image, min_dim, interpolation=None):
+        h, w = image.shape[:2]
+        if w > h:
+            if w < min_dim:
+                return image_helper.resize(image, width=min_dim)
+            else:
+                return image
+        else:
+            if h < min_dim:
+                return image_helper.resize(image, height=min_dim)
+            else:
+                return image
+
     # 'width' veya 'height yoksa en-boy oranını koruyarak resize eder. İkisi de varsa normal resize eder.
     # 'interpolation' yoksa en uygununu seçer.
     @staticmethod
@@ -171,37 +186,32 @@ class image_helper:
         finally:
             cv2.destroyWindow(window_name)
 
-        #
-        #
-        #
-        # lines = []
-        # line = []
-        #
-        # def get_mouse_points(event, x, y, _flags, _param):
-        #     if event == cv2.EVENT_LBUTTONDOWN:
-        #         if len(line) < 2:
-        #             cv2.circle(frame, (x, y), 10, (0, 255, 255), 10)
-        #             line.append((x, y))
-        #
-        # cv2.namedWindow(window_name)
-        # cv2.moveWindow(window_name, 40, 30)
-        # cv2.setMouseCallback(window_name, get_mouse_points)
-        #
-        # while True:
-        #     for ln in lines:
-        #         pts = np.array(ln, np.int32)
-        #         cv2.polylines(frame, [pts], True, (0, 255, 255), thickness=4)
-        #
-        #     cv2.imshow(window_name, frame)
-        #     k = cv2.waitKey(1)
-        #     if k & 0xFF == ord("s"):
-        #         cv2.destroyWindow(window_name)
-        #         break
-        #     if len(line) == 2:
-        #         lines.append(line)
-        #         line = []
-        #
-        # return lines
+    @staticmethod
+    def select_points(frame, window_name, color=(0, 255, 255), radius=8, thickness=4, max_count=None, finish_key="s"):
+        try:
+            pnts = []
+
+            def get_mouse_points(event, x, y, _flags, _param):
+                if event == cv2.EVENT_LBUTTONDOWN:
+                    pnts.append((x, y))
+
+            cv2.namedWindow(window_name)
+            cv2.moveWindow(window_name, 40, 30)
+            cv2.setMouseCallback(window_name, get_mouse_points)
+
+            while True:
+                image = frame.copy()
+                for pnt in pnts:
+                    cv2.circle(image, pnt, radius, color, thickness)
+                cv2.imshow(window_name, image)
+                k = cv2.waitKey(1)
+                if k & 0xFF == ord(finish_key):
+                    break
+                if max_count is not None and max_count <= len(pnts):
+                    break
+            return pnts
+        finally:
+            cv2.destroyWindow(window_name)
 
     @staticmethod
     def put_text(img, text_, center, color=None, font_scale=0.5, thickness=1, back_color=None):

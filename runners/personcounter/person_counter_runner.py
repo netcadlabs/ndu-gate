@@ -26,7 +26,7 @@ class person_counter_runner(Thread, NDUCameraRunner):
         settings = {}
         return settings
 
-    def process_frame(self, frame, extra_data):
+    def process_frame(self, frame, extra_data=None):
         super().process_frame(frame)
 
         person_count = 0

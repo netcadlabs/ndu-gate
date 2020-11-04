@@ -128,3 +128,26 @@ class NDUUtility:
     def is_debug_mode():
         get_trace = getattr(sys, 'gettrace', None)
         return get_trace is not None
+
+    # sadece preview/debug için kullanılmalıdır.
+    @staticmethod
+    def debug_conv_turkish(class_name):
+        if class_name == "person":
+            class_name = "insan"
+
+        elif class_name == "car":
+            class_name = "otomobil"
+
+        elif class_name == "bicycle":
+            class_name = "bisiklet"
+
+        elif class_name == "motorbike":
+            class_name = "motosiklet"
+
+        elif class_name == "truck":
+            class_name = "kamyon"
+
+        elif class_name == "bus":
+            class_name = "otobus"
+
+        return class_name

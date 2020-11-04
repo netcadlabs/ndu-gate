@@ -1,5 +1,6 @@
 video_source:
 #  max_frame_dim: 1600
+#  min_frame_dim: 1024
 
 #  type: IMAGE_FILE # VIDEO_FILE, PI_CAMERA, CAMERA, IP_CAMERA, VIDEO_URL, YOUTUBE
 #  type: YOUTUBE
@@ -31,9 +32,10 @@ video_source:
 #  file_path: çanakkale0/yaya2.mp4
 #  file_path: çanakkale0/araba2.mp4
 
-  file_path: çanakkale1/araba_trim.mov
+#  file_path: çanakkale1/araba_trim.mov
 #  file_path: çanakkale1/insan_trim.mov
 #  file_path: çanakkale1/otopark_trim.mov
+  file_path: çanakkale1/otopark_trim_8x.mov
 
 #  image_path: _emotion.jpg
 #  image_path: _emotion_mask.jpg
@@ -72,34 +74,34 @@ video_source:
     CAP_PROP_FRAME_HEIGHT: 240
     CAP_PROP_FPS: 10
 
-#
-#result_handler:
-#  type: SOCKET # FILE, SOCKET
-#  file_path: /var/lib/thingsboard_gateway/extensions/camera/
-#  socket:
-#    port: 60060
-#    host: 127.0.0.1
 
-#koray
 result_handler:
-  type: FILE
-  file_path: /Users/korhun/Documents/temp/
+  type: SOCKET # FILE, SOCKET
+  file_path: /var/lib/thingsboard_gateway/extensions/camera/
   socket:
     port: 60060
     host: 127.0.0.1
 
-runners:
-  - name: yolov3 - Object detection with 80 classes
-    type: yolov3
-    configuration: yolov3.json
-    class: yolov3_runner
-    priority: 10
+##koray
+#result_handler:
+#  type: FILE
+#  file_path: /Users/korhun/Documents/temp/
+#  socket:
+#    port: 60060
+#    host: 127.0.0.1
 
-#  - name: yolov4 - Object detection with 80 classes
-#    type: yolov4
-#    configuration: yolov4.json
-#    class: yolov4_runner
+runners:
+#  - name: yolov3 - Object detection with 80 classes
+#    type: yolov3
+#    configuration: yolov3.json
+#    class: yolov3_runner
 #    priority: 10
+
+  - name: yolov4 - Object detection with 80 classes
+    type: yolov4
+    configuration: yolov4.json
+    class: yolov4_runner
+    priority: 10
 
 #  - name: yolov3-tiny - Fast object detection with 80 classes
 #    type: yolov3-tiny
@@ -160,12 +162,18 @@ runners:
 #    configuration: object_counter.json
 #    class: object_counter_runner
 #    priority: 100
-#
+
 #  - name: Objects In Area
 #    type: objects_in_area
 #    configuration: objects_in_area.json
 #    class: objects_in_area_runner
 #    priority: 100
+
+  - name: Point Occupied
+    type: point_occupied
+    configuration: point_occupied.json
+    class: point_occupied_runner
+    priority: 100
 
 
 #  - name: Driver Monitor 2 with emo.conf
