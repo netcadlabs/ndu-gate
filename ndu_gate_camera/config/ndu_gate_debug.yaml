@@ -169,11 +169,11 @@ runners:
 #    class: objects_in_area_runner
 #    priority: 100
 
-  - name: Point Occupied
-    type: point_occupied
-    configuration: point_occupied.json
-    class: point_occupied_runner
-    priority: 100
+#  - name: Point Occupied
+#    type: point_occupied
+#    configuration: point_occupied.json
+#    class: point_occupied_runner
+#    priority: 100
 
 
 #  - name: Driver Monitor 2 with emo.conf
