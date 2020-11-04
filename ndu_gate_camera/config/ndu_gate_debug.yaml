@@ -32,10 +32,10 @@ video_source:
 #  file_path: çanakkale0/yaya2.mp4
 #  file_path: çanakkale0/araba2.mp4
 
-#  file_path: çanakkale1/araba_trim.mov
+  file_path: çanakkale1/araba_trim.mov
 #  file_path: çanakkale1/insan_trim.mov
 #  file_path: çanakkale1/otopark_trim.mov
-  file_path: çanakkale1/otopark_trim_8x.mov
+#  file_path: çanakkale1/otopark_trim_8x.mov
 
 #  image_path: _emotion.jpg
 #  image_path: _emotion_mask.jpg
@@ -157,11 +157,11 @@ runners:
 #    class: gender_age_runner
 #    priority: 100
 
-#  - name: Object Counter
-#    type: object_counter
-#    configuration: object_counter.json
-#    class: object_counter_runner
-#    priority: 100
+  - name: Object Counter
+    type: object_counter
+    configuration: object_counter.json
+    class: object_counter_runner
+    priority: 100
 
 #  - name: Objects In Area
 #    type: objects_in_area

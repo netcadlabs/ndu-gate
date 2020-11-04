@@ -130,8 +130,8 @@ class object_counter_runner(Thread, NDUCameraRunner):
 
         self.__frame_num += 1
         if len(self.__gates) == 0 and self.__frame_num == 1:
-            # lines = image_helper.select_lines(frame, self.get_name())
-            lines = [[(655, 497), (144, 371)]]  # vid_short.mp4
+            lines = image_helper.select_lines(frame, self.get_name())
+            # lines = [[(655, 497), (144, 371)]]  # vid_short.mp4
             # lines = [[(382, 434), (1184, 362)]]  # yaya4.mp4
             # lines = [[(75, 423), (1006, 278)]]  # araba2.mp4
             # lines = [[(425, 1074), (259, 695)], [(1161, 611), (1552, 688)]]  # meydan2.mp4
