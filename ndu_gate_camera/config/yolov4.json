@@ -1,0 +1,6 @@
+{
+  "onnx_fn": "/data/yolov4_-1_3_512_512_dynamic.onnx",
+  "input_size": 512,
+  "classes_filename": "/data/coco.names"
+}
+

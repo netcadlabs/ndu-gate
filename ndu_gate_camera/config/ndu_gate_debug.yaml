@@ -26,10 +26,14 @@ video_source:
 #  file_path: çanakkale0/kavsak1.mp4
 #  file_path: çanakkale0/kavsak2.mp4
 #  file_path: çanakkale0/kavsak7.mp4
-  file_path: çanakkale0/meydan2.mp4
+#  file_path: çanakkale0/meydan2.mp4
 #  file_path: çanakkale0/yaya4.mp4
 #  file_path: çanakkale0/yaya2.mp4
 #  file_path: çanakkale0/araba2.mp4
+
+  file_path: çanakkale1/araba_trim.mov
+#  file_path: çanakkale1/insan_trim.mov
+#  file_path: çanakkale1/otopark_trim.mov
 
 #  image_path: _emotion.jpg
 #  image_path: _emotion_mask.jpg
@@ -59,7 +63,7 @@ video_source:
 #  url: https://youtu.be/TlInDQgg2G4  #mask
 #  url: https://youtu.be/MNn9qKG2UFI  #highway
   show_preview: True
-#  write_preview: True
+  write_preview: True
   write_preview_file_name: /Users/korhun/Documents/temp/preview.mov
   mirror: True
   sleep: 1
@@ -68,21 +72,21 @@ video_source:
     CAP_PROP_FRAME_HEIGHT: 240
     CAP_PROP_FPS: 10
 
-
-result_handler:
-  type: SOCKET # FILE, SOCKET
-  file_path: /var/lib/thingsboard_gateway/extensions/camera/
-  socket:
-    port: 60060
-    host: 127.0.0.1
-
-##koray
+#
 #result_handler:
-#  type: FILE
-#  file_path: /Users/korhun/Documents/temp/
+#  type: SOCKET # FILE, SOCKET
+#  file_path: /var/lib/thingsboard_gateway/extensions/camera/
 #  socket:
 #    port: 60060
 #    host: 127.0.0.1
+
+#koray
+result_handler:
+  type: FILE
+  file_path: /Users/korhun/Documents/temp/
+  socket:
+    port: 60060
+    host: 127.0.0.1
 
 runners:
   - name: yolov3 - Object detection with 80 classes
@@ -90,6 +94,12 @@ runners:
     configuration: yolov3.json
     class: yolov3_runner
     priority: 10
+
+#  - name: yolov4 - Object detection with 80 classes
+#    type: yolov4
+#    configuration: yolov4.json
+#    class: yolov4_runner
+#    priority: 10
 
 #  - name: yolov3-tiny - Fast object detection with 80 classes
 #    type: yolov3-tiny
@@ -145,17 +155,17 @@ runners:
 #    class: gender_age_runner
 #    priority: 100
 
-  - name: Object Counter
-    type: object_counter
-    configuration: object_counter.json
-    class: object_counter_runner
-    priority: 100
-
-  - name: Objects In Area
-    type: objects_in_area
-    configuration: objects_in_area.json
-    class: objects_in_area_runner
-    priority: 100
+#  - name: Object Counter
+#    type: object_counter
+#    configuration: object_counter.json
+#    class: object_counter_runner
+#    priority: 100
+#
+#  - name: Objects In Area
+#    type: objects_in_area
+#    configuration: objects_in_area.json
+#    class: objects_in_area_runner
+#    priority: 100
 
 
 #  - name: Driver Monitor 2 with emo.conf

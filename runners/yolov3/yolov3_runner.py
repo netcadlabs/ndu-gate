@@ -14,10 +14,10 @@ class yolov3_runner(NDUCameraRunner):
         self.__config = config
         self.input_size = config.get("input_size", 416)
 
-        # self.input_size = 256 ####koray sil
-        self.input_size = 1024 ####koray sil
+        # self.input_size = 512########koray
 
-        self.onnx_fn = config.get("onnx_fn", "yolov3.onnx")
+        self.onnx_fn = config.get("onnx_fn", "/data/yolov3.onnx")
+
         if not os.path.isfile(self.onnx_fn):
             self.onnx_fn = os.path.dirname(os.path.abspath(__file__)) + self.onnx_fn.replace("/", os.path.sep)
 
@@ -48,7 +48,7 @@ class yolov3_runner(NDUCameraRunner):
         image_data = img_processed[np.newaxis, ...].astype(np.float32)
         image_data = np.transpose(image_data, [0, 3, 1, 2])
 
-        # yolov3-tiny için özel kısım
+        # yolov3 için özel kısım
         img_size = np.array([input_size, input_size], dtype=np.float32).reshape(1, 2)
         boxes, scores, indices = sess.run(None, {input_name: image_data, "image_shape": img_size})
         out_boxes, out_scores, out_classes = yolov3_runner._postprocess_yolov3(boxes, scores, indices, class_names)
