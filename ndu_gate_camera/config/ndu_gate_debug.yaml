@@ -1,6 +1,6 @@
 video_source:
 #  max_frame_dim: 1600
-#  min_frame_dim: 1024
+#  min_frame_dim: 800
 
 #  type: IMAGE_FILE # VIDEO_FILE, PI_CAMERA, CAMERA, IP_CAMERA, VIDEO_URL, YOUTUBE
 #  type: YOUTUBE
@@ -32,8 +32,8 @@ video_source:
 #  file_path: çanakkale0/yaya2.mp4
 #  file_path: çanakkale0/araba2.mp4
 
-  file_path: çanakkale1/araba_trim.mov
-#  file_path: çanakkale1/insan_trim.mov
+#  file_path: çanakkale1/araba_trim.mov
+  file_path: çanakkale1/insan_trim.mov
 #  file_path: çanakkale1/otopark_trim.mov
 #  file_path: çanakkale1/otopark_trim_8x.mov
 
@@ -102,13 +102,13 @@ runners:
     configuration: yolov4.json
     class: yolov4_runner
     priority: 10
-
+#
 #  - name: yolov3-tiny - Fast object detection with 80 classes
 #    type: yolov3-tiny
 #    configuration: yolov3-tiny.json
 #    class: yolov3_tiny_runner
 #    priority: 10
-
+#
 #  - name: ssd_mobilenet - Fast object detection with 80 classes
 #    type: ssd_mobilenet
 #    configuration: ssd_mobilenet.json

@@ -408,7 +408,8 @@ class NDUCameraService:
             cv2.rectangle(img, (c1_[0], c1_[1]), (c2_[0], c2_[1]), color=[0, 0, 0], thickness=3)
             cv2.rectangle(img, (c1_[0], c1_[1]), (c2_[0], c2_[1]), color=color, thickness=2)
 
-        #####koray show_debug_texts = show_runner_info = show_score = True
+        # show_debug_texts = show_runner_info = show_score = True
+        ####koray
         show_debug_texts = False
         show_runner_info = False
         show_score = False

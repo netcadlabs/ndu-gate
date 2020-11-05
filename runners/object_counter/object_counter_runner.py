@@ -135,6 +135,8 @@ class object_counter_runner(Thread, NDUCameraRunner):
             # lines = [[(382, 434), (1184, 362)]]  # yaya4.mp4
             # lines = [[(75, 423), (1006, 278)]]  # araba2.mp4
             # lines = [[(425, 1074), (259, 695)], [(1161, 611), (1552, 688)]]  # meydan2.mp4
+            # lines = [[(796, 261), (169, 425)]] # çanakkale2 araba
+            # lines =  # çanakkale2 insan
             ln_counter = 0
             for line in lines:
                 ln_counter += 1
@@ -307,28 +309,28 @@ class object_counter_runner(Thread, NDUCameraRunner):
                 all_enter += enter_val
                 all_exit += exit_val
                 if self.__debug:
-                    debug_text += f"{name} - Giren:{enter_val} Cikan:{exit_val}"
+                    debug_text += f"{NDUUtility.debug_conv_turkish(name)} - Giren:{enter_val} Cikan:{exit_val}"
                     debug_texts.append(debug_text)
 
                 data_val = str(enter_val) + "_" + str(exit_val)
                 if name not in self.__last_data or not self.__last_data[name] == data_val:
                     self.__last_data[name] = data_val
                     changed = True
-                    telemetry_enter = gate_name + "_" + name + "_giris"
-                    telemetry_exit = gate_name + "_" + name + "_cikis"
-                    telemetry_inside = gate_name + "_" + name + "_iceridekiler"
+                    telemetry_enter = gate_name + "_" + name + "_enter"
+                    telemetry_exit = gate_name + "_" + name + "_exit"
+                    telemetry_inside = gate_name + "_" + name + "_inside"
                     data = {telemetry_enter: enter_val, telemetry_exit: exit_val, telemetry_inside: count_val}
                     res.append({constants.RESULT_KEY_DATA: data})
             if changed:
-                telemetry_inside = gate_name + "_iceridekiler"
-                telemetry_enter = gate_name + "_giren"
-                telemetry_exit = gate_name + "_cikan"
+                telemetry_inside = gate_name + "_inside"
+                telemetry_enter = gate_name + "_enter"
+                telemetry_exit = gate_name + "_exit"
                 data = {telemetry_inside: all_inside, telemetry_enter: all_enter, telemetry_exit: all_exit}
                 res.append({constants.RESULT_KEY_DATA: data})
 
         if self.__debug:
             for name, value in active_counts.items():
-                debug_texts.append(f"gorunen '{NDUUtility.debug_conv_turkish(name)}': {value}")
+                debug_texts.append(f"Gorunen '{NDUUtility.debug_conv_turkish(name)}': {value}")
 
             for debug_text in debug_texts:
                 res.append({constants.RESULT_KEY_DEBUG: debug_text})
