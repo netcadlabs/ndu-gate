@@ -22,7 +22,7 @@ class object_counter_runner(Thread, NDUCameraRunner):
         self.__frame_num = 0
         self.__gates = []
         self.__last_data = {}
-        self.__debug = True  ####koray
+        self.__debug = False
 
     def get_name(self):
         return "object_counter_runner"

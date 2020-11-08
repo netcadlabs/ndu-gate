@@ -42,15 +42,9 @@ class yolov4_runner(NDUCameraRunner):
 
     @staticmethod
     def _predict(sess, input_name, input_size, class_names, frame):
-        # ih, iw = (input_size, input_size)
         h, w, _ = frame.shape
-        #
-        # scale = min(iw / w, ih / h)
-        # nw, nh = int(scale * w), int(scale * h)
-        # dw, dh = (iw - nw) // 2, (ih - nh) // 2
 
         def nms_cpu(boxes, confs, nms_thresh=0.5, min_mode=False):
-            # print(boxes.shape)
             x1 = boxes[:, 0]
             y1 = boxes[:, 1]
             x2 = boxes[:, 2]
@@ -144,7 +138,6 @@ class yolov4_runner(NDUCameraRunner):
         IN_IMAGE_H = sess.get_inputs()[0].shape[2]
         IN_IMAGE_W = sess.get_inputs()[0].shape[3]
 
-        # Input
         # resized = cv2.resize(frame, (IN_IMAGE_W, IN_IMAGE_H), interpolation=cv2.INTER_LINEAR)
         resized = image_helper.resize_best_quality(frame, (IN_IMAGE_W, IN_IMAGE_H))
         img_in = cv2.cvtColor(resized, cv2.COLOR_BGR2RGB)
@@ -152,7 +145,6 @@ class yolov4_runner(NDUCameraRunner):
         img_in = np.expand_dims(img_in, axis=0)
         img_in /= 255.0
 
-        # Compute
         input_name = sess.get_inputs()[0].name
 
         outputs = sess.run(None, {input_name: img_in})
@@ -175,18 +167,6 @@ class yolov4_runner(NDUCameraRunner):
             return out_boxes, out_scores, out_classes
 
         out_boxes, out_scores, out_classes = process_boxes(boxes, w, h, class_names)
-
-        #
-        # image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        # img_processed, w, h, nw, nh, dw, dh = yolov4_runner._image_preprocess(np.copy(image), [input_size, input_size])
-        # image_data = img_processed[np.newaxis, ...].astype(np.float32)
-        # image_data = np.transpose(image_data, [0, 3, 1, 2])
-        #
-        # img_size = np.array([input_size, input_size], dtype=np.float32).reshape(1, 2)
-        # boxes, scores, indices = sess.run(None, {input_name: image_data, "image_shape": img_size})
-        # out_boxes, out_scores, out_classes = yolov4_runner._postprocess_yolov4(boxes, scores, indices, class_names)
-
-        # out_boxes = yolov4_runner._remove_padding(out_boxes, w, h, nw, nh, dw, dh)
 
         res = []
         for i in range(len(out_boxes)):
@@ -214,38 +194,6 @@ class yolov4_runner(NDUCameraRunner):
             gt_boxes[:, [0, 2]] = gt_boxes[:, [0, 2]] * scale + dw
             gt_boxes[:, [1, 3]] = gt_boxes[:, [1, 3]] * scale + dh
             return image_padded, gt_boxes
-
-    @staticmethod
-    def _postprocess_yolov4(boxes, scores, indices, class_names):
-        objects_identified = indices.shape[0]
-        out_boxes, out_scores, out_classes = [], [], []
-        if objects_identified > 0:
-            for idx_ in indices:
-                class_index = idx_[1]
-                # if class_index==0 or class_index==67: #person - cell phone
-                out_classes.append(class_names[class_index])
-                out_scores.append(scores[tuple(idx_)])
-                idx_1 = (idx_[0], idx_[2])
-                out_boxes.append(boxes[idx_1])
-        return out_boxes, out_scores, out_classes
-
-    @staticmethod
-    def _remove_padding(bboxes, w, h, nw, nh, dw, dh):
-        rw = w / nw
-        rh = h / nh
-        for i in range(len(bboxes)):
-            bbox = bboxes[i]
-            h1 = bbox[0]
-            w1 = bbox[1]
-            h2 = bbox[2]
-            w2 = bbox[3]
-
-            bbox[0] = int((h1 - dh) * rh)
-            bbox[1] = int((w1 - dw) * rw)
-            bbox[2] = int((h2 - dh) * rh)
-            bbox[3] = int((w2 - dw) * rw)
-
-        return bboxes
 
     @staticmethod
     def _create_session(onnx_fn, classes_filename):

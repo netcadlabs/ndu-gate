@@ -21,7 +21,7 @@ class point_occupied_runner(Thread, NDUCameraRunner):
         self.__average_accept = 1
         self.__average_cur = 10
 
-        self.__debug = True  ####koray
+        self.__debug = False
         self.__debug_color_false = (200, 200, 200)
         self.__debug_color_true = (0, 255, 0)
         self.__debug_thickness_false = 4

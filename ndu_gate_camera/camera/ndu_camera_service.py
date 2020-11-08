@@ -360,7 +360,7 @@ class NDUCameraService:
                     .output(self.__write_preview_file_name + '.mp4') \
                     .run(capture_stdout=True, capture_stderr=True)
 
-                # # süper sıkışmış ama quicktime çalamıyor!
+                # # süper sıkışmış ama quicktime çalamıyor. Benim denemelerimde yarım yamalak kaydedebildi!
                 # ffmpeg.input(self.__write_preview_file_name) \
                 #     .output(self.__write_preview_file_name + '2.mp4', vcodec='libx265', crf=24, t=5) \
                 #     .run(capture_stdout=True, capture_stderr=True)
@@ -408,11 +408,7 @@ class NDUCameraService:
             cv2.rectangle(img, (c1_[0], c1_[1]), (c2_[0], c2_[1]), color=[0, 0, 0], thickness=3)
             cv2.rectangle(img, (c1_[0], c1_[1]), (c2_[0], c2_[1]), color=color, thickness=2)
 
-        # show_debug_texts = show_runner_info = show_score = True
-        ####koray
-        show_debug_texts = False
-        show_runner_info = False
-        show_score = False
+        show_debug_texts = show_runner_info = show_score = True
 
         h, w, *_ = image.shape
         line_height = 20

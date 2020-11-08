@@ -81,35 +81,10 @@ class gender_age_runner(Thread, NDUCameraRunner):
                             x2 = max(x2, 0)
                             image = frame[y1:y2, x1:x2]
 
-                            # # square
-                            # padding_ratio = 0.75
-                            # bbox = rect_face
-                            # y1 = max(int(bbox[0]), 0)
-                            # x1 = max(int(bbox[1]), 0)
-                            # y2 = max(int(bbox[2]), 0)
-                            # x2 = max(int(bbox[3]), 0)
-                            # w = x2 - x1
-                            # h = y2 - y1
-                            # side = max(w, h)
-                            # side *= padding_ratio
-                            # center = 0.5 * (x1 + x2), 0.5 * (y1 + y2)
-                            # x1 = center[0] - side
-                            # x2 = center[0] + side
-                            # y1 = center[1] - side
-                            # y2 = center[1] + side
-                            # y1 = int(max(y1, 0))
-                            # x1 = int(max(x1, 0))
-                            # y2 = int(max(y2, 0))
-                            # x2 = int(max(x2, 0))
-                            # image = frame[y1:y2, x1:x2]
-
-                            # cv2.imshow("aaa", image)
-                            # cv2.waitKey(100)
-
-                            # test koray
-                            item.pop(constants.RESULT_KEY_CLASS_NAME)
-                            item.pop(constants.RESULT_KEY_SCORE)
-                            item.pop(constants.RESULT_KEY_RECT)
+                            # # test
+                            # item.pop(constants.RESULT_KEY_CLASS_NAME)
+                            # item.pop(constants.RESULT_KEY_SCORE)
+                            # item.pop(constants.RESULT_KEY_RECT)
 
                             input_shape = (1, 64, 64, 3)
                             image = image_helper.resize_best_quality(image, (64, 64))

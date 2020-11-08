@@ -33,9 +33,9 @@ video_source:
 #  file_path: çanakkale0/araba2.mp4
 
 #  file_path: çanakkale1/araba_trim.mov
-  file_path: çanakkale1/insan_trim.mov
+#  file_path: çanakkale1/insan_trim.mov
 #  file_path: çanakkale1/otopark_trim.mov
-#  file_path: çanakkale1/otopark_trim_8x.mov
+  file_path: çanakkale1/otopark_trim_8x.mov
 
 #  image_path: _emotion.jpg
 #  image_path: _emotion_mask.jpg
@@ -65,7 +65,7 @@ video_source:
 #  url: https://youtu.be/TlInDQgg2G4  #mask
 #  url: https://youtu.be/MNn9qKG2UFI  #highway
   show_preview: True
-  write_preview: True
+#  write_preview: True
   write_preview_file_name: /Users/korhun/Documents/temp/preview.mov
   mirror: True
   sleep: 1
@@ -97,18 +97,42 @@ runners:
 #    class: yolov3_runner
 #    priority: 10
 
-  - name: yolov4 - Object detection with 80 classes
-    type: yolov4
-    configuration: yolov4.json
-    class: yolov4_runner
+#  - name: yolov4 - Object detection with 80 classes
+#    type: yolov4
+#    configuration: yolov4.json
+#    class: yolov4_runner
+#    priority: 10
+
+#  - name: yolov5s - Object detection with 80 classes (Fastest)
+#    type: yolov5s
+#    configuration: yolov5s.json
+#    class: yolov5s_runner
+#    priority: 10
+
+#  - name: yolov5m - Object detection with 80 classes (Fast)
+#    type: yolov5m
+#    configuration: yolov5m.json
+#    class: yolov5m_runner
+#    priority: 10
+
+  - name: yolov5l - Object detection with 80 classes (Accurate)
+    type: yolov5l
+    configuration: yolov5l.json
+    class: yolov5l_runner
     priority: 10
-#
+
+#  - name: yolov5x - Object detection with 80 classes (Most Accurate)
+#    type: yolov5x
+#    configuration: yolov5x.json
+#    class: yolov5x_runner
+#    priority: 10
+
 #  - name: yolov3-tiny - Fast object detection with 80 classes
 #    type: yolov3-tiny
 #    configuration: yolov3-tiny.json
 #    class: yolov3_tiny_runner
 #    priority: 10
-#
+
 #  - name: ssd_mobilenet - Fast object detection with 80 classes
 #    type: ssd_mobilenet
 #    configuration: ssd_mobilenet.json
@@ -157,11 +181,11 @@ runners:
 #    class: gender_age_runner
 #    priority: 100
 
-  - name: Object Counter
-    type: object_counter
-    configuration: object_counter.json
-    class: object_counter_runner
-    priority: 100
+#  - name: Object Counter
+#    type: object_counter
+#    configuration: object_counter.json
+#    class: object_counter_runner
+#    priority: 100
 
 #  - name: Objects In Area
 #    type: objects_in_area

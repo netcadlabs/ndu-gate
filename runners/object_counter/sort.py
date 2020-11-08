@@ -164,14 +164,12 @@ def associate_detections_to_trackers(detections, trackers, iou_threshold=0.3):
 
     iou_matrix = iou_batch(detections, trackers)
 
-    # iou_threshold = 0 ############koray
     if min(iou_matrix.shape) > 0:
         a = (iou_matrix > iou_threshold).astype(np.int32)
         if a.sum(1).max() == 1 and a.sum(0).max() == 1:
             matched_indices = np.stack(np.where(a), axis=1)
         else:
             matched_indices = linear_assignment(-iou_matrix)
-        # matched_indices = linear_assignment(-iou_matrix) #######koray
     else:
         matched_indices = np.empty(shape=(0, 2))
 
@@ -192,7 +190,6 @@ def associate_detections_to_trackers(detections, trackers, iou_threshold=0.3):
             unmatched_trackers.append(m[1])
         else:
             matches.append(m.reshape(1, 2))
-        # matches.append(m.reshape(1, 2))###########koray
 
     if (len(matches) == 0):
         matches = np.empty((0, 2), dtype=int)
@@ -248,18 +245,14 @@ class Sort(object):
         i = len(self.trackers)
         for trk in reversed(self.trackers):
             d = trk.get_state()[0]
-            # if (trk.time_since_update < 1) and (trk.hit_streak >= self.min_hits or self.frame_count <= self.min_hits):
-            # if (trk.time_since_update < 100) and (trk.hit_streak >= self.min_hits or self.frame_count <= self.min_hits):################koray
-            if (trk.time_since_update < self.max_age) and (trk.hit_streak >= self.min_hits or self.frame_count <= self.min_hits):################koray
+            if (trk.time_since_update < self.max_age) and (trk.hit_streak >= self.min_hits or self.frame_count <= self.min_hits):##
                 ret.append(np.concatenate((d, [trk.id + 1])).reshape(1, -1))  # +1 as MOT benchmark requires positive
 
             i -= 1
             # remove dead tracklet
             if (trk.time_since_update > self.max_age):
-            # if (trk.time_since_update > 100):################koray
                 self.trackers.pop(i)
 
-        ################koray
         if (len(ret) > 0):
             ret = np.concatenate(ret)
             if len(dets) > len(ret):
@@ -267,7 +260,7 @@ class Sort(object):
                 i = len(self.trackers)
                 for trk in reversed(self.trackers):
                     d = trk.get_state()[0]
-                    if (trk.time_since_update < self.max_age) and (trk.hit_streak >= 0 or self.frame_count <= 0):  ################koray
+                    if (trk.time_since_update < self.max_age) and (trk.hit_streak >= 0 or self.frame_count <= 0): ##
                         ret.append(np.concatenate((d, [trk.id + 1])).reshape(1, -1))  # +1 as MOT benchmark requires positive
                     i -= 1
             else:
@@ -275,92 +268,7 @@ class Sort(object):
         else:
             return np.empty((0, 5))
 
-        # if len(dets) < len(ret):################koray
-        #     aaa = dets
-        #     bbb = np.concatenate(ret)
-        #     if len(dets) < len(bbb):
-        #         aaa = bbb
 
         if (len(ret) > 0):
             return np.concatenate(ret)
         return np.empty((0, 5))
-
-#
-# def parse_args():
-#     """Parse input arguments."""
-#     parser = argparse.ArgumentParser(description='SORT demo')
-#     parser.add_argument('--display', dest='display', help='Display online tracker output (slow) [False]', action='store_true')
-#     parser.add_argument("--seq_path", help="Path to detections.", type=str, default='data')
-#     parser.add_argument("--phase", help="Subdirectory in seq_path.", type=str, default='train')
-#     parser.add_argument("--max_age",
-#                         help="Maximum number of frames to keep alive a track without associated detections.",
-#                         type=int, default=1)
-#     parser.add_argument("--min_hits",
-#                         help="Minimum number of associated detections before track is initialised.",
-#                         type=int, default=3)
-#     parser.add_argument("--iou_threshold", help="Minimum IOU for match.", type=float, default=0.3)
-#     args = parser.parse_args()
-#     return args
-#
-
-# if __name__ == '__main__':
-#     # all train
-#     args = parse_args()
-#     display = args.display
-#     phase = args.phase
-#     total_time = 0.0
-#     total_frames = 0
-#     colours = np.random.rand(32, 3)  # used only for display
-#     if (display):
-#         if not os.path.exists('mot_benchmark'):
-#             print(
-#                 '\n\tERROR: mot_benchmark link not found!\n\n    Create a symbolic link to the MOT benchmark\n    (https://motchallenge.net/data/2D_MOT_2015/#download). E.g.:\n\n    $ ln -s /path/to/MOT2015_challenge/2DMOT2015 mot_benchmark\n\n')
-#             exit()
-#         plt.ion()
-#         fig = plt.figure()
-#         ax1 = fig.add_subplot(111, aspect='equal')
-#
-#     if not os.path.exists('output'):
-#         os.makedirs('output')
-#     pattern = os.path.join(args.seq_path, phase, '*', 'det', 'det.txt')
-#     for seq_dets_fn in glob.glob(pattern):
-#         mot_tracker = Sort(max_age=args.max_age,
-#                            min_hits=args.min_hits,
-#                            iou_threshold=args.iou_threshold)  # create instance of the SORT tracker
-#         seq_dets = np.loadtxt(seq_dets_fn, delimiter=',')
-#         seq = seq_dets_fn[pattern.find('*'):].split('/')[0]
-#
-#         with open('output/%s.txt' % (seq), 'w') as out_file:
-#             print("Processing %s." % (seq))
-#             for frame in range(int(seq_dets[:, 0].max())):
-#                 frame += 1  # detection and frame numbers begin at 1
-#                 dets = seq_dets[seq_dets[:, 0] == frame, 2:7]
-#                 dets[:, 2:4] += dets[:, 0:2]  # convert to [x1,y1,w,h] to [x1,y1,x2,y2]
-#                 total_frames += 1
-#
-#                 if (display):
-#                     fn = 'mot_benchmark/%s/%s/img1/%06d.jpg' % (phase, seq, frame)
-#                     im = io.imread(fn)
-#                     ax1.imshow(im)
-#                     plt.title(seq + ' Tracked Targets')
-#
-#                 start_time = time.time()
-#                 trackers = mot_tracker.update(dets)
-#                 cycle_time = time.time() - start_time
-#                 total_time += cycle_time
-#
-#                 for d in trackers:
-#                     print('%d,%d,%.2f,%.2f,%.2f,%.2f,1,-1,-1,-1' % (frame, d[4], d[0], d[1], d[2] - d[0], d[3] - d[1]), file=out_file)
-#                     if (display):
-#                         d = d.astype(np.int32)
-#                         ax1.add_patch(patches.Rectangle((d[0], d[1]), d[2] - d[0], d[3] - d[1], fill=False, lw=3, ec=colours[d[4] % 32, :]))
-#
-#                 if (display):
-#                     fig.canvas.flush_events()
-#                     plt.draw()
-#                     ax1.cla()
-#
-#     print("Total Tracking took: %.3f seconds for %d frames or %.1f FPS" % (total_time, total_frames, total_frames / total_time))
-#
-#     if (display):
-#         print("Note: to get real runtime results run without the option: --display")

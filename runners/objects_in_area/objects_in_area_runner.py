@@ -18,7 +18,7 @@ class objects_in_area_runner(Thread, NDUCameraRunner):
         self.__frame_num = 0
         self.__last_data = {}
 
-        self.__debug = True  ####koray
+        self.__debug = False
         self.__debug_color_normal = (255, 255, 255)
         self.__debug_color_alert = (0, 0, 255)
         self.__debug_thickness_normal = 1
