@@ -4,11 +4,11 @@ video_source:
 
 #  type: IMAGE_FILE # VIDEO_FILE, PI_CAMERA, CAMERA, IP_CAMERA, VIDEO_URL, YOUTUBE
 #  type: YOUTUBE
-  type: VIDEO_FILE
-#  type: CAMERA
+#  type: VIDEO_FILE
+  type: CAMERA
 
 #  file_path: iett_1.avi
-#  file_path: iett_2.avi
+  file_path: iett_2.avi
 #  file_path: smoke_film.mp4
 #  file_path: smoke_women.mp4
 #  file_path: smoking_anti.mp4
@@ -35,7 +35,7 @@ video_source:
 #  file_path: çanakkale1/araba_trim.mov
 #  file_path: çanakkale1/insan_trim.mov
 #  file_path: çanakkale1/otopark_trim.mov
-  file_path: çanakkale1/otopark_trim_8x.mov
+#  file_path: çanakkale1/otopark_trim_8x.mov
 
 #  image_path: _emotion.jpg
 #  image_path: _emotion_mask.jpg
@@ -49,10 +49,10 @@ video_source:
   data_folder: /Users/korhun/Documents/test_data/
   replay: False # not implemented
 #  url: https://www.youtube.com/watch?v=3FXUw98rrUY #sahil
-#  url: https://youtu.be/8pXFktAbx5Y #kalabalık
+  url: https://youtu.be/8pXFktAbx5Y #kalabalık
 #  url: https://youtu.be/NyLF8nHIquM #london street
 #  url: https://youtu.be/szZWplKlQNI #istiklal
-  url: https://youtu.be/n5b_nIzdvfI #black or white
+#  url: https://youtu.be/n5b_nIzdvfI #black or white
 #  url: https://youtu.be/Xygk7UjKM2g #faces around world
 #  url: https://youtu.be/AqFWYZsOgWY #kalabalık oturanlar
 #  url: https://youtu.be/N9JtUC8hl8o #benchmark
@@ -68,7 +68,7 @@ video_source:
 #  write_preview: True
   write_preview_file_name: /Users/korhun/Documents/temp/preview.mov
   mirror: True
-  sleep: 1
+#  sleep: 1
   cam_gear_options:
     CAP_PROP_FRAME_WIDTH: 320
     CAP_PROP_FRAME_HEIGHT: 240
@@ -103,11 +103,11 @@ runners:
 #    class: yolov4_runner
 #    priority: 10
 
-#  - name: yolov5s - Object detection with 80 classes (Fastest)
-#    type: yolov5s
-#    configuration: yolov5s.json
-#    class: yolov5s_runner
-#    priority: 10
+  - name: Cigarette Detector
+    type: cigarette_detector
+    configuration: cigarette_detector.json
+    class: cigarette_detector_runner
+    priority: 10
 
 #  - name: yolov5m - Object detection with 80 classes (Fast)
 #    type: yolov5m
@@ -115,11 +115,11 @@ runners:
 #    class: yolov5m_runner
 #    priority: 10
 
-  - name: yolov5l - Object detection with 80 classes (Accurate)
-    type: yolov5l
-    configuration: yolov5l.json
-    class: yolov5l_runner
-    priority: 10
+#  - name: yolov5l - Object detection with 80 classes (Accurate)
+#    type: yolov5l
+#    configuration: yolov5l.json
+#    class: yolov5l_runner
+#    priority: 10
 
 #  - name: yolov5x - Object detection with 80 classes (Most Accurate)
 #    type: yolov5x

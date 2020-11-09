@@ -1,0 +1,6 @@
+{
+    "connector_config": {
+      "class": "cigarette_detector"
+    },
+    "copy": []
+}

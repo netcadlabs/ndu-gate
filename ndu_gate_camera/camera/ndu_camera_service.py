@@ -334,9 +334,11 @@ class NDUCameraService:
                 # while True:
                 #     k = cv2.waitKey(100) & 0xFF
                 #     print(k)
+                exit_requested = False
                 while True:
                     k = cv2.waitKey(1) & 0xFF
                     if k == ord("q"):
+                        exit_requested = True
                         break
                     elif k == ord("s"):
                         skip = 10
@@ -344,7 +346,8 @@ class NDUCameraService:
                         pause = not pause
                     if not pause:
                         break
-
+                if exit_requested:
+                    break
                 if self.__write_preview:
                     self._write_frame(preview)
             elif self.__write_preview:

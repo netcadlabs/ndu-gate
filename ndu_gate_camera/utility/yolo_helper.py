@@ -165,16 +165,17 @@ class yolo_helper:
         batch_detections = np.array(pred)
         batch_detections = non_max_suppression(batch_detections, conf_thres=0.4, iou_thres=0.5, agnostic=False)
         detections = batch_detections[0]
-        labels = detections[..., -1]
-        boxs = detections[..., :4]
-        confs = detections[..., 4]
-        boxs[:, :] = scale_coords((input_size, input_size), boxs[:, :], (h, w)).round()
-        for i, box in enumerate(boxs):
-            x1, y1, x2, y2 = box
-            class_name = class_names[int(labels[i])]
-            score = confs[i]
-            res.append({constants.RESULT_KEY_RECT: [y1, x1, y2, x2],
-                        constants.RESULT_KEY_SCORE: score, constants.RESULT_KEY_CLASS_NAME: class_name})
+        if detections is not None:
+            labels = detections[..., -1]
+            boxs = detections[..., :4]
+            confs = detections[..., 4]
+            boxs[:, :] = scale_coords((input_size, input_size), boxs[:, :], (h, w)).round()
+            for i, box in enumerate(boxs):
+                x1, y1, x2, y2 = box
+                class_name = class_names[int(labels[i])]
+                score = confs[i]
+                res.append({constants.RESULT_KEY_RECT: [y1, x1, y2, x2],
+                            constants.RESULT_KEY_SCORE: score, constants.RESULT_KEY_CLASS_NAME: class_name})
 
         # for i in range(len(out_boxes)):
         #    res.append({constants.RESULT_KEY_RECT: out_boxes[i], constants.RESULT_KEY_SCORE: out_scores[i], constants.RESULT_KEY_CLASS_NAME: out_classes[i]})
