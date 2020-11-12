@@ -1,6 +1,6 @@
-#Intersector
+# Intersector
 
-##intersector.json
+## intersector.json
 ```yaml
 {
   "groups": {
@@ -47,7 +47,7 @@
 ```
 
 
-##Örnek:
+### Örnek:
 ```json
 {
   "groups": {
