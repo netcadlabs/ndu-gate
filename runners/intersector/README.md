@@ -1,4 +1,4 @@
-# Intersector
+# Intersector Runner
 
 ## intersector.json
 ```yaml
@@ -48,7 +48,7 @@
 
 
 ### Örnek:
-```json
+```yaml
 {
   "groups": {
     "Sosyal mesafe ihlali": {
@@ -201,7 +201,7 @@
 ## Classification:
 Classification modeli olarak googlenet-9.onnx kullanıldı. Classify edebileceği nesneler:
 
-```
+```yaml
 tench, Tinca tinca
 goldfish, Carassius auratus
 great white shark, white shark, man-eater, man-eating shark, Carcharodon carcharias
