@@ -1,7 +1,7 @@
 #Intersector
 
 ##intersector.json
-```json
+```yaml
 {
   "groups": {
     "<group_name1>": { //n tane grup olabilir

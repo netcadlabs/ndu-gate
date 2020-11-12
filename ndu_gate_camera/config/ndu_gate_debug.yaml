@@ -98,124 +98,124 @@ result_handler:
 #    host: 127.0.0.1
 
 runners:
-##  - name: yolov3 - Object detection with 80 classes
-##    type: yolov3
-##    configuration: yolov3.json
-##    class: yolov3_runner
-##    priority: 10
-#
-##  - name: yolov4 - Object detection with 80 classes
-##    type: yolov4
-##    configuration: yolov4.json
-##    class: yolov4_runner
-##    priority: 10
-#
-#  - name: Cigarette Detector
-#    type: cigarette_detector
-#    configuration: cigarette_detector.json
-#    class: cigarette_detector_runner
+#  - name: yolov3 - Object detection with 80 classes
+#    type: yolov3
+#    configuration: yolov3.json
+#    class: yolov3_runner
 #    priority: 10
-#
-##  - name: yolov5m - Object detection with 80 classes (Fast)
-##    type: yolov5m
-##    configuration: yolov5m.json
-##    class: yolov5m_runner
-##    priority: 10
-#
-##  - name: yolov5l - Object detection with 80 classes (Accurate)
-##    type: yolov5l
-##    configuration: yolov5l.json
-##    class: yolov5l_runner
-##    priority: 10
-#
-##  - name: yolov5x - Object detection with 80 classes (Most Accurate)
-##    type: yolov5x
-##    configuration: yolov5x.json
-##    class: yolov5x_runner
-##    priority: 10
-#
-##  - name: yolov3-tiny - Fast object detection with 80 classes
-##    type: yolov3-tiny
-##    configuration: yolov3-tiny.json
-##    class: yolov3_tiny_runner
-##    priority: 10
-#
-##  - name: ssd_mobilenet - Fast object detection with 80 classes
-##    type: ssd_mobilenet
-##    configuration: ssd_mobilenet.json
-##    class: ssd_mobilenet_runner
-##    priority: 10
-#
-#  - name: Face Detector
-#    type: facedetector
-#    configuration: facedetector.json
-#    class: face_detector_runner
+
+#  - name: yolov4 - Object detection with 80 classes
+#    type: yolov4
+#    configuration: yolov4.json
+#    class: yolov4_runner
 #    priority: 10
-#
-##  - name: Person Counter
-##    type: personcounter
-##    configuration: person_counter.json
-##    class: person_counter_runner
-##    priority: 100
-#
-##  - name: Driver Monitor
-##    type: drivermonitor
-##    configuration: drivermonitor.json
-##    class: driver_monitor_runner
-##    priority: 100
-#
-##  - name: Emotion
-##    type: emotion
-##    configuration: emotion.json
-##    class: emotion_runner
-##    priority: 100
-#
-##  - name: Face Mask Detection
-##    type: facemask
-##    configuration: facemask.json
-##    class: face_mask_runner
-##    priority: 100
-#
-##  - name: Social Distance
-##    type: socialdistance
-##    configuration: socialdistance.json
-##    class: social_distance_runner
-##    priority: 100
-#
-##  - name: Gender and Age Detection
-##    type: gender_age
-##    configuration: gender_age.json
-##    class: gender_age_runner
-##    priority: 100
-#
-##  - name: Object Counter
-##    type: object_counter
-##    configuration: object_counter.json
-##    class: object_counter_runner
-##    priority: 100
-#
-##  - name: Objects In Area
-##    type: objects_in_area
-##    configuration: objects_in_area.json
-##    class: objects_in_area_runner
-##    priority: 100
-#
-##  - name: Point Occupied
-##    type: point_occupied
-##    configuration: point_occupied.json
-##    class: point_occupied_runner
-##    priority: 100
-#
-#  - name: Intersector
-#    type: intersector
-#    configuration: intersector.json
-#    class: intersector_runner
+
+  - name: Cigarette Detector
+    type: cigarette_detector
+    configuration: cigarette_detector.json
+    class: cigarette_detector_runner
+    priority: 10
+
+#  - name: yolov5m - Object detection with 80 classes (Fast)
+#    type: yolov5m
+#    configuration: yolov5m.json
+#    class: yolov5m_runner
+#    priority: 10
+
+#  - name: yolov5l - Object detection with 80 classes (Accurate)
+#    type: yolov5l
+#    configuration: yolov5l.json
+#    class: yolov5l_runner
+#    priority: 10
+
+#  - name: yolov5x - Object detection with 80 classes (Most Accurate)
+#    type: yolov5x
+#    configuration: yolov5x.json
+#    class: yolov5x_runner
+#    priority: 10
+
+#  - name: yolov3-tiny - Fast object detection with 80 classes
+#    type: yolov3-tiny
+#    configuration: yolov3-tiny.json
+#    class: yolov3_tiny_runner
+#    priority: 10
+
+#  - name: ssd_mobilenet - Fast object detection with 80 classes
+#    type: ssd_mobilenet
+#    configuration: ssd_mobilenet.json
+#    class: ssd_mobilenet_runner
+#    priority: 10
+
+  - name: Face Detector
+    type: facedetector
+    configuration: facedetector.json
+    class: face_detector_runner
+    priority: 10
+
+#  - name: Person Counter
+#    type: personcounter
+#    configuration: person_counter.json
+#    class: person_counter_runner
 #    priority: 100
 
+#  - name: Driver Monitor
+#    type: drivermonitor
+#    configuration: drivermonitor.json
+#    class: driver_monitor_runner
+#    priority: 100
 
-  - name: Hard Hat Detector
-    type: hard_hat_detector
-    configuration: hard_hat_detector.json
-    class: hard_hat_detector_runner
-    priority: 10
+#  - name: Emotion
+#    type: emotion
+#    configuration: emotion.json
+#    class: emotion_runner
+#    priority: 100
+
+#  - name: Face Mask Detection
+#    type: facemask
+#    configuration: facemask.json
+#    class: face_mask_runner
+#    priority: 100
+
+#  - name: Social Distance
+#    type: socialdistance
+#    configuration: socialdistance.json
+#    class: social_distance_runner
+#    priority: 100
+
+#  - name: Gender and Age Detection
+#    type: gender_age
+#    configuration: gender_age.json
+#    class: gender_age_runner
+#    priority: 100
+
+#  - name: Object Counter
+#    type: object_counter
+#    configuration: object_counter.json
+#    class: object_counter_runner
+#    priority: 100
+
+#  - name: Objects In Area
+#    type: objects_in_area
+#    configuration: objects_in_area.json
+#    class: objects_in_area_runner
+#    priority: 100
+
+#  - name: Point Occupied
+#    type: point_occupied
+#    configuration: point_occupied.json
+#    class: point_occupied_runner
+#    priority: 100
+
+  - name: Intersector
+    type: intersector
+    configuration: intersector.json
+    class: intersector_runner
+    priority: 100
+
+
+#  - name: Hard Hat Detector
+#    type: hard_hat_detector
+#    configuration: hard_hat_detector.json
+#    class: hard_hat_detector_runner
+#    priority: 10
 
