@@ -1,0 +1,6 @@
+{
+    "connector_config": {
+      "class": "hard_hat_detector_runner"
+    },
+    "copy": []
+}

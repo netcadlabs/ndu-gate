@@ -45,7 +45,7 @@ class gender_age_runner(Thread, NDUCameraRunner):
         res = []
         count_female = 0
         count_male = 0
-        results = extra_data.get("results", None)
+        results = extra_data.get(constants.EXTRA_DATA_KEY_RESULTS, None)
         if results is not None:
             for runner_name, result in results.items():
                 for item in result:

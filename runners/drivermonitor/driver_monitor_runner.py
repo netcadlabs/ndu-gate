@@ -1,4 +1,3 @@
-import errno
 from threading import Thread
 from random import choice
 from string import ascii_lowercase
@@ -12,6 +11,7 @@ from os import path
 
 from ndu_gate_camera.api.ndu_camera_runner import NDUCameraRunner, log
 from ndu_gate_camera.utility import constants
+from ndu_gate_camera.utility.geometry_helper import geometry_helper
 from ndu_gate_camera.utility.ndu_utility import NDUUtility
 
 
@@ -52,7 +52,7 @@ class driver_monitor_runner(Thread, NDUCameraRunner):
         count_seatbelt = 0
 
         if extra_data is not None:
-            results = extra_data.get("results", None)
+            results = extra_data.get(constants.EXTRA_DATA_KEY_RESULTS, None)
             if results is not None:
                 rect_persons = []
                 rect_faces = []
@@ -76,7 +76,7 @@ class driver_monitor_runner(Thread, NDUCameraRunner):
                 for face in rect_faces:
                     cell_phone_handled = False
                     for cellphone in rect_cellphones:
-                        if driver_monitor_runner._intersects(face, cellphone):
+                        if geometry_helper.rects_intersect(face, cellphone):
                             count_talking_to_cellphone += 1
                             cell_phone_handled = True
                             break
@@ -148,24 +148,4 @@ class driver_monitor_runner(Thread, NDUCameraRunner):
         output_name = sess.get_outputs()[0].name
         return sess, input_name, class_names, output_name
 
-    @staticmethod
-    def _intersects(b1, b2):
-        return rectangle(b1).intersects(rectangle(b2))
 
-
-class rectangle:
-    def intersects(self, other):
-        a, b = self, other
-        x1 = max(min(a.x1, a.x2), min(b.x1, b.x2))
-        y1 = max(min(a.y1, a.y2), min(b.y1, b.y2))
-        x2 = min(max(a.x1, a.x2), max(b.x1, b.x2))
-        y2 = min(max(a.y1, a.y2), max(b.y1, b.y2))
-        return x1 < x2 and y1 < y2
-
-    def _set(self, x1, y1, x2, y2):
-        if x1 > x2 or y1 > y2:
-            raise ValueError("Coordinates are invalid")
-        self.x1, self.y1, self.x2, self.y2 = x1, y1, x2, y2
-
-    def __init__(self, bbox):
-        self._set(bbox[0], bbox[1], bbox[2], bbox[3])

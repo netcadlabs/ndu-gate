@@ -5,6 +5,9 @@ from platform import system
 from importlib import util
 from logging import getLogger
 from inspect import getmembers, isclass, isfunction
+from typing import Iterator, List
+
+from ndu_gate_camera.utility import constants
 
 log = getLogger("service")
 
@@ -151,3 +154,16 @@ class NDUUtility:
             class_name = "otobus"
 
         return class_name
+
+    # returns (class_name, score, rect) from extra_data. Score and rect can be None!
+    @staticmethod
+    def enumerate_results(extra_data, class_name_filter=None) -> Iterator[tuple]:
+        results = extra_data.get(constants.EXTRA_DATA_KEY_RESULTS, None)
+        if results is not None:
+            for runner_name, result in results.items():
+                for item in result:
+                    class_name = item.get(constants.RESULT_KEY_CLASS_NAME, None)
+                    if class_name_filter is None or class_name in class_name_filter:
+                        score = item.get(constants.RESULT_KEY_SCORE, None)
+                        rect = item.get(constants.RESULT_KEY_RECT, None)
+                        yield class_name, score, rect

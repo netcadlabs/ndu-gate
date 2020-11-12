@@ -54,7 +54,7 @@ class emotion_runner(Thread, NDUCameraRunner):
 
         res = []
         if extra_data is not None:
-            results = extra_data.get("results", None)
+            results = extra_data.get(constants.EXTRA_DATA_KEY_RESULTS, None)
             if results is not None:
                 for runner_name, result in results.items():
                     for item in result:

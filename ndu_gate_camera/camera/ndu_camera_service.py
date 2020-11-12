@@ -301,7 +301,7 @@ class NDUCameraService:
                 if self.__show_preview:
                     start_total = time.time()
                 extra_data = {
-                    "results": {}
+                    constants.EXTRA_DATA_KEY_RESULTS: {}
                 }
 
                 # TODO - check runner settings before send the frame to runner
@@ -313,7 +313,7 @@ class NDUCameraService:
                         elapsed = time.time() - start
                         if self.__show_preview and result is not None:
                             result.append({"elapsed_time": f'{runner_conf["type"]}: {elapsed:.4f}sn'})
-                        extra_data["results"][runner_unique_key] = result
+                        extra_data[constants.EXTRA_DATA_KEY_RESULTS][runner_unique_key] = result
                         log.debug("result : %s", result)
 
                         if result is not None:

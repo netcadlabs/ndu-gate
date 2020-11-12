@@ -31,7 +31,7 @@ class person_counter_runner(Thread, NDUCameraRunner):
 
         person_count = 0
         if extra_data is not None:
-            results = extra_data.get("results", None)
+            results = extra_data.get(constants.EXTRA_DATA_KEY_RESULTS, None)
             if results is not None:
                 rect_persons = []
                 for runner_name, result in results.items():

@@ -15,3 +15,5 @@ RESULT_KEY_SCORE = "score"
 RESULT_KEY_DATA = "data"
 # Preview'e büyük şekilde yazılacak veri.
 RESULT_KEY_DEBUG = "debug"
+
+EXTRA_DATA_KEY_RESULTS = "results"

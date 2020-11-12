@@ -1,0 +1,6 @@
+{
+    "connector_config": {
+      "class": "point_occupied_runner"
+    },
+    "copy": []
+}

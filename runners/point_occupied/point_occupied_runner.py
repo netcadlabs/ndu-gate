@@ -93,7 +93,7 @@ class point_occupied_runner(Thread, NDUCameraRunner):
         #         cv2.circle(frame, pnt, self.__debug_radius_false, self.__debug_color_false, self.__debug_thickness_false)
         #         image_helper.put_text(frame, pnt_name, pnt, color=self.__debug_color_false, font_scale=0.75)
 
-        results = extra_data.get("results", None)
+        results = extra_data.get(constants.EXTRA_DATA_KEY_RESULTS, None)
         # active_pnts = {}
         if results is not None:
             # counts = {}

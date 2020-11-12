@@ -89,7 +89,7 @@ class objects_in_area_runner(Thread, NDUCameraRunner):
                 center = self.get_center_int(area)
                 image_helper.put_text(frame, area_name, center, color=self.__debug_color_normal, font_scale=0.75)
 
-        results = extra_data.get("results", None)
+        results = extra_data.get(constants.EXTRA_DATA_KEY_RESULTS, None)
         active_areas = {}
         if results is not None:
             counts = {}

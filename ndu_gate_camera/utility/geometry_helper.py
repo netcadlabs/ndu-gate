@@ -55,5 +55,25 @@ class geometry_helper:
         return True
 
     @staticmethod
+    def rects_intersect(rect1, rect2):
+        class rectangle:
+            def intersects(self, other):
+                a, b = self, other
+                x1 = max(min(a.x1, a.x2), min(b.x1, b.x2))
+                y1 = max(min(a.y1, a.y2), min(b.y1, b.y2))
+                x2 = min(max(a.x1, a.x2), max(b.x1, b.x2))
+                y2 = min(max(a.y1, a.y2), max(b.y1, b.y2))
+                return x1 < x2 and y1 < y2
+
+            def _set(self, x1, y1, x2, y2):
+                if x1 > x2 or y1 > y2:
+                    raise ValueError("Coordinates are invalid")
+                self.x1, self.y1, self.x2, self.y2 = x1, y1, x2, y2
+
+            def __init__(self, bbox):
+                self._set(bbox[0], bbox[1], bbox[2], bbox[3])
+        return rectangle(rect1).intersects(rectangle(rect2))
+
+    @staticmethod
     def distance(p1, p2):
         return math.sqrt((p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2)
