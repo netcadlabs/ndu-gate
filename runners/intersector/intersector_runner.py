@@ -12,24 +12,7 @@ from ndu_gate_camera.utility.geometry_helper import geometry_helper
 from ndu_gate_camera.utility.ndu_utility import NDUUtility
 
 
-
 class intersector_runner(Thread, NDUCameraRunner):
-    _GROUPS = "groups"
-    # _RECTS = "rects"
-    # _PADDING = "padding"
-    # _OBJ_DETECTION = "obj_detection"
-    # _GROUND = "ground"
-    # _DIST = "dist"
-    # _CLASS_NAMES = "class_names"
-    #
-    # _STYLE = "style"
-    # _ST_OR = "or"
-    # _ST_AND = "and"
-    # _ST_TOUCH = "touch"
-    # _ST_DIST = "dist"
-    #
-    # _CLASSIFICATION = "classification"
-    # _CLASSIFY_NAMES = "classify_names"
 
     def _init_classification(self):
         onnx_fn = path.dirname(path.abspath(__file__)) + "/data/googlenet-9.onnx"
@@ -42,51 +25,93 @@ class intersector_runner(Thread, NDUCameraRunner):
         self.__onnx_classify_names = onnx_helper.parse_class_names(class_names_fn)
 
     def _check_config(self, config):
-        class struct:
-            obj_detection = {}
-            classification = {}
-            def __init__(self, **entries):
-                self.__dict__.update(entries)
-        groups = {}
-        for group_name, group in config.items():
-            groups[group_name] = struct(**group)
-
-            aaa = groups[group_name].obj_detection
-            bbb = aaa.rects
-
-
-
-        rect_names = []
-        self.__onnx_classify_names = None
-        for group_name, group in config.items():
-            style = group.get(self._STYLE, None)
-            if style not in [self._ST_OR, self._ST_AND, self._ST_TOUCH]:
-                raise Exception(f"Bad config: {group_name} has bad style")
-            if self._RECTS in group:
-                for name in group[self._RECTS]:
-                    if name not in rect_names:
-                        rect_names.append(name)
+        def get_obj_detection(_gr0):
+            if "obj_detection" not in _gr0:
+                return None
             else:
-                group[self._RECTS] = []
-            if self._CLASSIFY in group:
-                if self.__onnx_classify_names is None:
-                    self._init_classification()
-                for css_name in group[self._CLASSIFY]:
-                    i = 0
-                    for css_name0 in self.__onnx_classify_names:
-                        if css_name in css_name0:
-                            group[self._CLASSIFY_INDEX] = i
-                            break
-                        i += 1
+                def get_rect(r0):
+                    class rect_det(object):
+                        pass
 
-        if len(rect_names) > 0:
-            return config, rect_names
-        else:
-            return None
+                    r = rect_det()
+                    r.padding = r0["padding"] if "padding" in r0 else 0
+                    r.style = r0["style"] if "style" in r0 else "or"
+                    r.class_names = []
+                    if "class_names" in r0:
+                        for class_name in r0["class_names"]:
+                            r.class_names.append(class_name)
+                    return r
+
+                class obj_det(object):
+                    pass
+
+                od0 = _gr0["obj_detection"]
+                od = obj_det()
+                od.ground = od0["ground"] if "ground" in od0 else None
+                od.dist = od0["dist"] if "dist" in od0 else None
+                if "rects" not in od0:
+                    raise Exception("Bad config! no rects in obj_detection node.")
+                od.rects = []
+                for r0 in od0["rects"]:
+                    od.rects.append(get_rect(r0))
+                return od
+
+        def get_classification(_gr0):
+            if "classification" not in _gr0:
+                return None
+            else:
+                class cs_det(object):
+                    pass
+
+                cs0 = _gr0["classification"]
+                cs = cs_det()
+                cs.threshold = cs0["threshold"] if "threshold" in cs0 else 0.5
+                cs.padding = cs0["padding"] if "padding" in cs0 else 0
+
+                cs.rect_names = []
+                for r0 in cs0["rect_names"]:
+                    cs.rect_names.append(r0)
+
+                if "classify_names" not in cs0:
+                    raise Exception("Bad config! no classify_names in classificaion node.")
+                cs.classify_names = []
+                for name in cs0["classify_names"]:
+                    cs.classify_names.append(name)
+                return cs
+
+        def enumerate_rect_class_names(_gr):
+            if _gr.obj_detection is not None:
+                for r in _gr.obj_detection.rects:
+                    for name in r.class_names:
+                        yield  name
+            if _gr.classification is not None:
+                for rect_name in _gr.classification.rect_names:
+                    yield rect_name
+
+        class config_def(object):
+            pass
+        class group_def(object):
+            pass
+
+        self.__onnx_classify_names = None
+        self._conf = config_def()
+        self._conf.groups = []
+        self._conf.all_rect_names = []
+        for group_name, gr0 in config.items():
+            gr = group_def()
+            gr.name = group_name
+            gr.obj_detection = get_obj_detection(gr0)
+            gr.classification = get_classification(gr0)
+            if self.__onnx_classify_names is None and gr.classification is not None:
+                self._init_classification()
+            self._conf.groups.append(gr)
+            for name in enumerate_rect_class_names(gr):
+                if name not in self._conf.all_rect_names:
+                    self._conf.all_rect_names.append(name)
 
     def __init__(self, config, connector_type):
         super().__init__()
-        self.__config, self.__rect_names = self._check_config(config.get("groups", None))
+        self._check_config(config.get("groups", None))
 
     def get_name(self):
         return "intersector_runner"

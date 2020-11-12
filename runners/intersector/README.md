@@ -33,7 +33,7 @@
       "classification": { //0 veya 1 tane classification olarbilir.        
         "threshold": 0.1, //classification minimum score değeri. Default=0.5
         "padding": 0.03, //classification çalıştırılacak rect'lere padding uygulamak istendiğinde kullanılır. Default=0
-        "rects": ["<class_name1>","<class_name1>", ...], //bu isimlerdeki tüm rect'ler için classification çalıştırılır. '*' karakteri kullanılabilir.
+        "rect_names": ["<class_name1>","<class_name1>", ...], //bu isimlerdeki tüm rect'ler için classification çalıştırılır. '*' karakteri kullanılabilir.
                                                          //hiç rect verilmemişse frame'in tamamına classification yapılır.
         "classify_names": ["<class_name1>", "<class_name2>", ...] //bu isimlere ait bir classification sonucu bulundu mu? 
                                                           //Her zaman 'or' olarak çalışır. Yani bir tanesi varsa kabul edilir.
@@ -48,7 +48,7 @@
 
 
 ### Örnek:
-```yaml
+```java
 {
   "groups": {
     "Sosyal mesafe ihlali": {
@@ -107,7 +107,7 @@
       "classification": {
         "threshold": 0.1,
         "padding": 0.03,
-        "rects": [
+        "rect_names": [
           "person"
         ],
         "classify_names": [
@@ -131,7 +131,7 @@
       "classification": {
         "threshold": 0.1,
         "padding": 0,
-        "rects": [
+        "rect_names": [
           "face"
         ],
         "classify_names": [
