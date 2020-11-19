@@ -158,16 +158,28 @@ class NDUUtility:
 
     # returns (class_name, score, rect) from extra_data. Score and rect can be None!
     @staticmethod
-    def enumerate_results(extra_data, class_name_filter=None) -> Iterator[tuple]:
+    def enumerate_results(extra_data, class_name_filters=None, use_wildcard=False) -> Iterator[tuple]:
         results = extra_data.get(constants.EXTRA_DATA_KEY_RESULTS, None)
         if results is not None:
             for runner_name, result in results.items():
                 for item in result:
                     class_name = item.get(constants.RESULT_KEY_CLASS_NAME, None)
-                    if class_name_filter is None or class_name in class_name_filter:
-                        score = item.get(constants.RESULT_KEY_SCORE, None)
-                        rect = item.get(constants.RESULT_KEY_RECT, None)
-                        yield class_name, score, rect
+                    if class_name is not None:
+                        ok = False
+                        if class_name_filters is None:
+                            ok = True
+                        else:
+                            if use_wildcard:
+                                for filter1 in class_name_filters:
+                                    if NDUUtility.wildcard(class_name, filter1):
+                                        ok = True
+                                        break
+                            else:
+                                ok = class_name in class_name_filters
+                        if ok:
+                            score = item.get(constants.RESULT_KEY_SCORE, None)
+                            rect = item.get(constants.RESULT_KEY_RECT, None)
+                            yield class_name, score, rect
 
     @staticmethod
     def wildcard(txt, pattern, case_insensitive=True):

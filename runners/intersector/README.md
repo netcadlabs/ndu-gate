@@ -47,7 +47,43 @@
 ```
 
 
-### Örnek:
+### Örnekler:
+
+####Telefonla konuşuyor, emniyet kemeri takıyor:
+```java
+{
+  "groups": {
+    "Telefonla konusuyor": {
+      "obj_detection": {
+        "rects": [
+          {
+            "style": "touch",
+            "padding": 0.1,
+            "class_names": [
+              "face",
+              "*phone*"
+            ]
+          }
+        ]
+      }
+    },
+    "Emniyet kemeri takiyor": {
+      "classification": {
+        "threshold": 0.1,
+        "padding": 0,
+        "rect_names": [
+          "person"
+        ],
+        "classify_names": [
+          "*belt*"
+        ]
+      }
+    }
+  }
+}
+```
+
+Misc..
 ```java
 {
   "groups": {

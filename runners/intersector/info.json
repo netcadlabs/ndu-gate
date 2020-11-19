@@ -1,6 +1,6 @@
 {
     "connector_config": {
-      "class": "PointOccupiedRunner"
+      "class": "IntersectorRunner"
     },
     "copy": []
 }

@@ -120,11 +120,11 @@ runners:
 #    class: Yolov4Runner
 #    priority: 10
 
-#  - name: yolov5s - Object detection with 80 classes (Fastest)
-#    type: yolov5s
-#    configuration: yolov5s.json
-#    class: Yolov5sRunner
-#    priority: 10
+  - name: yolov5s - Object detection with 80 classes (Fastest)
+    type: yolov5s
+    configuration: yolov5s.json
+    class: Yolov5sRunner
+    priority: 10
 
 #  - name: yolov5m - Object detection with 80 classes (Fast)
 #    type: yolov5m
@@ -138,11 +138,11 @@ runners:
 #    class: Yolov5lRunner
 #    priority: 10
 
-  - name: yolov5x - Object detection with 80 classes (Most Accurate)
-    type: yolov5x
-    configuration: yolov5x.json
-    class: Yolov5xRunner
-    priority: 10
+#  - name: yolov5x - Object detection with 80 classes (Most Accurate)
+#    type: yolov5x
+#    configuration: yolov5x.json
+#    class: Yolov5xRunner
+#    priority: 10
 
 #  - name: ssd_mobilenet - Fast object detection with 80 classes
 #    type: ssd_mobilenet
