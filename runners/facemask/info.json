@@ -1,6 +1,6 @@
 {
     "connector_config": {
-      "class": "face_mask_runner"
+      "class": "FaceMaskRunner"
     },
     "copy": []
 }

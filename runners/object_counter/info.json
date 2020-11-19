@@ -1,6 +1,6 @@
 {
     "connector_config": {
-      "class": "object_counter_runner"
+      "class": "ObjectCounterRunner"
     },
     "copy": []
 }

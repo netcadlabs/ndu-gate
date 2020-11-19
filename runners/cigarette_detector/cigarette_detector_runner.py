@@ -4,7 +4,7 @@ from ndu_gate_camera.api.ndu_camera_runner import NDUCameraRunner
 from ndu_gate_camera.utility import onnx_helper, yolo_helper
 
 
-class cigarette_detector_runner(NDUCameraRunner):
+class CigaretteDetectorRunner(NDUCameraRunner):
     def __init__(self, config, connector_type):
         super().__init__()
         onnx_fn = "/data/cigarette_s.onnx"

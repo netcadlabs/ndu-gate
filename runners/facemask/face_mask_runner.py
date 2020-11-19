@@ -11,7 +11,7 @@ from ndu_gate_camera.api.ndu_camera_runner import NDUCameraRunner, log
 from ndu_gate_camera.utility import constants, image_helper
 
 
-class face_mask_runner(Thread, NDUCameraRunner):
+class FaceMaskRunner(Thread, NDUCameraRunner):
     def __init__(self, config, connector_type):
         super().__init__()
         self.__config = config
@@ -102,7 +102,7 @@ class face_mask_runner(Thread, NDUCameraRunner):
         # # export
 
     def get_name(self):
-        return "face_mask_runner"
+        return "FaceMaskRunner"
 
     def get_settings(self):
         settings = {}

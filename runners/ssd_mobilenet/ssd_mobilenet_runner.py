@@ -14,7 +14,7 @@ from os import path
 import numpy as np
 
 
-class ssd_mobilenet_runner(Thread, NDUCameraRunner):
+class SsdMobilenetRunner(Thread, NDUCameraRunner):
 
     def __init__(self, config, connector_type):
         super().__init__()

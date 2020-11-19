@@ -1,6 +1,6 @@
 {
     "connector_config": {
-      "class": "yolov3_runner"
+      "class": "Yolov3Runner"
     },
     "copy": []
 }

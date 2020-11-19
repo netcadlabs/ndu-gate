@@ -12,7 +12,7 @@ from ndu_gate_camera.utility import constants, image_helper
 from ndu_gate_camera.utility.ndu_utility import NDUUtility
 
 
-class gender_age_runner(Thread, NDUCameraRunner):
+class GenderAgeRunner(Thread, NDUCameraRunner):
     def __init__(self, config, connector_type):
         def _create_session(onnx_fn):
             sess = rt.InferenceSession(onnx_fn)
@@ -32,7 +32,7 @@ class gender_age_runner(Thread, NDUCameraRunner):
         self.__onnx_sess, self.__onnx_input_name, self.__onnx_output_names = _create_session(onnx_fn)
 
     def get_name(self):
-        return "gender_age_runner"
+        return "GenderAgeRunner"
 
     def get_settings(self):
         settings = {}

@@ -15,7 +15,7 @@ from ndu_gate_camera.utility import constants, image_helper
 from ndu_gate_camera.utility.ndu_utility import NDUUtility
 
 
-class emotion_runner(Thread, NDUCameraRunner):
+class EmotionRunner(Thread, NDUCameraRunner):
     def __init__(self, config, connector_type):
         super().__init__()
         self.__config = config
@@ -42,7 +42,7 @@ class emotion_runner(Thread, NDUCameraRunner):
         self.__onnx_sess, self.__onnx_input_name, self.__onnx_output_names, self.__onnx_class_names = _create_session(onnx_fn, class_names_fn)
 
     def get_name(self):
-        return "emotion_runner"
+        return "EmotionRunner"
 
     def get_settings(self):
         settings = {}

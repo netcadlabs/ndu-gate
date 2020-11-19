@@ -12,7 +12,7 @@ from ndu_gate_camera.utility.ndu_utility import NDUUtility
 from sort import Sort
 
 
-class object_counter_runner(Thread, NDUCameraRunner):
+class ObjectCounterRunner(Thread, NDUCameraRunner):
     def __init__(self, config, connector_type):
         super().__init__()
         self.connector_type = connector_type
@@ -23,7 +23,7 @@ class object_counter_runner(Thread, NDUCameraRunner):
         self.__debug = True #####koray
 
     def get_name(self):
-        return "object_counter_runner"
+        return "ObjectCounterRunner"
 
     def get_settings(self):
         settings = {}

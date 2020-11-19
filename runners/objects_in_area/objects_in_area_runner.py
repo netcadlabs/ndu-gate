@@ -7,7 +7,7 @@ from ndu_gate_camera.utility import constants, geometry_helper, image_helper
 from ndu_gate_camera.utility.ndu_utility import NDUUtility
 
 
-class objects_in_area_runner(Thread, NDUCameraRunner):
+class ObjectsInAreaRunner(Thread, NDUCameraRunner):
     def __init__(self, config, connector_type):
         super().__init__()
         self.connector_type = connector_type
@@ -23,7 +23,7 @@ class objects_in_area_runner(Thread, NDUCameraRunner):
         self.__debug_thickness_alert = 4
 
     def get_name(self):
-        return "objects_in_area_runner"
+        return "ObjectsInAreaRunner"
 
     def get_settings(self):
         settings = {}

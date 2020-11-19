@@ -11,7 +11,7 @@ from ndu_gate_camera.api.ndu_camera_runner import NDUCameraRunner, log
 from ndu_gate_camera.utility import constants, image_helper
 
 
-class face_detector_runner(NDUCameraRunner):
+class FaceDetectorRunner(NDUCameraRunner):
     def __init__(self, config, connector_type):
         super().__init__()
         self.__threshold = config.get("threshold", 0.8)
@@ -24,7 +24,7 @@ class face_detector_runner(NDUCameraRunner):
         if not path.isfile(class_names_fn):
             raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), class_names_fn)
 
-        # self.__onnx_sess, self.__onnx_input_name, self.__onnx_class_names = face_detector_runner._create_session(onnx_fn, class_names_fn)
+        # self.__onnx_sess, self.__onnx_input_name, self.__onnx_class_names = FaceDetectorRunner._create_session(onnx_fn, class_names_fn)
         def _create_session(onnx_fn, classes_fn):
             sess = rt.InferenceSession(onnx_fn)
             input_name = sess.get_inputs()[0].name
@@ -75,7 +75,7 @@ class face_detector_runner(NDUCameraRunner):
         image = image.astype(np.float32)
         confidences, boxes = self.__onnx_sess.run(self.__onnx_output_names, {self.__onnx_input_name: image})
 
-        out_boxes, out_classes, out_scores = face_detector_runner._predict_faces(w, h, confidences, boxes, self.__threshold, self.__onnx_class_names)
+        out_boxes, out_classes, out_scores = FaceDetectorRunner._predict_faces(w, h, confidences, boxes, self.__threshold, self.__onnx_class_names)
 
         res = []
         for i in range(len(out_boxes)):
@@ -98,7 +98,7 @@ class face_detector_runner(NDUCameraRunner):
                 continue
             subset_boxes = boxes[mask, :]
             box_probs = np.concatenate([subset_boxes, probs.reshape(-1, 1)], axis=1)
-            box_probs = face_detector_runner._hard_nms(box_probs,
+            box_probs = FaceDetectorRunner._hard_nms(box_probs,
                                                        iou_threshold=iou_threshold,
                                                        top_k=top_k,
                                                        )

@@ -7,7 +7,7 @@ from ndu_gate_camera.api.ndu_camera_runner import NDUCameraRunner, log
 from ndu_gate_camera.utility import constants, image_helper
 
 
-class yolov3_runner(NDUCameraRunner):
+class Yolov3Runner(NDUCameraRunner):
     def __init__(self, config, connector_type):
         super().__init__()
         self.__config = config
@@ -42,17 +42,17 @@ class yolov3_runner(NDUCameraRunner):
     @staticmethod
     def _predict(sess, input_name, input_size, class_names, frame):
         image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        img_processed, w, h, nw, nh, dw, dh = yolov3_runner._image_preprocess(np.copy(image), [input_size, input_size])
-        # img_processed, w, h, nw, nh, dw, dh = yolov3_runner._image_preprocess(np.copy(frame), [input_size, input_size])
+        img_processed, w, h, nw, nh, dw, dh = Yolov3Runner._image_preprocess(np.copy(image), [input_size, input_size])
+        # img_processed, w, h, nw, nh, dw, dh = Yolov3Runner._image_preprocess(np.copy(frame), [input_size, input_size])
         image_data = img_processed[np.newaxis, ...].astype(np.float32)
         image_data = np.transpose(image_data, [0, 3, 1, 2])
 
         # yolov3 için özel kısım
         img_size = np.array([input_size, input_size], dtype=np.float32).reshape(1, 2)
         boxes, scores, indices = sess.run(None, {input_name: image_data, "image_shape": img_size})
-        out_boxes, out_scores, out_classes = yolov3_runner._postprocess_yolov3(boxes, scores, indices, class_names)
+        out_boxes, out_scores, out_classes = Yolov3Runner._postprocess_yolov3(boxes, scores, indices, class_names)
 
-        out_boxes = yolov3_runner._remove_padding(out_boxes, w, h, nw, nh, dw, dh)
+        out_boxes = Yolov3Runner._remove_padding(out_boxes, w, h, nw, nh, dw, dh)
 
         res = []
         for i in range(len(out_boxes)):

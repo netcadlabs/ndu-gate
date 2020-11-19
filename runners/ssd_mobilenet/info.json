@@ -1,6 +1,6 @@
 {
     "connector_config": {
-      "class": "ssd_mobilenet_runner"
+      "class": "SsdMobilenetRunner"
     },
     "copy": []
 }

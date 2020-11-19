@@ -12,7 +12,7 @@ from ndu_gate_camera.utility import constants, onnx_helper, geometry_helper
 from ndu_gate_camera.utility.ndu_utility import NDUUtility
 
 
-class intersector_runner(Thread, NDUCameraRunner):
+class IntersectorRunner(Thread, NDUCameraRunner):
 
     def _init_classification(self):
         onnx_fn = path.dirname(path.abspath(__file__)) + "/data/googlenet-9.onnx"
@@ -51,7 +51,7 @@ class intersector_runner(Thread, NDUCameraRunner):
             obj_detection = ObjDet()
             classification = CsDet()
 
-        class rect_det(object):
+        class RectDet(object):
             padding = 0
             style = self._ST_OR
             class_names = []
@@ -61,7 +61,7 @@ class intersector_runner(Thread, NDUCameraRunner):
                 return None
             else:
                 def get_rect(r0):
-                    r = rect_det()
+                    r = RectDet()
                     r.padding = r0["padding"] if "padding" in r0 else 0
                     r.style = r0["style"] if "style" in r0 else "or"
                     if "class_names" in r0:
@@ -128,7 +128,7 @@ class intersector_runner(Thread, NDUCameraRunner):
         self._check_config(config.get("groups", None))
 
     def get_name(self):
-        return "intersector_runner"
+        return "IntersectorRunner"
 
     def get_settings(self):
         settings = {}
@@ -265,16 +265,16 @@ class intersector_runner(Thread, NDUCameraRunner):
                     rect = None
 
                 rects = []
-                for class_name, score, rect in rects0:
+                for class_name1, score1, rect1 in rects0:
                     ok = False
                     for r_name in r.class_names:
-                        if NDUUtility.wildcard(class_name, r_name):
+                        if NDUUtility.wildcard(class_name1, r_name):
                             ok = True
                             break
                     if ok:
                         r = r_def()
-                        r.name = class_name
-                        r.rect = rect
+                        r.name = class_name1
+                        r.rect = rect1
                         rects.append(r)
                 ok_r = []
                 for r1 in rects:

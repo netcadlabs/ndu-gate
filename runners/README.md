@@ -11,7 +11,7 @@ runners:
   - name: Face Detector
     type: facedetector # ndu-gate/runners dizini altındaki runnerın bunuduğu klasörün adı.
     configuration: facedetector.json # ndu-gate/ndu_gate_camera/config dizinde bulunan, runner'a ait özel ayarların yapılabildiği congif dosyası.
-    class: face_detector_runner # çalıştırılacak runner class'ının adı.
+    class: FaceDetectorRunner # çalıştırılacak runner class'ının adı.
     priority: 10  # Öncelik sırası
 ```
 

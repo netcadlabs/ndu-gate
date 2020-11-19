@@ -1,6 +1,6 @@
 {
     "connector_config": {
-      "class": "face_detector_runner"
+      "class": "FaceDetectorRunner"
     },
     "copy": []
 }

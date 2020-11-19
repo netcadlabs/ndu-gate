@@ -7,7 +7,7 @@ from ndu_gate_camera.api.ndu_camera_runner import NDUCameraRunner
 from ndu_gate_camera.utility import constants, geometry_helper, image_helper
 
 
-class point_occupied_runner(Thread, NDUCameraRunner):
+class PointOccupiedRunner(Thread, NDUCameraRunner):
     def __init__(self, config, connector_type):
         super().__init__()
         self.connector_type = connector_type
@@ -28,7 +28,7 @@ class point_occupied_runner(Thread, NDUCameraRunner):
         self.__debug_radius_true = 4
 
     def get_name(self):
-        return "point_occupied_runner"
+        return "PointOccupiedRunner"
 
     def get_settings(self):
         settings = {}

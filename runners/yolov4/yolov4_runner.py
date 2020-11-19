@@ -7,7 +7,7 @@ from ndu_gate_camera.api.ndu_camera_runner import NDUCameraRunner
 from ndu_gate_camera.utility import constants, image_helper
 
 
-class yolov4_runner(NDUCameraRunner):
+class Yolov4Runner(NDUCameraRunner):
     def __init__(self, config, connector_type):
         super().__init__()
         self.__config = config

@@ -1,6 +1,6 @@
 {
     "connector_config": {
-      "class": "objects_in_area_runner"
+      "class": "ObjectsInAreaRunner"
     },
     "copy": []
 }
