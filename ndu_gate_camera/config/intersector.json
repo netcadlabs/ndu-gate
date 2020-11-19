@@ -1,69 +1,5 @@
 {
   "groups": {
-    "Sosyal mesafe ihlali": {
-      "obj_detection": {
-        "ground": [[1,1],[2,2],[3,3],[4,4]],
-        "dist": [[1,1],[2,2]],
-        "rects": [
-          {
-            "padding": 0,
-            "style": "dist",
-            "class_names": [
-              "person",
-              "person"
-            ]
-          }
-        ]
-      }
-    },
-    "Is guvenligi ihlali": {
-      "obj_detection": {
-        "ground": [0,1,2,3],
-        "dist": [[0,1],[2,3]],
-        "rects": [
-          {
-            "padding": 0,
-            "class_names": [
-              "person"
-            ]
-          },
-          {
-            "padding": 0,
-            "style": "or",
-            "class_names": [
-              "truck",
-              "bus"
-            ]
-          }
-        ]
-      }
-    },
-    "Sigara iciyor": {
-      "obj_detection": {
-        "rects": [
-          {
-            "padding": 0,
-            "style": "touch",
-            "class_names": [
-              "cigarette",
-              "face"
-            ]
-          }
-        ]
-      }
-    },
-    "Emniyet kemeri takili": {
-      "classification": {
-        "threshold": 0.1,
-        "padding": 0.03,
-        "rect_names": [
-          "person"
-        ],
-        "classify_names": [
-          "*seatbelt*"
-        ]
-      }
-    },
     "Telefonla konusuyor": {
       "obj_detection": {
         "rects": [
@@ -85,55 +21,6 @@
         ],
         "classify_names": [
           "*phone*"
-        ]
-      }
-    },
-    "Kamera tasit tespit etti!": {
-      "obj_detection": {
-        "rects": [
-          {
-            "style": "or",
-            "class_names": [
-              "car",
-              "bicycle",
-              "motorbike",
-              "truck",
-              "bus"
-            ]
-          }
-        ]
-      }
-    },
-    "Ayi saldırma tehlikesi": {
-      "obj_detection": {
-        "rects": [
-          {
-            "style": "and",
-            "class_names": [
-              "person",
-              "bear"
-            ]
-          }
-        ]
-      }
-    },
-    "Vahsi hayvan saldırma tehlikesi": {
-      "obj_detection": {
-        "rects": [
-          {
-            "class_names": [
-              "person"
-            ]
-          },
-          {
-            "style": "or",
-            "class_names": [
-              "elephant",
-              "bear",
-              "zebra",
-              "giraffe"
-            ]
-          }
         ]
       }
     }

@@ -6,6 +6,7 @@ from importlib import util
 from logging import getLogger
 from inspect import getmembers, isclass, isfunction
 from typing import Iterator, List
+from fnmatch import fnmatch
 
 from ndu_gate_camera.utility import constants
 
@@ -167,3 +168,25 @@ class NDUUtility:
                         score = item.get(constants.RESULT_KEY_SCORE, None)
                         rect = item.get(constants.RESULT_KEY_RECT, None)
                         yield class_name, score, rect
+
+    @staticmethod
+    def wildcard(txt, pattern, case_insensitive=True):
+        if txt == pattern:
+            return True
+        else:
+            return fnmatch(txt.lower(), pattern.lower()) if case_insensitive else fnmatch(txt, pattern)
+
+    @staticmethod
+    def wildcard_match_count(list_txt, pattern, case_insensitive=True):
+        count = 0
+        for txt in list_txt:
+            if NDUUtility.wildcard(txt, pattern, case_insensitive):
+                count += 1
+        return count
+
+    @staticmethod
+    def wildcard_has_match(list_txt, pattern, case_insensitive=True):
+        for txt in list_txt:
+            if NDUUtility.wildcard(txt, pattern, case_insensitive):
+                return True
+        return False

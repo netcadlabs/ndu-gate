@@ -63,6 +63,8 @@ class NDUCameraService:
         self.__write_preview_file_name = self.SOURCE_CONFIG.get("write_preview_file_name", "")
         self.__max_frame_dim = self.SOURCE_CONFIG.get("max_frame_dim", None)
         self.__min_frame_dim = self.SOURCE_CONFIG.get("min_frame_dim", None)
+        self.__skip_frame = self.SOURCE_CONFIG.get("skip_frame", 0)
+        self.__color_toggle = None
         logging_error = None
         logging_config_file = self._ndu_gate_config_dir + "logs.conf"
         try:
@@ -277,8 +279,10 @@ class NDUCameraService:
             cv2.moveWindow(winname, 40, 30)
 
         for i, frame in self.video_source.get_frames():
-            if i % 100 == 0:
+            if i % 1000 == 0:
                 log.debug("frame count %s ", i)
+            if self.__skip_frame > 1 and i % self.__skip_frame != 0:
+                continue
 
             if i % self.frame_send_interval == 0:
                 try:
@@ -330,6 +334,7 @@ class NDUCameraService:
                     total_elapsed_time = time.time() - start_total
                     results.append([{"total_elapsed_time": f'{total_elapsed_time * 1000:.0f}msec'}])
                     preview = self._get_preview(frame, results)
+
                 cv2.imshow(winname, preview)
                 # while True:
                 #     k = cv2.waitKey(100) & 0xFF
@@ -396,6 +401,15 @@ class NDUCameraService:
             self.__out = cv2.VideoWriter(self.__write_preview_file_name, fourcc, 24.0, shape)
             self.__out.write(frame)
 
+    def _new_color(self):
+        if self.__color_toggle is None:
+            self.__color_toggle = [random.randint(50, 255), random.randint(50, 255), random.randint(50, 255)]
+            return self.__color_toggle
+        else:
+            c = self.__color_toggle
+            self.__color_toggle = None
+            return [max(50, 255 - c[0]), max(50, 255 - c[1]), max(50, 255 - c[2])]
+
     def _get_preview(self, image, results):
         def draw_rect(obj, img, c1_, c2_, class_preview_key_):
             color = [255, 255, 255]
@@ -406,7 +420,7 @@ class NDUCameraService:
                 if class_preview_key_ in dic:
                     color = dic[class_preview_key_]
                 else:
-                    color = dic[class_preview_key_] = [random.randint(50, 255), random.randint(50, 255), random.randint(50, 255)]
+                    color = dic[class_preview_key_] = self._new_color()
 
             cv2.rectangle(img, (c1_[0], c1_[1]), (c2_[0], c2_[1]), color=[0, 0, 0], thickness=3)
             cv2.rectangle(img, (c1_[0], c1_[1]), (c2_[0], c2_[1]), color=color, thickness=2)
