@@ -3,9 +3,7 @@ from threading import Thread
 import numpy as np
 
 from ndu_gate_camera.api.ndu_camera_runner import NDUCameraRunner
-from ndu_gate_camera.utility import constants
-from ndu_gate_camera.utility.geometry_helper import geometry_helper
-from ndu_gate_camera.utility.image_helper import image_helper
+from ndu_gate_camera.utility import constants, geometry_helper, image_helper
 from ndu_gate_camera.utility.ndu_utility import NDUUtility
 
 
@@ -71,7 +69,9 @@ class objects_in_area_runner(Thread, NDUCameraRunner):
         if len(self.__areas) == 0 and self.__frame_num == 1:
             # areas = image_helper.select_areas(frame, self.get_name(), color=self.__debug_color_false, opacity=0.3, thickness=self.__debug_thickness_false, max_count=None, next_area_key="n", finish_key="s")
             areas = [[(503, 167), (403, 225), (565, 270), (639, 203)],
-                     [(334, 484), (307, 483), (277, 481), (229, 491), (210, 518), (196, 546), (213, 580), (230, 605), (280, 626), (309, 627), (350, 615), (374, 598), (405, 567), (411, 532), (384, 501)]]  # vid_short.mp4
+                     [(334, 484), (307, 483), (277, 481), (229, 491), (210, 518), (196, 546), (213, 580), (230, 605),
+                      (280, 626), (309, 627), (350, 615), (374, 598), (405, 567), (411, 532),
+                      (384, 501)]]  # vid_short.mp4
             # areas = [[(144, 361), (645, 368), (983, 824), (897, 892), (5, 894), (19, 427)]] # yaya4.mp4
             # areas = [[(164, 191), (310, 185), (355, 213), (451, 244), (512, 263), (354, 299), (244, 247), (205, 222), (190, 216)]] # araba2.mp4
             # areas = [[(654, 565), (665, 576), (666, 583), (660, 589), (653, 592), (642, 599), (630, 603), (621, 607), (939, 558), (864, 539), (767, 550)]] # meydan2.mp4
@@ -85,7 +85,8 @@ class objects_in_area_runner(Thread, NDUCameraRunner):
                 area_name = self.debug_area_name(item.get("name"))
                 area = item.get("area")
                 pnts = np.array(area, np.int32)
-                image_helper.fill_polyline_transparent(frame, [pnts], color=self.__debug_color_normal, opacity=0.3, thickness=self.__debug_thickness_normal)
+                image_helper.fill_polyline_transparent(frame, [pnts], color=self.__debug_color_normal, opacity=0.3,
+                                                      thickness=self.__debug_thickness_normal)
                 center = self.get_center_int(area)
                 image_helper.put_text(frame, area_name, center, color=self.__debug_color_normal, font_scale=0.75)
 
@@ -115,9 +116,13 @@ class objects_in_area_runner(Thread, NDUCameraRunner):
 
                                     if self.__debug:  # and self.__frame_num % 2 == 0:
                                         pnts = np.array(area, np.int32)
-                                        image_helper.fill_polyline_transparent(frame, [pnts], color=self.__debug_color_alert, opacity=0.5, thickness=self.__debug_thickness_alert)
+                                        image_helper.fill_polyline_transparent(frame, [pnts],
+                                                                              color=self.__debug_color_alert,
+                                                                              opacity=0.5,
+                                                                              thickness=self.__debug_thickness_alert)
                                         center = self.get_center_int(area)
-                                        image_helper.put_text(frame, self.debug_area_name(area_name), center, color=self.__debug_color_alert, font_scale=0.75)
+                                        image_helper.put_text(frame, self.debug_area_name(area_name), center,
+                                                             color=self.__debug_color_alert, font_scale=0.75)
 
             debug_texts = debug_text = None
             if self.__debug:

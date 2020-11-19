@@ -4,9 +4,7 @@ import cv2
 import numpy as np
 
 from ndu_gate_camera.api.ndu_camera_runner import NDUCameraRunner
-from ndu_gate_camera.utility import constants
-from ndu_gate_camera.utility.geometry_helper import geometry_helper
-from ndu_gate_camera.utility.image_helper import image_helper
+from ndu_gate_camera.utility import constants, geometry_helper, image_helper
 
 
 class point_occupied_runner(Thread, NDUCameraRunner):
@@ -84,7 +82,8 @@ class point_occupied_runner(Thread, NDUCameraRunner):
             pnt_counter = 0
             for pnt in pnts:
                 pnt_counter += 1
-                self.__points.append({"name": f"{self.pnt_prefix}{pnt_counter}", "pnt": pnt, "true_count": 0, "is_true": False})
+                self.__points.append(
+                    {"name": f"{self.pnt_prefix}{pnt_counter}", "pnt": pnt, "true_count": 0, "is_true": False})
 
         # if self.__debug:
         #     for item in self.__points:
@@ -165,10 +164,12 @@ class point_occupied_runner(Thread, NDUCameraRunner):
                 pnt_name = self.debug_pnt_name(pnt_item.get("name"))
                 pnt = pnt_item.get("pnt")
                 if pnt_item["is_true"]:
-                    cv2.circle(frame, pnt, self.__debug_radius_true, self.__debug_color_true, self.__debug_thickness_true)
+                    cv2.circle(frame, pnt, self.__debug_radius_true, self.__debug_color_true,
+                               self.__debug_thickness_true)
                     image_helper.put_text(frame, pnt_name, pnt, color=self.__debug_color_true, font_scale=0.75)
                 else:
-                    cv2.circle(frame, pnt, self.__debug_radius_false, self.__debug_color_false, self.__debug_thickness_false)
+                    cv2.circle(frame, pnt, self.__debug_radius_false, self.__debug_color_false,
+                               self.__debug_thickness_false)
                     image_helper.put_text(frame, pnt_name, pnt, color=self.__debug_color_false, font_scale=0.75)
 
         return res

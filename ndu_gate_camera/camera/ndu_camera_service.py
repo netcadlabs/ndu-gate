@@ -22,8 +22,7 @@ from ndu_gate_camera.camera.video_sources.ip_camera_video_source import IPCamera
 from ndu_gate_camera.camera.video_sources.pi_camera_video_source import PiCameraVideoSource
 from ndu_gate_camera.camera.video_sources.youtube_video_source import YoutubeVideoSource
 from ndu_gate_camera.camera.video_sources.image_video_source import ImageVideoSource
-from ndu_gate_camera.utility import constants
-from ndu_gate_camera.utility.image_helper import image_helper
+from ndu_gate_camera.utility import constants, image_helper
 from ndu_gate_camera.utility.ndu_utility import NDUUtility
 
 name = uname()
@@ -125,7 +124,7 @@ class NDUCameraService:
             for runner in self.__ndu_gate_config['runners']:
                 log.debug("runner config : %s", runner)
                 try:
-                    if runner.get("status", 1) is 0:  # runner status default value is 1
+                    if runner.get("status", 1) == 0:  # runner status default value is 1>>>
                         log.debug("runner is not active %s", runner)
                         continue
 

@@ -9,11 +9,8 @@ import os
 import errno
 from os import path
 
-from ndu_gate_camera.api.ndu_camera_runner import NDUCameraRunner, log
-from ndu_gate_camera.utility import constants
-from ndu_gate_camera.utility.geometry_helper import geometry_helper
-from ndu_gate_camera.utility.ndu_utility import NDUUtility
-
+from ndu_gate_camera.api.ndu_camera_runner import NDUCameraRunner
+from ndu_gate_camera.utility import constants, geometry_helper
 
 class driver_monitor_runner(Thread, NDUCameraRunner):
     def __init__(self, config, connector_type):

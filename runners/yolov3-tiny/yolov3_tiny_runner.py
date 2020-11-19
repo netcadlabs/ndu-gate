@@ -4,8 +4,7 @@ import onnxruntime as rt
 import os
 
 from ndu_gate_camera.api.ndu_camera_runner import NDUCameraRunner, log
-from ndu_gate_camera.utility import constants
-from ndu_gate_camera.utility.image_helper import image_helper
+from ndu_gate_camera.utility import constants, image_helper
 
 class yolov3_tiny_runner(NDUCameraRunner):
     def __init__(self, config, connector_type):

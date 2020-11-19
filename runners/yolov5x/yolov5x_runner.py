@@ -1,11 +1,10 @@
 import os
 
 from ndu_gate_camera.api.ndu_camera_runner import NDUCameraRunner
-from ndu_gate_camera.utility import onnx_helper
-from ndu_gate_camera.utility.yolo_helper import yolo_helper
+from ndu_gate_camera.utility import onnx_helper, yolo_helper
 
 
-class yolov5x_runner(NDUCameraRunner):
+class Yolov5xRunner(NDUCameraRunner):
     def __init__(self, config, connector_type):
         super().__init__()
         onnx_fn = "/data/yolov5x.onnx"

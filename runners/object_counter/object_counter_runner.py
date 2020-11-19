@@ -7,9 +7,7 @@ import cv2
 from threading import Thread
 
 from ndu_gate_camera.api.ndu_camera_runner import NDUCameraRunner
-from ndu_gate_camera.utility import constants
-from ndu_gate_camera.utility.geometry_helper import geometry_helper
-from ndu_gate_camera.utility.image_helper import image_helper
+from ndu_gate_camera.utility import constants, geometry_helper, image_helper
 from ndu_gate_camera.utility.ndu_utility import NDUUtility
 from sort import Sort
 
@@ -22,7 +20,7 @@ class object_counter_runner(Thread, NDUCameraRunner):
         self.__frame_num = 0
         self.__gates = []
         self.__last_data = {}
-        self.__debug = False
+        self.__debug = True #####koray
 
     def get_name(self):
         return "object_counter_runner"

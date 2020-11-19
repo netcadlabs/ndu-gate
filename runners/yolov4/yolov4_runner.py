@@ -3,9 +3,8 @@ import cv2
 import onnxruntime as rt
 import os
 
-from ndu_gate_camera.api.ndu_camera_runner import NDUCameraRunner, log
-from ndu_gate_camera.utility import constants
-from ndu_gate_camera.utility.image_helper import image_helper
+from ndu_gate_camera.api.ndu_camera_runner import NDUCameraRunner
+from ndu_gate_camera.utility import constants, image_helper
 
 
 class yolov4_runner(NDUCameraRunner):
@@ -23,11 +22,13 @@ class yolov4_runner(NDUCameraRunner):
 
         self.classes_filename = config.get("classes_filename", "coco.names")
         if not os.path.isfile(self.classes_filename):
-            self.classes_filename = os.path.dirname(os.path.abspath(__file__)) + self.classes_filename.replace("/", os.path.sep)
+            self.classes_filename = os.path.dirname(os.path.abspath(__file__)) + self.classes_filename.replace("/",
+                                                                                                               os.path.sep)
 
         # os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
-        self.yolo_sess, self.yolo_input_name, self.yolo_class_names = self._create_session(self.onnx_fn, self.classes_filename)
+        self.yolo_sess, self.yolo_input_name, self.yolo_class_names = self._create_session(self.onnx_fn,
+                                                                                           self.classes_filename)
 
     def get_name(self):
         return "yolov4"
@@ -130,7 +131,9 @@ class yolov4_runner(NDUCameraRunner):
                         ll_max_id = ll_max_id[keep]
 
                         for k in range(ll_box_array.shape[0]):
-                            bboxes.append([ll_box_array[k, 0], ll_box_array[k, 1], ll_box_array[k, 2], ll_box_array[k, 3], ll_max_conf[k], ll_max_conf[k], ll_max_id[k]])
+                            bboxes.append(
+                                [ll_box_array[k, 0], ll_box_array[k, 1], ll_box_array[k, 2], ll_box_array[k, 3],
+                                 ll_max_conf[k], ll_max_conf[k], ll_max_id[k]])
 
                 bboxes_batch.append(bboxes)
             return bboxes_batch
@@ -152,25 +155,26 @@ class yolov4_runner(NDUCameraRunner):
         boxes = post_processing(img_in, 0.4, 0.6, outputs)
 
         def process_boxes(boxes, width, height, class_names):
-            out_boxes = []
-            out_scores = []
-            out_classes = []
+            out_boxes1 = []
+            out_scores1 = []
+            out_classes1 = []
             for box in boxes[0]:
                 if len(box) >= 7:
                     x1 = int(box[0] * width)
                     y1 = int(box[1] * height)
                     x2 = int(box[2] * width)
                     y2 = int(box[3] * height)
-                    out_boxes.append([y1, x1, y2, x2])
-                    out_scores.append(box[5])
-                    out_classes.append(class_names[box[6]])
-            return out_boxes, out_scores, out_classes
+                    out_boxes1.append([y1, x1, y2, x2])
+                    out_scores1.append(box[5])
+                    out_classes1.append(class_names[box[6]])
+            return out_boxes1, out_scores1, out_classes1
 
         out_boxes, out_scores, out_classes = process_boxes(boxes, w, h, class_names)
 
         res = []
         for i in range(len(out_boxes)):
-            res.append({constants.RESULT_KEY_RECT: out_boxes[i], constants.RESULT_KEY_SCORE: out_scores[i], constants.RESULT_KEY_CLASS_NAME: out_classes[i]})
+            res.append({constants.RESULT_KEY_RECT: out_boxes[i], constants.RESULT_KEY_SCORE: out_scores[i],
+                        constants.RESULT_KEY_CLASS_NAME: out_classes[i]})
         return res
 
     @staticmethod

@@ -1,8 +1,7 @@
 import os
 
 from ndu_gate_camera.api.ndu_camera_runner import NDUCameraRunner
-from ndu_gate_camera.utility import onnx_helper
-from ndu_gate_camera.utility.yolo_helper import yolo_helper
+from ndu_gate_camera.utility import onnx_helper, yolo_helper
 
 
 class yolov5m_runner(NDUCameraRunner):

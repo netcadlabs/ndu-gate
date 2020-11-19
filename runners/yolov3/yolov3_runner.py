@@ -4,8 +4,7 @@ import onnxruntime as rt
 import os
 
 from ndu_gate_camera.api.ndu_camera_runner import NDUCameraRunner, log
-from ndu_gate_camera.utility import constants
-from ndu_gate_camera.utility.image_helper import image_helper
+from ndu_gate_camera.utility import constants, image_helper
 
 
 class yolov3_runner(NDUCameraRunner):
@@ -21,11 +20,13 @@ class yolov3_runner(NDUCameraRunner):
 
         self.classes_filename = config.get("classes_filename", "coco.names")
         if not os.path.isfile(self.classes_filename):
-            self.classes_filename = os.path.dirname(os.path.abspath(__file__)) + self.classes_filename.replace("/", os.path.sep)
+            self.classes_filename = os.path.dirname(os.path.abspath(__file__)) + self.classes_filename.replace("/",
+                                                                                                               os.path.sep)
 
         # os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
-        self.yolo_sess, self.yolo_input_name, self.yolo_class_names = self._create_session(self.onnx_fn, self.classes_filename)
+        self.yolo_sess, self.yolo_input_name, self.yolo_class_names = self._create_session(self.onnx_fn,
+                                                                                           self.classes_filename)
 
     def get_name(self):
         return "yolov3"
@@ -55,7 +56,8 @@ class yolov3_runner(NDUCameraRunner):
 
         res = []
         for i in range(len(out_boxes)):
-            res.append({constants.RESULT_KEY_RECT: out_boxes[i], constants.RESULT_KEY_SCORE: out_scores[i], constants.RESULT_KEY_CLASS_NAME: out_classes[i]})
+            res.append({constants.RESULT_KEY_RECT: out_boxes[i], constants.RESULT_KEY_SCORE: out_scores[i],
+                        constants.RESULT_KEY_CLASS_NAME: out_classes[i]})
         return res
 
     @staticmethod
@@ -93,7 +95,6 @@ class yolov3_runner(NDUCameraRunner):
                 idx_1 = (idx_[0], idx_[2])
                 out_boxes.append(boxes[idx_1])
         return out_boxes, out_scores, out_classes
-
 
     @staticmethod
     def _remove_padding(bboxes, w, h, nw, nh, dw, dh):

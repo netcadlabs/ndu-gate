@@ -8,8 +8,7 @@ from os import path
 import errno
 
 from ndu_gate_camera.api.ndu_camera_runner import NDUCameraRunner
-from ndu_gate_camera.utility import constants, onnx_helper
-from ndu_gate_camera.utility.geometry_helper import geometry_helper
+from ndu_gate_camera.utility import constants, onnx_helper, geometry_helper
 from ndu_gate_camera.utility.ndu_utility import NDUUtility
 
 
@@ -32,25 +31,25 @@ class intersector_runner(Thread, NDUCameraRunner):
 
     def _check_config(self, config):
 
-        class obj_det(object):
+        class ObjDet(object):
             ground = None
             dist = None
             rects = []
 
-        class cs_det(object):
+        class CsDet(object):
             threshold = 0.5
             padding = 0
             rect_names = []
             classify_names = []
 
-        class config_def(object):
+        class ConfigDef(object):
             groups = []
             all_rect_names = []
 
-        class group_def(object):
+        class GroupDef(object):
             name = ""
-            obj_detection = obj_det()
-            classification = cs_det()
+            obj_detection = ObjDet()
+            classification = CsDet()
 
         class rect_det(object):
             padding = 0
@@ -71,7 +70,7 @@ class intersector_runner(Thread, NDUCameraRunner):
                     return r
 
                 od0 = _gr0["obj_detection"]
-                od = obj_det()
+                od = ObjDet()
                 od.ground = od0["ground"] if "ground" in od0 else None
                 od.dist = od0["dist"] if "dist" in od0 else None
                 if "rects" not in od0:
@@ -88,7 +87,7 @@ class intersector_runner(Thread, NDUCameraRunner):
                 return None
             else:
                 cs0 = _gr0["classification"]
-                cs = cs_det()
+                cs = CsDet()
                 cs.threshold = cs0["threshold"] if "threshold" in cs0 else 0.5
                 cs.padding = cs0["padding"] if "padding" in cs0 else 0
 
@@ -111,9 +110,9 @@ class intersector_runner(Thread, NDUCameraRunner):
                     yield rect_name
 
         self.__onnx_classify_names = None
-        self._conf = config_def()
+        self._conf = ConfigDef()
         for group_name, gr0 in config.items():
-            gr = group_def()
+            gr = GroupDef()
             gr.name = group_name
             gr.obj_detection = get_obj_detection(gr0)
             gr.classification = get_classification(gr0)

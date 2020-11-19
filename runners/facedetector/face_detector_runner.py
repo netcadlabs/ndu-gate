@@ -8,8 +8,7 @@ from os import path
 
 
 from ndu_gate_camera.api.ndu_camera_runner import NDUCameraRunner, log
-from ndu_gate_camera.utility import constants
-from ndu_gate_camera.utility.image_helper import image_helper
+from ndu_gate_camera.utility import constants, image_helper
 
 
 class face_detector_runner(NDUCameraRunner):

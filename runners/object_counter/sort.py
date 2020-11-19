@@ -26,7 +26,7 @@ import numpy as np
 # import matplotlib.patches as patches
 # from skimage import io
 #
-import lap
+# import lap
 # import glob
 # import time
 # import argparse
@@ -34,15 +34,19 @@ from filterpy.kalman import KalmanFilter
 
 np.random.seed(0)
 
-
 def linear_assignment(cost_matrix):
-    try:
-        _, x, y = lap.lapjv(cost_matrix, extend_cost=True)
-        return np.array([[y[i], i] for i in x if i >= 0])  #
-    except ImportError:
-        from scipy.optimize import linear_sum_assignment
-        x, y = linear_sum_assignment(cost_matrix)
-        return np.array(list(zip(x, y)))
+    from scipy.optimize import linear_sum_assignment
+    x, y = linear_sum_assignment(cost_matrix)
+    return np.array(list(zip(x, y)))
+
+    # try:
+    #     _, x, y = lap.lapjv(cost_matrix, extend_cost=True)
+    #     row_sol, cost, v, u, cost_mat = lapjv_python(cost_matrix, calc_reduced_cost_matrix=True)
+    #     return np.array([[y[i], i] for i in x if i >= 0])  #
+    # except ImportError:
+    #     from scipy.optimize import linear_sum_assignment
+    #     x, y = linear_sum_assignment(cost_matrix)
+    #     return np.array(list(zip(x, y)))
 
 
 def iou_batch(bb_test, bb_gt):
