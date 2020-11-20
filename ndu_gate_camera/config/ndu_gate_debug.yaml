@@ -3,7 +3,7 @@ video_source:
 #  min_frame_dim: 800
 
   show_preview: True
-#  write_preview: True
+  write_preview: True
   write_preview_file_name: /Users/korhun/Documents/temp/preview.mov
   mirror: True
 #  sleep: 1
@@ -150,11 +150,11 @@ runners:
 #    class: SsdMobilenetRunner
 #    priority: 10
 
-#  - name: Cigarette Detector
-#    type: cigarette_detector
-#    configuration: cigarette_detector.json
-#    class: CigaretteDetectorRunner
-#    priority: 10
+  - name: Cigarette Detector
+    type: cigarette_detector
+    configuration: cigarette_detector.json
+    class: CigaretteDetectorRunner
+    priority: 10
 
   - name: Face Detector
     type: facedetector
@@ -179,13 +179,13 @@ runners:
 #    configuration: emotion.json
 #    class: EmotionRunner
 #    priority: 100
-#
-#  - name: Face Mask Detection
-#    type: facemask
-#    configuration: facemask.json
-#    class: FaceMaskRunner
-#    priority: 100
-#
+
+  - name: Face Mask Detection
+    type: facemask
+    configuration: facemask.json
+    class: FaceMaskRunner
+    priority: 100
+
 #  - name: Social Distance
 #    type: socialdistance
 #    configuration: socialdistance.json

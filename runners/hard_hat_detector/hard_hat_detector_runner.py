@@ -9,8 +9,8 @@ class HardHatDetectorRunner(NDUCameraRunner):
         super().__init__()
         # onnx_fn = "/data/hard_hat_ep1.onnx"
         # onnx_fn = "/data/hard_hat_2.onnx"
-        onnx_fn = "/data/best.onnx"
-        # onnx_fn = "/data/last.onnx"
+        # onnx_fn = "/data/best.onnx"
+        onnx_fn = "/data/last.onnx"
         classes_filename = "/data/class.names"
         self.input_size = 640
 

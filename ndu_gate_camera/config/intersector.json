@@ -1,28 +1,18 @@
 {
   "groups": {
-    "Telefonla konusuyor": {
+    "Sosyal mesafe ihlali": {
       "obj_detection": {
+        "ground": [],
+        "dist": [],
         "rects": [
           {
-            "style": "touch",
-            "padding": 0.1,
+            "padding": 0,
+            "style": "dist",
             "class_names": [
-              "face",
-              "*phone*"
+              "person",
+              "person"
             ]
           }
-        ]
-      }
-    },
-    "Emniyet kemeri takiyor": {
-      "classification": {
-        "threshold": 0.1,
-        "padding": 0,
-        "rect_names": [
-          "person"
-        ],
-        "classify_names": [
-          "*belt*"
         ]
       }
     }

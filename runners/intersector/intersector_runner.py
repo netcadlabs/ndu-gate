@@ -31,30 +31,35 @@ class IntersectorRunner(Thread, NDUCameraRunner):
     def _check_config(self, config):
 
         class ObjDet(object):
-            ground = None
-            dist = None
-            rects = []
-            all_rect_names = []
+            def __init__(self):
+                self.ground = None
+                self.dist = None
+                self.rects = []
+                self.all_rect_names = []
 
         class CssDet(object):
-            threshold = 0.5
-            padding = 0
-            rect_names = []
-            classify_indexes = []
+            def __init__(self):
+                self.threshold = 0.5
+                self.padding = 0
+                self.rect_names = []
+                self.classify_indexes = []
 
         class ConfigDef(object):
-            groups = []
-            all_rect_names = []
+            def __init__(self):
+                self.groups = []
+                self.all_rect_names = []
 
         class GroupDef(object):
-            name = ""
-            obj_detection = ObjDet()
-            classification = CssDet()
+            def __init__(self):
+                self.name = ""
+                self.obj_detection = ObjDet()
+                self.classification = CssDet()
 
         class RectDet(object):
-            padding = 0
-            style = self._ST_OR
-            class_names = []
+            def __init__(self):
+                self.padding = 0
+                self.style = IntersectorRunner._ST_OR
+                self.class_names = []
 
         def get_obj_detection(_gr0) -> Optional[ObjDet]:
             if "obj_detection" not in _gr0:
@@ -191,8 +196,9 @@ class IntersectorRunner(Thread, NDUCameraRunner):
         def has_touch(r_, rect_names0_, rects0_):
             if has_and(r_, rect_names0_):
                 class RDef:
-                    name = ""
-                    rect = None
+                    def __init__(self):
+                        self.name = ""
+                        self.rect = None
 
                 rects = []
                 for class_name1, score1, rect1 in rects0_:
@@ -213,9 +219,21 @@ class IntersectorRunner(Thread, NDUCameraRunner):
                     for r2 in rects:
                         if r1 != r2:
                             if geometry_helper.rects_intersect(r1.rect, r2.rect):
-                                cv2.rectangle(frame, (int(r1.rect[1]), int(r1.rect[0])), (int(r1.rect[3]), int(r1.rect[2])), color=[0, 0, 0], thickness=3)
-                                cv2.rectangle(frame, (int(r2.rect[1]), int(r2.rect[0])), (int(r2.rect[3]), int(r2.rect[2])), color=[255, 255, 255], thickness=3)
+                                # cv2.rectangle(frame, (int(r1.rect[1]), int(r1.rect[0])), (int(r1.rect[3]), int(r1.rect[2])), color=[0, 0, 0], thickness=3)
+                                # cv2.rectangle(frame, (int(r2.rect[1]), int(r2.rect[0])), (int(r2.rect[3]), int(r2.rect[2])), color=[255, 255, 255], thickness=3)
                                 return True
+            return False
+
+        def has_classification(gr_, rects0_):
+            rects_css = []
+            for class_name, score, rect in rects0_:
+                for css_rect_name in gr_.classification.rect_names:
+                    if NDUUtility.wildcard(class_name, css_rect_name):
+                        rects_css.append(rect)
+                        break
+            for rect_css in rects_css:
+                if self._classify(frame, rect_css, gr.classification.threshold, gr.classification.classify_indexes):
+                   return True
             return False
 
         counts = {}
@@ -240,6 +258,8 @@ class IntersectorRunner(Thread, NDUCameraRunner):
                             if has_touch(r, rect_names0, rects0):
                                 count += 1
                         elif r.style == self._ST_DIST:
+                            if gr.obj_detection.ground is None or len(gr.)
+
                             pass  ####
 
             if count == 0 and gr.classification is not None:
@@ -248,16 +268,8 @@ class IntersectorRunner(Thread, NDUCameraRunner):
                     if rect is not None:
                         rects0.append((class_name, score, rect))
                 if len(rects0) > 0:
-                    rects_css = []
-                    for class_name, score, rect in rects0:
-                        for css_rect_name in gr.classification.rect_names:
-                            if NDUUtility.wildcard(class_name, css_rect_name):
-                                rects_css.append(rect)
-                                break
-                    for rect_css in rects_css:
-                        if self._classify(frame, rect_css, gr.classification.threshold, gr.classification.classify_indexes):
-                            count += 1
-                            break
+                    if has_classification(gr, rects0):
+                        count += 1
 
             if count > 0:
                 counts[gr.name] = count

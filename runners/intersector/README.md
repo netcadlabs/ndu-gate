@@ -49,7 +49,37 @@
 
 ### Örnekler:
 
-####Telefonla konuşuyor, emniyet kemeri takıyor:
+#### Maske takıyor, takmıyor:
+```java
+{
+  "groups": {
+    "Maske takmiyor": {
+      "obj_detection": {
+        "rects": [
+          {
+            "class_names": [
+              "no mask"
+            ]
+          }
+        ]
+      }
+    },
+    "Maske takiyor": {
+      "obj_detection": {
+        "rects": [
+          {
+            "class_names": [
+              "mask"
+            ]
+          }
+        ]
+      }
+    }
+  }
+}
+```
+
+#### Telefonla konuşuyor, emniyet kemeri takıyor, maske takmıyor, sigara içiyor:
 ```java
 {
   "groups": {
@@ -78,12 +108,40 @@
           "*belt*"
         ]
       }
+    },
+    "Maske takmiyor": {
+      "obj_detection": {
+        "rects": [
+          {
+            "style": "touch",
+            "padding": 0.1,
+            "class_names": [
+              "face",
+              "no mask"
+            ]
+          }
+        ]
+      }
+    },
+    "Sigara iciyor": {
+      "obj_detection": {
+        "rects": [
+          {
+            "style": "touch",
+            "padding": 0.1,
+            "class_names": [
+              "face",
+              "cigarette"
+            ]
+          }
+        ]
+      }
     }
   }
 }
 ```
 
-Misc..
+##### misc...
 ```java
 {
   "groups": {

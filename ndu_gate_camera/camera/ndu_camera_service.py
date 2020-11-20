@@ -58,7 +58,7 @@ class NDUCameraService:
         self.__show_preview = self.SOURCE_CONFIG.get("show_preview", False)
         self.__write_preview = self.SOURCE_CONFIG.get("write_preview", False)
         self.__last_data = []
-        self.__last_data_show_count = 0
+        self.__last_data_show_counts = []
         self.__write_preview_file_name = self.SOURCE_CONFIG.get("write_preview_file_name", "")
         self.__max_frame_dim = self.SOURCE_CONFIG.get("max_frame_dim", None)
         self.__min_frame_dim = self.SOURCE_CONFIG.get("min_frame_dim", None)
@@ -496,10 +496,20 @@ class NDUCameraService:
                         image_helper.put_text(image, debug_text, current_line_bottom, color=[255, 250, 99], font_scale=font_scale * 2.75, thickness=2, back_color=[0, 0, 0])
 
         if len(data_added) > 0:
-            self.__last_data = data_added
-            self.__last_data_show_count = 30
-        if show_runner_info and self.__last_data_show_count > 0:
-            self.__last_data_show_count -= 1
+            show_last_data_frame_count = 30
+            for i in reversed(range(len(self.__last_data))):
+                self.__last_data_show_counts[i] -= 1
+                if self.__last_data_show_counts[i] <=0:
+                    del self.__last_data_show_counts[i]
+                    del self.__last_data[i]
+            for data in data_added:
+                if data not in self.__last_data:
+                    self.__last_data.append(data)
+                    self.__last_data_show_counts.append(show_last_data_frame_count)
+                else:
+                    self.__last_data_show_counts[self.__last_data.index(data)] = show_last_data_frame_count
+
+        if show_runner_info:
             for last_data in self.__last_data:
                 current_line[1] += line_height
                 image_helper.put_text(image, last_data, current_line, color=[0, 255, 255])
