@@ -138,7 +138,7 @@ class driver_monitor_runner(Thread, NDUCameraRunner):
 
     @staticmethod
     def _create_session(onnx_fn, classes_filename):
-        class_names = [line.rstrip('\n') for line in open(classes_filename)]
+        class_names = [line.rstrip('\n') for line in open(classes_filename, encoding='utf-8')]
 
         sess = rt.InferenceSession(onnx_fn)
         input_name = sess.get_inputs()[0].name

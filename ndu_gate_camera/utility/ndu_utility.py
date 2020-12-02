@@ -25,14 +25,15 @@ class NDUUtility:
             file_dir = path.dirname(path.dirname(__file__))
             extensions_paths = []
 
-            if system() == "Windows":
-                extensions_paths.append(path.abspath(file_dir + '/runners/'.replace('/', path.sep) + extension_type.lower()))
-            else:
-                extensions_paths.append('/var/lib/ndu_gate/runners/'.replace('/', path.sep) + extension_type.lower())
-                extensions_paths.append(path.abspath(file_dir + '/runners/'.replace('/', path.sep) + extension_type.lower()))
-
-            if NDUUtility.is_debug_mode():
-                extensions_paths.append(path.abspath(file_dir + '/../runners/'.replace('/', path.sep) + extension_type.lower()))
+            # if system() == "Windows":
+            #     extensions_paths.append(path.abspath(file_dir + '/runners/'.replace('/', path.sep) + extension_type.lower()))
+            # else:
+            #     extensions_paths.append('/var/lib/ndu_gate/runners/'.replace('/', path.sep) + extension_type.lower())
+            #     extensions_paths.append(path.abspath(file_dir + '/runners/'.replace('/', path.sep) + extension_type.lower()))
+            #
+            # if NDUUtility.is_debug_mode():
+            #     extensions_paths.append(path.abspath(file_dir + '/../runners/'.replace('/', path.sep) + extension_type.lower()))
+            extensions_paths.append(path.abspath(file_dir + '/../runners/'.replace('/', path.sep) + extension_type.lower()))
 
             if package_uuids and len(package_uuids) > 0:
                 for uuid in package_uuids:
@@ -46,7 +47,8 @@ class NDUUtility:
                             if file.startswith('__') or not file.endswith('.py'):
                                 continue
                             try:
-                                module_spec = util.spec_from_file_location(module_name, extension_path + path.sep + file)
+                                module_spec = util.spec_from_file_location(module_name,
+                                                                           extension_path + path.sep + file)
                                 log.debug(module_spec)
 
                                 if module_spec is None:
@@ -107,7 +109,8 @@ class NDUUtility:
             if current_package_version is None or current_package_version != version:
                 installation_sign = "==" if ">=" not in version else ""
                 try:
-                    result = check_call([executable, "-m", "pip", "install", package + installation_sign + version, "--user"])
+                    result = check_call(
+                        [executable, "-m", "pip", "install", package + installation_sign + version, "--user"])
                 except CalledProcessError:
                     try:
                         result = check_call([executable, "-m", "pip", "install", package + installation_sign + version])
@@ -141,18 +144,19 @@ class NDUUtility:
 
         elif class_name == "car":
             class_name = "otomobil"
-
         elif class_name == "bicycle":
             class_name = "bisiklet"
-
         elif class_name == "motorbike":
             class_name = "motosiklet"
-
         elif class_name == "truck":
             class_name = "kamyon"
-
         elif class_name == "bus":
             class_name = "otobus"
+
+        elif class_name == "helmet":
+            class_name = "baret takiyor"
+        elif class_name == "no helmet":
+            class_name = "baret takmiyor"
 
         return class_name
 

@@ -55,7 +55,7 @@ def is_inside_rect(rect, point):
 
 
 def rects_intersect(rect1, rect2):
-    class rectangle:
+    class Rectangle:
         def intersects(self, other):
             a, b = self, other
             x1 = max(min(a.x1, a.x2), min(b.x1, b.x2))
@@ -72,7 +72,14 @@ def rects_intersect(rect1, rect2):
         def __init__(self, bbox):
             self._set(bbox[0], bbox[1], bbox[2], bbox[3])
 
-    return rectangle(rect1).intersects(rectangle(rect2))
+    return Rectangle(rect1).intersects(Rectangle(rect2))
+
+
+def add_padding_rect(rect, padding):
+    x1, y1, x2, y2 = rect[0], rect[1], rect[2], rect[3]
+    dw = (x2 - x1) * padding
+    dh = (y2 - y1) * padding
+    return [x1 - dw, y1 - dh, x2 + dw, y2 + dh]
 
 
 def distance(p1, p2):

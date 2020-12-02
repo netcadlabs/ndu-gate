@@ -1,13 +1,16 @@
-numpy
+numpy==1.19.3 # pip install numpy==1.19.3 --upgrade
 protobuf
 opencv-python
 onnx
 onnxruntime
+# onnxruntime-gpu
 setuptools
 vidgear
 pyzmq
 PyYAML
 simplejson
 picamera
+
 # macos: brew install libomp
 # linux: sudo apt install libgomp1
+# windows: https://aka.ms/vs/16/release/vc_redist.x64.exe

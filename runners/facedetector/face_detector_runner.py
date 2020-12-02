@@ -32,7 +32,7 @@ class FaceDetectorRunner(NDUCameraRunner):
             output_names = []
             for output in outputs:
                 output_names.append(output.name)
-            class_names = [line.rstrip('\n') for line in open(classes_fn)]
+            class_names = [line.rstrip('\n') for line in open(classes_fn, encoding='utf-8')]
             return sess, input_name, output_names, class_names
 
         self.__onnx_sess, self.__onnx_input_name, self.__onnx_output_names, self.__onnx_class_names = _create_session(onnx_fn, class_names_fn)

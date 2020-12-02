@@ -8,6 +8,7 @@ import cv2
 
 from ndu_gate_camera.api.ndu_camera_runner import NDUCameraRunner
 from ndu_gate_camera.utility import constants, onnx_helper, geometry_helper
+from ndu_gate_camera.utility.geometry_helper import add_padding_rect
 from ndu_gate_camera.utility.ndu_utility import NDUUtility
 
 
@@ -171,12 +172,6 @@ class IntersectorRunner(Thread, NDUCameraRunner):
         if self._conf is None:
             return res
 
-        def add_padding(rect_, padding):
-            x1, y1, x2, y2 = rect_[0], rect_[1], rect_[2], rect_[3]
-            dw = (x2 - x1) * padding
-            dh = (y2 - y1) * padding
-            return [x1 - dw, y1 - dh, x2 + dw, y2 + dh]
-
         def has_or(r_, rect_names0_):
             _count = 0
             for r_name in r_.class_names:
@@ -211,7 +206,7 @@ class IntersectorRunner(Thread, NDUCameraRunner):
                         r1 = RDef()
                         r1.name = class_name1
                         if r_.padding != 0:
-                            rect1 = add_padding(rect1, r_.padding)
+                            rect1 = add_padding_rect(rect1, r_.padding)
                         r1.rect = rect1
                         rects.append(r1)
 
@@ -233,7 +228,7 @@ class IntersectorRunner(Thread, NDUCameraRunner):
                         break
             for rect_css in rects_css:
                 if self._classify(frame, rect_css, gr.classification.threshold, gr.classification.classify_indexes):
-                   return True
+                    return True
             return False
 
         counts = {}

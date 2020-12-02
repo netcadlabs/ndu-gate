@@ -1,7 +1,6 @@
 import os
 import random
 import time
-from os import path, uname
 import logging
 import logging.config
 import logging.handlers
@@ -25,7 +24,11 @@ from ndu_gate_camera.camera.video_sources.image_video_source import ImageVideoSo
 from ndu_gate_camera.utility import constants, image_helper
 from ndu_gate_camera.utility.ndu_utility import NDUUtility
 
-name = uname()
+# uname windows'ta çalışmadığı için kaldırıldı
+# from os import path, uname
+from os import path
+
+# name = uname()
 
 DEFAULT_RUNNERS = {
     # "drivermonitor": "DriverMonitorRunner",
@@ -53,19 +56,25 @@ class NDUCameraService:
             else:
                 self.SOURCE_TYPE = VideoSourceType.PI_CAMERA
 
-        if self.SOURCE_CONFIG.get("show_preview", None) is None:
-            self.SOURCE_CONFIG["show_preview"] = NDUUtility.is_debug_mode()
-        self.__show_preview = self.SOURCE_CONFIG.get("show_preview", False)
-        self.__write_preview = self.SOURCE_CONFIG.get("write_preview", False)
-        self.__last_data = []
-        self.__last_data_show_counts = []
-        self.__write_preview_file_name = self.SOURCE_CONFIG.get("write_preview_file_name", "")
+        self.__preview_show = self.SOURCE_CONFIG.get("preview_show", False)
+        self.__preview_show_debug_texts = self.SOURCE_CONFIG.get("preview_show_debug_texts", True)
+        self.__preview_show_runner_info = self.SOURCE_CONFIG.get("preview_show_runner_info", True)
+        self.__preview_show_score = self.SOURCE_CONFIG.get("preview_show_score", True)
+        self.__preview_show_rect_name = self.SOURCE_CONFIG.get("preview_show_rect_name", True)
+        self.__preview_show_rect_filter = self.SOURCE_CONFIG.get("preview_show_rect_filter", None)
+
+        self.__preview_write = self.SOURCE_CONFIG.get("preview_write", False)
+        self.__preview_last_data = []
+        self.__preview_last_data_show_counts = []
+        self.__preview_write_file_name = self.SOURCE_CONFIG.get("preview_write_file_name", "")
+
         self.__max_frame_dim = self.SOURCE_CONFIG.get("max_frame_dim", None)
         self.__min_frame_dim = self.SOURCE_CONFIG.get("min_frame_dim", None)
         self.__skip_frame = self.SOURCE_CONFIG.get("skip_frame", 0)
         self.__color_toggle = None
-        logging_error = None
         logging_config_file = self._ndu_gate_config_dir + "logs.conf"
+        if NDUUtility.is_debug_mode():
+            logging_config_file = self._ndu_gate_config_dir + "logs_debug.conf"
         try:
             import platform
             if platform.system() == "Darwin":
@@ -73,7 +82,6 @@ class NDUCameraService:
             logging.config.fileConfig(logging_config_file, disable_existing_loggers=False)
         except Exception as e:
             print(e)
-            logging_error = e
             NDULoggerHandler.set_default_handler()
 
         global log
@@ -150,7 +158,6 @@ class NDUCameraService:
                     configuration_name = runner['configuration']
                     config_file = self._ndu_gate_config_dir + configuration_name
 
-                    runner_conf = {}
                     if path.isfile(config_file):
                         with open(config_file, 'r', encoding="UTF-8") as conf_file:
                             runner_conf = load(conf_file)
@@ -200,7 +207,6 @@ class NDUCameraService:
             self.runners_configs = sorted(runner_arr, key=lambda x: x["priority"], reverse=False)
         else:
             log.error("Runners - not found! Check your configuration!")
-        dummy = True
 
     def _connect_with_runners(self):
         """
@@ -241,7 +247,7 @@ class NDUCameraService:
                 self.video_source = FileVideoSource(self.SOURCE_CONFIG)
                 pass
             elif self.SOURCE_TYPE is VideoSourceType.PI_CAMERA:
-                self.video_source = PiCameraVideoSource(show_preview=True)
+                self.video_source = PiCameraVideoSource(preview_show=True)
             elif self.SOURCE_TYPE is VideoSourceType.VIDEO_URL:
                 # TODO
                 pass
@@ -272,7 +278,7 @@ class NDUCameraService:
         # TODO - runner dependency ile kimin çıktısı kimn giridisi olacak şeklinde de olabilir
 
         winname = None
-        if self.__show_preview:
+        if self.__preview_show:
             winname = "ndu_gate_camera preview"
             cv2.namedWindow(winname)  # Create a named window
             cv2.moveWindow(winname, 40, 30)
@@ -301,7 +307,7 @@ class NDUCameraService:
 
             results = []
             if skip <= 0:
-                if self.__show_preview:
+                if self.__preview_show:
                     start_total = time.time()
                 extra_data = {
                     constants.EXTRA_DATA_KEY_RESULTS: {}
@@ -314,24 +320,38 @@ class NDUCameraService:
                         start = time.time()
                         result = self.available_runners[runner_unique_key].process_frame(frame, extra_data=extra_data)
                         elapsed = time.time() - start
-                        if self.__show_preview and result is not None:
-                            result.append({"elapsed_time": f'{runner_conf["type"]}: {elapsed:.4f}sn'})
+                        if self.__preview_show and result is not None:
+                            # result.append({"elapsed_time": f'{runner_conf["type"]}: {elapsed:.4f}sn'})
+                            result.append({"elapsed_time": f'{runner_conf["type"]}: {elapsed:.4f}sn fps:{1.0 / elapsed:.0f}'})
                         extra_data[constants.EXTRA_DATA_KEY_RESULTS][runner_unique_key] = result
                         log.debug("result : %s", result)
 
                         if result is not None:
+                            ###########koray self.__result_handler.save_result(result, runner_name=runner_conf["name"])
+
                             self.__result_handler.save_result(result, runner_name=runner_conf["name"])
+
+                            # def _save_result(result_handler_, result_, runner_name_):
+                            #     result_handler_.save_result(result_, runner_name=runner_name_)
+                            # import threading
+                            # thr = threading.Thread(target=_save_result( self.__result_handler, result, runner_conf["name"]), args=(), kwargs={})
+                            # thr.start()  # Will run "foo"
+                            # # thr.is_alive()  # Will return whether foo is running currently
+                            # # thr.join()  # Will wait till "foo" is done
+
+
                             results.append(result)
                     except Exception as e:
                         log.exception(e)
 
-            if self.__show_preview:
+            if self.__preview_show:
                 if skip > 0:
                     skip = skip - 1
                     preview = frame
                 else:
                     total_elapsed_time = time.time() - start_total
-                    results.append([{"total_elapsed_time": f'{total_elapsed_time * 1000:.0f}msec'}])
+                    # results.append([{"total_elapsed_time": f'{total_elapsed_time * 1000:.0f}msec'}])
+                    results.append([{"total_elapsed_time": f'{total_elapsed_time * 1000:.0f}msec fps:{1.0 / total_elapsed_time:.0f}sn'}])
                     preview = self._get_preview(frame, results)
 
                 cv2.imshow(winname, preview)
@@ -352,26 +372,24 @@ class NDUCameraService:
                         break
                 if exit_requested:
                     break
-                if self.__write_preview:
+                if self.__preview_write:
                     self._write_frame(preview)
-            elif self.__write_preview:
+            elif self.__preview_write:
                 self._write_frame(frame)
 
-        if self.__write_preview and self.__out is not None:
+        if self.__preview_write and self.__out is not None:
             self.__out.release()
-            import ffmpeg
+            import ffmpeg  # pip3 install ffmpeg-python & brew install ffmpeg
             try:
-                # pip3 install ffmpeg-python & brew install ffmpeg
                 # daha az sıkışmış, quicktime çalabiliyor
-                ffmpeg.input(self.__write_preview_file_name) \
-                    .output(self.__write_preview_file_name + '.mp4') \
-                    .run(capture_stdout=True, capture_stderr=True)
+                fn = self.__preview_write_file_name
+                ffmpeg.input(fn).output(fn + '.mp4').run(capture_stdout=True, capture_stderr=True)
 
                 # # süper sıkışmış ama quicktime çalamıyor. Benim denemelerimde yarım yamalak kaydedebildi!
-                # ffmpeg.input(self.__write_preview_file_name) \
-                #     .output(self.__write_preview_file_name + '2.mp4', vcodec='libx265', crf=24, t=5) \
-                #     .run(capture_stdout=True, capture_stderr=True)
-                # # os.remove(self.__write_preview_file_name)
+                ffmpeg.input(fn) \
+                    .output(fn + '2.mp4', vcodec='libx265', crf=24, t=5) \
+                    .run(capture_stdout=True, capture_stderr=True)
+                # # os.remove(fn)
             except ffmpeg.Error as e:
                 print('stdout:', e.stdout.decode('utf8'))
                 print('stderr:', e.stderr.decode('utf8'))
@@ -395,9 +413,10 @@ class NDUCameraService:
         except:  # daha iyi bir yolunu bulursanız, bana da gösterin -> korhun :)
             shape = frame.shape[1], frame.shape[0]
             fourcc = cv2.VideoWriter_fourcc(*'MP4V')
+            # fourcc = cv2.VideoWriter_fourcc(*'AVC1')
             # fourcc = cv2.VideoWriter_fourcc(*'XVID')
-            self.__write_preview_file_name = get_free_file_name(self.__write_preview_file_name)
-            self.__out = cv2.VideoWriter(self.__write_preview_file_name, fourcc, 24.0, shape)
+            self.__preview_write_file_name = get_free_file_name(self.__preview_write_file_name)
+            self.__out = cv2.VideoWriter(self.__preview_write_file_name, fourcc, 24.0, shape)
             self.__out.write(frame)
 
     def _new_color(self):
@@ -410,21 +429,26 @@ class NDUCameraService:
             return [max(50, 255 - c[0]), max(50, 255 - c[1]), max(50, 255 - c[2])]
 
     def _get_preview(self, image, results):
-        def draw_rect(obj, img, c1_, c2_, class_preview_key_):
-            color = [255, 255, 255]
-            if class_preview_key_ is not None:
-                if not hasattr(obj, "__colors"):
-                    setattr(obj, "__colors", {})
-                dic = getattr(obj, "__colors")
-                if class_preview_key_ in dic:
-                    color = dic[class_preview_key_]
-                else:
-                    color = dic[class_preview_key_] = self._new_color()
+        def draw_rect(obj, img, c1_, c2_, class_preview_key_, color=None):
+            if color is None:
+                color = [255, 255, 255]
+                if class_preview_key_ is not None:
+                    if not hasattr(obj, "__colors"):
+                        setattr(obj, "__colors", {})
+                    dic = getattr(obj, "__colors")
+                    if class_preview_key_ in dic:
+                        color = dic[class_preview_key_]
+                    else:
+                        color = dic[class_preview_key_] = self._new_color()
 
             cv2.rectangle(img, (c1_[0], c1_[1]), (c2_[0], c2_[1]), color=[0, 0, 0], thickness=3)
             cv2.rectangle(img, (c1_[0], c1_[1]), (c2_[0], c2_[1]), color=color, thickness=2)
 
-        show_debug_texts = show_runner_info = show_score = True
+        show_debug_texts = self.__preview_show_debug_texts
+        show_runner_info = self.__preview_show_runner_info
+        show_score = self.__preview_show_score
+        rect_filter = self.__preview_show_rect_filter
+        show_rect_name = self.__preview_show_rect_name
 
         h, w, *_ = image.shape
         line_height = 20
@@ -441,7 +465,7 @@ class NDUCameraService:
                     if show_runner_info:
                         total_elapsed_time = item.get("total_elapsed_time", None)
                         if total_elapsed_time is not None:
-                            image_helper.put_text(image, total_elapsed_time, [w - 100, h - 30], color=[200, 200, 128], font_scale=0.4)
+                            image_helper.put_text(image, total_elapsed_time, [w - 150, h - 30], color=[200, 200, 128], font_scale=0.4)
                             continue
 
                     values = {}
@@ -458,24 +482,26 @@ class NDUCameraService:
 
                     text = ""
                     if class_name is not None:
-                        text = str(class_name) + " "
+                        text = NDUUtility.debug_conv_turkish(class_name) + " "
                         if show_score and score is not None:
                             text = f"{text} - %{score * 100:.2f} "
                     elif show_score and score is not None:
                         text = f"%{score * 100:.2f} "
-                    for key in item:
-                        if key not in values:
-                            text = text + str(item[key])
+
+                    # for key in item:
+                    #     if key not in values:
+                    #         text = text + str(item[key])
+
                     if data is not None:
                         add_txt = " data: " + str(data)
                         data_added.append(add_txt)
                         text = text + add_txt
                         has_data = True
-                    if rect is not None:
+                    if rect is not None and (rect_filter is None or NDUUtility.wildcard(class_name, rect_filter)):
                         c = np.array(rect[:4], dtype=np.int32)
                         c1, c2 = [c[1], c[0]], (c[3], c[2])
-                        draw_rect(self, image, c1, c2, class_preview_key)
-                        if show_runner_info and len(text) > 0:
+                        draw_rect(self, image, c1, c2, class_preview_key, item.get(constants.RESULT_KEY_RECT_COLOR, None))
+                        if show_rect_name and len(text) > 0:
                             c1[1] = c1[1] + line_height
                             image_helper.put_text(image, text, c1)
                             text = ""
@@ -495,22 +521,21 @@ class NDUCameraService:
                         current_line_bottom[1] -= line_height * 2
                         image_helper.put_text(image, debug_text, current_line_bottom, color=[255, 250, 99], font_scale=font_scale * 2.75, thickness=2, back_color=[0, 0, 0])
 
-        if len(data_added) > 0:
-            show_last_data_frame_count = 30
-            for i in reversed(range(len(self.__last_data))):
-                self.__last_data_show_counts[i] -= 1
-                if self.__last_data_show_counts[i] <=0:
-                    del self.__last_data_show_counts[i]
-                    del self.__last_data[i]
-            for data in data_added:
-                if data not in self.__last_data:
-                    self.__last_data.append(data)
-                    self.__last_data_show_counts.append(show_last_data_frame_count)
-                else:
-                    self.__last_data_show_counts[self.__last_data.index(data)] = show_last_data_frame_count
-
         if show_runner_info:
-            for last_data in self.__last_data:
+            if len(data_added) > 0:
+                show_last_data_frame_count = 15
+                for data in data_added:
+                    if data not in self.__preview_last_data:
+                        self.__preview_last_data.append(data)
+                        self.__preview_last_data_show_counts.append(show_last_data_frame_count)
+                    else:
+                        self.__preview_last_data_show_counts[self.__preview_last_data.index(data)] = show_last_data_frame_count
+            for i in reversed(range(len(self.__preview_last_data))):
+                self.__preview_last_data_show_counts[i] -= 1
+                if self.__preview_last_data_show_counts[i] <= 0:
+                    del self.__preview_last_data_show_counts[i]
+                    del self.__preview_last_data[i]
+            for last_data in self.__preview_last_data:
                 current_line[1] += line_height
                 image_helper.put_text(image, last_data, current_line, color=[0, 255, 255])
 

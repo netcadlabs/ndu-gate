@@ -45,7 +45,7 @@ class SsdMobilenetRunner(Thread, NDUCameraRunner):
 
             def _parse_pbtxt(file_name):
                 import json
-                with open(file_name) as json_file:
+                with open(file_name, encoding='utf-8') as json_file:
                     data = json.load(json_file)
                     class_names = {}
                     for item in data:
