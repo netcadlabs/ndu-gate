@@ -21,22 +21,24 @@ video_source:
 
 
 #  type: IMAGE_FILE # VIDEO_FILE, PI_CAMERA, CAMERA, IP_CAMERA, VIDEO_URL, YOUTUBE
-  type: YOUTUBE
-#  type: VIDEO_FILE
+#  type: YOUTUBE
+  type: VIDEO_FILE
 #  type: CAMERA
 
 #  file_path: iett_1.avi
 #  file_path: iett_2.avi
+
 #  file_path: smoke_film.mp4
 #  file_path: smoke_women.mp4
 #  file_path: smoking_anti.mp4
 #  file_path: smoking.mp4
 #  file_path: smoking2.mp4
+
 #  file_path: duygu2.mp4
 #  file_path: crowded_720x.mp4
 #  file_path: pedestrian_survaillance.mp4
 #  file_path: vehicle_survaillance.mp4
-  file_path: vid_short.mp4 #pedestrians
+#  file_path: vid_short.mp4 #pedestrians
 #  file_path: çanakkale.mp4 #car - pedestrians
 #  file_path: çanakkale0.mp4 #pedestrians
 #  file_path: çanakkale_yaya.mp4 #pedestrians
@@ -89,12 +91,9 @@ video_source:
 #  url: https://youtu.be/MNn9qKG2UFI  #highway
 
 
-
-
-#  url: https://www.youtube.com/watch?v=CjJynPk007w
-#  url: https://www.youtube.com/watch?v=oHEWcefPWws
-  url: https://www.youtube.com/watch?v=8kpHK4YIwY4
-
+#  url: https://www.youtube.com/watch?v=CjJynPk007w #helmet
+#  url: https://www.youtube.com/watch?v=oHEWcefPWws #helmet
+#  url: https://www.youtube.com/watch?v=8kpHK4YIwY4 #helmet
 #  url: https://www.youtube.com/watch?v=bkBAWvQMU0Y  #helmet
 #  url: https://www.youtube.com/watch?v=IIFBq9aSzPM  #helmet
 #  url: https://www.youtube.com/watch?v=sFieyNnJOHg  #helmet komik
@@ -188,11 +187,11 @@ runners:
 #    class: SsdMobilenetRunner
 #    priority: 10
 #
-#  - name: Cigarette Detector
-#    type: cigarette_detector
-#    configuration: cigarette_detector.json
-#    class: CigaretteDetectorRunner
-#    priority: 10
+  - name: Cigarette Detector
+    type: cigarette_detector
+    configuration: cigarette_detector.json
+    class: CigaretteDetectorRunner
+    priority: 10
 #
 #  - name: Face Detector
 #    type: facedetector
@@ -261,11 +260,11 @@ runners:
 ##    priority: 100
 
 
-  - name: Hard Hat Detector
-    type: hard_hat_detector
-    configuration: hard_hat_detector.json
-    class: HardHatDetectorRunner
-    priority: 10
+#  - name: Hard Hat Detector
+#    type: hard_hat_detector
+#    configuration: hard_hat_detector.json
+#    class: HardHatDetectorRunner
+#    priority: 10
 
 
 
