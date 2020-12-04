@@ -7,7 +7,6 @@ from ndu_gate_camera.utility.ndu_utility import NDUUtility
 
 
 def main(argv):
-
     ndu_gate_config_file = ""
     try:
         opts, args = getopt.getopt(argv, "c:", ["config="])
@@ -32,6 +31,10 @@ def main(argv):
 
 def daemon():
     NDUCameraService(ndu_gate_config_file=DEFAULT_NDU_GATE_CONF.replace('/', path.sep))
+
+
+def daemon_with_conf(config_file):
+    NDUCameraService(ndu_gate_config_file=config_file.replace('/', path.sep))
 
 
 if __name__ == '__main__':
