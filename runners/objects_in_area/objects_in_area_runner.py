@@ -78,7 +78,7 @@ class ObjectsInAreaRunner(Thread, NDUCameraRunner):
             area_counter = 0
             for area in areas:
                 area_counter += 1
-                self.__areas.append({"name": f"{self.area_prefix}{area_counter}", "area": area})
+                self.__areas.append({"name": "{}{}".format(self.area_prefix, area_counter), "area": area})
 
         if self.__debug:
             for item in self.__areas:
@@ -86,7 +86,7 @@ class ObjectsInAreaRunner(Thread, NDUCameraRunner):
                 area = item.get("area")
                 pnts = np.array(area, np.int32)
                 image_helper.fill_polyline_transparent(frame, [pnts], color=self.__debug_color_normal, opacity=0.3,
-                                                      thickness=self.__debug_thickness_normal)
+                                                       thickness=self.__debug_thickness_normal)
                 center = self.get_center_int(area)
                 image_helper.put_text(frame, area_name, center, color=self.__debug_color_normal, font_scale=0.75)
 
@@ -117,12 +117,12 @@ class ObjectsInAreaRunner(Thread, NDUCameraRunner):
                                     if self.__debug:  # and self.__frame_num % 2 == 0:
                                         pnts = np.array(area, np.int32)
                                         image_helper.fill_polyline_transparent(frame, [pnts],
-                                                                              color=self.__debug_color_alert,
-                                                                              opacity=0.5,
-                                                                              thickness=self.__debug_thickness_alert)
+                                                                               color=self.__debug_color_alert,
+                                                                               opacity=0.5,
+                                                                               thickness=self.__debug_thickness_alert)
                                         center = self.get_center_int(area)
                                         image_helper.put_text(frame, self.debug_area_name(area_name), center,
-                                                             color=self.__debug_color_alert, font_scale=0.75)
+                                                              color=self.__debug_color_alert, font_scale=0.75)
 
             debug_texts = debug_text = None
             if self.__debug:
@@ -130,10 +130,10 @@ class ObjectsInAreaRunner(Thread, NDUCameraRunner):
             for area_name, item in counts.items():
                 active_areas[area_name] = True
                 if self.__debug:
-                    debug_text = f"{self.debug_area_name(area_name)}: "
+                    debug_text = "{}: ".format(self.debug_area_name(area_name))
                 for class_name, value in counts.get(area_name).items():
                     if self.__debug:
-                        debug_text += f"{NDUUtility.debug_conv_turkish(class_name)}: {value} "
+                        debug_text += "{}: {} ".format(NDUUtility.debug_conv_turkish(class_name), value)
 
                     # data_val = class_name + "_" + str(value)
                     # changed = False

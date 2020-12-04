@@ -3,10 +3,10 @@ video_source:
 #  min_frame_dim: 800
 
   preview_show: True
-  preview_show_debug_texts: True
-  preview_show_runner_info: False
-  preview_show_score: False
-  preview_show_rect_name: True
+#  preview_show_debug_texts: True
+#  preview_show_runner_info: False
+#  preview_show_score: False
+#  preview_show_rect_name: True
 #  preview_show_rect_filter: "no helmet"
 
 #  preview_write: True
@@ -22,8 +22,8 @@ video_source:
 
 #  type: IMAGE_FILE # VIDEO_FILE, PI_CAMERA, CAMERA, IP_CAMERA, VIDEO_URL, YOUTUBE
 #  type: YOUTUBE
-  type: VIDEO_FILE
-#  type: CAMERA
+#  type: VIDEO_FILE
+  type: CAMERA
 
 #  file_path: iett_1.avi
 #  file_path: iett_2.avi
@@ -139,41 +139,41 @@ result_handler:
 #    host: 127.0.0.1
 
 runners:
-#  - name: yolov3 - Object detection with 80 classes
-#    type: yolov3
-#    configuration: yolov3.json
-#    class: Yolov3Runner
+  - name: yolov3 - Object detection with 80 classes
+    type: yolov3
+    configuration: yolov3.json
+    class: Yolov3Runner
+    priority: 10
+
+  - name: yolov3-tiny - Fast object detection with 80 classes
+    type: yolov3-tiny
+    configuration: yolov3-tiny.json
+    class: Yolov3TinyRunner
+    priority: 10
+
+  - name: yolov4 - Object detection with 80 classes
+    type: yolov4
+    configuration: yolov4.json
+    class: Yolov4Runner
+    priority: 10
+
+  - name: yolov5s - Object detection with 80 classes (Fastest)
+    type: yolov5s
+    configuration: yolov5s.json
+    class: Yolov5sRunner
+    priority: 10
+
+  - name: yolov5m - Object detection with 80 classes (Fast)
+    type: yolov5m
+    configuration: yolov5m.json
+    class: Yolov5mRunner
+    priority: 10
+
+#  - name: yolov5l - Object detection with 80 classes (Accurate)
+#    type: yolov5l
+#    configuration: yolov5l.json
+#    class: Yolov5lRunner
 #    priority: 10
-#
-#  - name: yolov3-tiny - Fast object detection with 80 classes
-#    type: yolov3-tiny
-#    configuration: yolov3-tiny.json
-#    class: Yolov3TinyRunner
-#    priority: 10
-#
-#  - name: yolov4 - Object detection with 80 classes
-#    type: yolov4
-#    configuration: yolov4.json
-#    class: Yolov4Runner
-#    priority: 10
-#
-#  - name: yolov5s - Object detection with 80 classes (Fastest)
-#    type: yolov5s
-#    configuration: yolov5s.json
-#    class: Yolov5sRunner
-#    priority: 10
-#
-#  - name: yolov5m - Object detection with 80 classes (Fast)
-#    type: yolov5m
-#    configuration: yolov5m.json
-#    class: Yolov5mRunner
-#    priority: 10
-#
-##  - name: yolov5l - Object detection with 80 classes (Accurate)
-##    type: yolov5l
-##    configuration: yolov5l.json
-##    class: Yolov5lRunner
-##    priority: 10
 #
 #  - name: yolov5x - Object detection with 80 classes (Most Accurate)
 #    type: yolov5x
@@ -260,11 +260,11 @@ runners:
 ##    priority: 100
 
 
-#  - name: Hard Hat Detector
-#    type: hard_hat_detector
-#    configuration: hard_hat_detector.json
-#    class: HardHatDetectorRunner
-#    priority: 10
+  - name: Hard Hat Detector
+    type: hard_hat_detector
+    configuration: hard_hat_detector.json
+    class: HardHatDetectorRunner
+    priority: 10
 
 
 

@@ -109,7 +109,7 @@ class HardHatDetectorRunner(NDUCameraRunner):
                     no_helmet_count += 1
                     item[constants.RESULT_KEY_RECT_COLOR] = [0, 0, 255]
                 else:
-                    raise Exception(f"Bad class name: '{class_name}'")
+                    raise Exception("Bad class name: '{}'".format(class_name))
 
         data = {"no_helmet_count": no_helmet_count, "helmet_count": helmet_count, "no_helmet_exists": no_helmet_count > 0}
         if self.debug_mode and no_helmet_count > 0:

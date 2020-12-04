@@ -326,8 +326,7 @@ class NDUCameraService:
                         result = self.available_runners[runner_unique_key].process_frame(frame, extra_data=extra_data)
                         elapsed = time.time() - start
                         if self.__preview_show and result is not None:
-                            # result.append({"elapsed_time": f'{runner_conf["type"]}: {elapsed:.4f}sn'})
-                            result.append({"elapsed_time": f'{runner_conf["type"]}: {elapsed:.4f}sn fps:{1.0 / elapsed:.0f}'})
+                            result.append({"elapsed_time": '{}: {:.4f}sn fps:{:.0f}'.format(runner_conf["type"], elapsed, 1.0 / elapsed)})
                         extra_data[constants.EXTRA_DATA_KEY_RESULTS][runner_unique_key] = result
                         log.debug("result : %s", result)
 
@@ -344,7 +343,6 @@ class NDUCameraService:
                             # # thr.is_alive()  # Will return whether foo is running currently
                             # # thr.join()  # Will wait till "foo" is done
 
-
                             results.append(result)
                     except Exception as e:
                         log.exception(e)
@@ -355,8 +353,7 @@ class NDUCameraService:
                     preview = frame
                 else:
                     total_elapsed_time = time.time() - start_total
-                    # results.append([{"total_elapsed_time": f'{total_elapsed_time * 1000:.0f}msec'}])
-                    results.append([{"total_elapsed_time": f'{total_elapsed_time * 1000:.0f}msec fps:{1.0 / total_elapsed_time:.0f}sn'}])
+                    results.append([{"total_elapsed_time": '{:.0f}msec fps:{:.0f}sn'.format(total_elapsed_time * 1000, 1.0 / total_elapsed_time)}])
                     preview = self._get_preview(frame, results)
 
                 cv2.imshow(winname, preview)
@@ -409,7 +406,8 @@ class NDUCameraService:
                 filename, file_extension = os.path.splitext(fn)
                 i = 1
                 while os.path.exists(fn):
-                    fn = f"{filename}{i}{file_extension}"
+                    # sil fn = f"{filename}{i}{file_extension}"
+                    fn = "{}{}{}".format(filename, i, file_extension)
                     i += 1
             return fn
 
@@ -489,13 +487,9 @@ class NDUCameraService:
                     if class_name is not None:
                         text = NDUUtility.debug_conv_turkish(class_name) + " "
                         if show_score and score is not None:
-                            text = f"{text} - %{score * 100:.2f} "
+                            text = "{} - %{:.2f} ".format(text, score * 100)
                     elif show_score and score is not None:
-                        text = f"%{score * 100:.2f} "
-
-                    # for key in item:
-                    #     if key not in values:
-                    #         text = text + str(item[key])
+                        text = "%{:.2f} ".format(score * 100)
 
                     if data is not None:
                         add_txt = " data: " + str(data)

@@ -83,7 +83,7 @@ class PointOccupiedRunner(Thread, NDUCameraRunner):
             for pnt in pnts:
                 pnt_counter += 1
                 self.__points.append(
-                    {"name": f"{self.pnt_prefix}{pnt_counter}", "pnt": pnt, "true_count": 0, "is_true": False})
+                    {"name": "{}{}".format(self.pnt_prefix, pnt_counter), "pnt": pnt, "true_count": 0, "is_true": False})
 
         # if self.__debug:
         #     for item in self.__points:

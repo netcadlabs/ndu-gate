@@ -34,7 +34,8 @@ def create_sess_tuple(onnx_fn):
     # # sess.set_providers(['CUDAExecutionProvider'])
 
     elapsed = time.time() - start
-    print(f"onnx model {onnx_fn} load time: {elapsed:.0f}sn")
+    # sil print(f"onnx model {onnx_fn} load time: {elapsed:.0f}sn")
+    print("onnx model {} load time: {:.0f}sn".format(onnx_fn, elapsed))
 
     input_names = []
     for sess_input in sess.get_inputs():

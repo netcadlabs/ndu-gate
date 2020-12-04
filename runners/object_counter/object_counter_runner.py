@@ -20,7 +20,7 @@ class ObjectCounterRunner(Thread, NDUCameraRunner):
         self.__frame_num = 0
         self.__gates = []
         self.__last_data = {}
-        self.__debug = True #####koray
+        self.__debug = True  #####koray
 
     def get_name(self):
         return "ObjectCounterRunner"
@@ -115,8 +115,8 @@ class ObjectCounterRunner(Thread, NDUCameraRunner):
         line[0] = rotate_point(line[0], deg, center)
         line[1] = rotate_point(line[1], deg, center)
 
-
     gate_prefix = "Gate"
+
     def debug_gate_name(self, gate_name):
         return gate_name.replace(self.gate_prefix, "KAPI")
 
@@ -307,7 +307,7 @@ class ObjectCounterRunner(Thread, NDUCameraRunner):
                 all_enter += enter_val
                 all_exit += exit_val
                 if self.__debug:
-                    debug_text += f"{NDUUtility.debug_conv_turkish(name)} - Giren:{enter_val} Cikan:{exit_val}"
+                    debug_text += "{} - Giren:{} Cikan:{}".format(NDUUtility.debug_conv_turkish(name), enter_val, exit_val)
                     debug_texts.append(debug_text)
 
                 data_val = str(enter_val) + "_" + str(exit_val)
@@ -328,7 +328,7 @@ class ObjectCounterRunner(Thread, NDUCameraRunner):
 
         if self.__debug:
             for name, value in active_counts.items():
-                debug_texts.append(f"Gorunen '{NDUUtility.debug_conv_turkish(name)}': {value}")
+                debug_texts.append("Gorunen '{}': {}".format(NDUUtility.debug_conv_turkish(name), value))
 
             for debug_text in debug_texts:
                 res.append({constants.RESULT_KEY_DEBUG: debug_text})
