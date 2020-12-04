@@ -1,5 +1,6 @@
 import os
 import random
+import sys
 import time
 import logging
 import logging.config
@@ -41,6 +42,10 @@ class NDUCameraService:
     def __init__(self, ndu_gate_config_file=None):
         if ndu_gate_config_file is None:
             ndu_gate_config_file = path.dirname(path.dirname(path.abspath(__file__))) + '/config/ndu_gate.yaml'.replace('/', path.sep)
+
+        if not path.isfile(ndu_gate_config_file):
+            print('config parameter is not a file : ', ndu_gate_config_file)
+            sys.exit(2)
 
         with open(ndu_gate_config_file) as general_config:
             self.__ndu_gate_config = safe_load(general_config)
