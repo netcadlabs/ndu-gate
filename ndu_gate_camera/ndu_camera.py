@@ -34,6 +34,7 @@ def daemon():
 
 
 def daemon_with_conf(config_file):
+    print("Start daemon_with_conf {} ".format(config_file))
     NDUCameraService(ndu_gate_config_file=config_file.replace('/', path.sep))
 
 
