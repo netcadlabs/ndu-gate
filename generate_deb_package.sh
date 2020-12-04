@@ -20,7 +20,7 @@ if [ "$1" != "only_clean" ] ; then
   echo "Adding the files, scripts and permissions in the package"
   sudo cp -r ndu_gate_camera/runners for_build/etc/ndu-gate/runners
   sudo cp -r ndu_gate_camera/config for_build/etc/ndu-gate/config
-  sudo cp -r ndu_gate_camera/data for_build/etc/ndu-gate/data
+#  sudo cp -r ndu_gate_camera/data for_build/etc/ndu-gate/data
   sudo cp -r for_build/etc deb_dist/ndu-gate-$CURRENT_VERSION/debian/python3-ndu-gate
   sudo cp -r for_build/var deb_dist/ndu-gate-$CURRENT_VERSION/debian/python3-ndu-gate
   sudo cp -r -a for_build/DEBIAN deb_dist/ndu-gate-$CURRENT_VERSION/debian/python3-ndu-gate
