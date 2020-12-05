@@ -105,7 +105,7 @@ class NDUCameraService:
                 "file_path": default_result_file_path
             }
         if str(result_hand_conf.get("type", "FILE")) == str("SOCKET"):
-            self.__result_handler = ResultHandlerSocket(result_hand_conf.get("socket", {}))
+            self.__result_handler = ResultHandlerSocket(result_hand_conf.get("socket", {}), result_hand_conf.get("device", None))
         else:
             self.__result_handler = ResultHandlerFile(result_hand_conf.get("file_path", default_result_file_path))
 

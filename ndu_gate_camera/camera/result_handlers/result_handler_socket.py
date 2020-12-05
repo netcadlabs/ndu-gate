@@ -7,10 +7,10 @@ from ndu_gate_camera.utility import constants
 
 
 class ResultHandlerSocket:
-    def __init__(self, config):
+    def __init__(self, config, device_name):
         self.__socket_port = config.get("port", 60600)
         self.__socket_host = config.get("host", "127.0.0.1")
-        self.__device_name = config.get("device", None)
+        self.__device_name = device_name
 
         self.context = zmq.Context()
         self.socket = self.context.socket(zmq.PUB)
@@ -41,7 +41,7 @@ class ResultHandlerSocket:
         data = {
             data_type: item,
             "runner": runner_name,
-            "deviceName" : self.__device_name
+            "deviceName": self.__device_name
         }
         data_json = json.dumps(data)
         try:
