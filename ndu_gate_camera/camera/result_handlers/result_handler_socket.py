@@ -10,6 +10,7 @@ class ResultHandlerSocket:
     def __init__(self, config):
         self.__socket_port = config.get("port", 60600)
         self.__socket_host = config.get("host", "127.0.0.1")
+        self.__device_name = config.get("device", None)
 
         self.context = zmq.Context()
         self.socket = self.context.socket(zmq.PUB)
@@ -39,7 +40,8 @@ class ResultHandlerSocket:
     def __send_item(self, item, runner_name, data_type):
         data = {
             data_type: item,
-            "runner": runner_name
+            "runner": runner_name,
+            "deviceName" : self.__device_name
         }
         data_json = json.dumps(data)
         try:

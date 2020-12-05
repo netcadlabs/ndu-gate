@@ -18,6 +18,7 @@ video_source:
     CAP_PROP_FPS: 10
 
 result_handler:
+  device: "DEVICE-1"
   type: SOCKET # FILE, SOCKET
   file_path: /folder-to-write-serviceTelemetry.txt
   socket:
