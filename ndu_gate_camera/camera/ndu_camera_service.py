@@ -109,7 +109,7 @@ class NDUCameraService:
         else:
             self.__result_handler = ResultHandlerFile(result_hand_conf.get("file_path", default_result_file_path))
 
-        self.frame_sent = False
+        self.frame_sent = self.SOURCE_CONFIG.get("frame_sent", False)
 
         self.default_runners = DEFAULT_RUNNERS
         self.runners_configs = []
@@ -289,8 +289,9 @@ class NDUCameraService:
             cv2.moveWindow(winname, 40, 30)
 
         for i, frame in self.video_source.get_frames():
-            if i % 1000 == 0:
+            if i % 500 == 0:
                 log.debug("frame count %s ", i)
+                print("frame {}".format(i))
             if self.__skip_frame > 1 and i % self.__skip_frame != 0:
                 continue
 
@@ -298,9 +299,11 @@ class NDUCameraService:
                 try:
                     camera_capture_base64 = image_helper.frame2base64(frame)
                     log.info("CAMERA_CAPTURE size : %s", len(camera_capture_base64))
-                    # TODO - bir ayar üzerinde enable-disable olabilir..
-                    # self.__result_handler.save_result([{"data": {"CAMERA_CAPTURE": camera_capture_base64}}], data_type='attribute')
-                    # self.frame_sent = True
+                    print("CAMERA_CAPTURE size : {}".format(len(camera_capture_base64)))
+                    if self.frame_sent:
+                        self.__result_handler.save_result([{"data": {"CAMERA_CAPTURE": camera_capture_base64}}], data_type='attribute')
+                    self.__result_handler.save_result([{"data": {"FRAME_COUNT": i}}], data_type='attribute')
+                    self.frame_sent = True
                 except Exception as e:
                     log.exception(e)
                     log.error("can not create CAMERA_CAPTURE")

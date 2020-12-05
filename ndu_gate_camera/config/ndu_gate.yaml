@@ -8,6 +8,8 @@ video_source:
   write_preview: False
   max_frame_dim: 
   write_preview_file_name: /file-for-video-file-to-write.mp4
+  frame_send_interval: 500
+  frame_send: True
   mirror: True
   # sleep: 0.1 # ??
   cam_gear_options:

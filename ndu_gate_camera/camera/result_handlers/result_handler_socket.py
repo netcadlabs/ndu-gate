@@ -13,7 +13,7 @@ class ResultHandlerSocket:
 
         self.context = zmq.Context()
         self.socket = self.context.socket(zmq.PUB)
-        self.socket.bind("tcp://{}:{}".format(self.__socket_host, self.__socket_port))
+        self.socket.connect("tcp://{}:{}".format(self.__socket_host, self.__socket_port))
         time.sleep(.5)
         log.info("ResultHandlerSocket %s:%s", self.__socket_host, self.__socket_port)
 
