@@ -25,15 +25,15 @@ class NDUUtility:
             file_dir = path.dirname(path.dirname(__file__))
             extensions_paths = []
 
-            # if system() == "Windows":
-            #     extensions_paths.append(path.abspath(file_dir + '/runners/'.replace('/', path.sep) + extension_type.lower()))
-            # else:
-            #     extensions_paths.append('/var/lib/ndu_gate/runners/'.replace('/', path.sep) + extension_type.lower())
-            #     extensions_paths.append(path.abspath(file_dir + '/runners/'.replace('/', path.sep) + extension_type.lower()))
-            #
-            # if NDUUtility.is_debug_mode():
-            #     extensions_paths.append(path.abspath(file_dir + '/../runners/'.replace('/', path.sep) + extension_type.lower()))
-            extensions_paths.append(path.abspath(file_dir + '/../runners/'.replace('/', path.sep) + extension_type.lower()))
+            if system() == "Windows":
+                extensions_paths.append(path.abspath(file_dir + '/runners/'.replace('/', path.sep) + extension_type.lower()))
+            else:
+                extensions_paths.append('/var/lib/ndu_gate/runners/'.replace('/', path.sep) + extension_type.lower())
+                extensions_paths.append(path.abspath(file_dir + '/runners/'.replace('/', path.sep) + extension_type.lower()))
+            
+            if NDUUtility.is_debug_mode():
+                extensions_paths.append(path.abspath(file_dir + '/../runners/'.replace('/', path.sep) + extension_type.lower()))
+            # extensions_paths.append(path.abspath(file_dir + '/../runners/'.replace('/', path.sep) + extension_type.lower()))
 
             if package_uuids and len(package_uuids) > 0:
                 for uuid in package_uuids:
