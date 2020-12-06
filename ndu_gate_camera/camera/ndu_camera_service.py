@@ -334,8 +334,6 @@ class NDUCameraService:
                         log.debug("result : %s", result)
 
                         if result is not None:
-                            ###########koray self.__result_handler.save_result(result, runner_name=runner_conf["name"])
-
                             self.__result_handler.save_result(result, runner_name=runner_conf["name"])
 
                             # def _save_result(result_handler_, result_, runner_name_):

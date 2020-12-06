@@ -2,6 +2,9 @@ import time
 
 import onnxruntime as rt
 
+from ndu_gate_camera.utility import constants
+from ndu_gate_camera.utility.geometry_helper import add_padding_rect, rects_intersect
+
 
 def create_sess_tuple(onnx_fn):
     start = time.time()
@@ -59,14 +62,7 @@ def run(sess_tuple, inputs):
     else:
         input_item = {input_names[0]: inputs[0]}
 
-    # sess.run(None, {input_name: image_data, "image_shape": img_size})
     return sess.run(output_names, input_item)
-
-    # start = time.time()
-    # res = sess.run(output_names, input_item)
-    # elapsed = time.time() - start
-    # print(f"sess.run time: {elapsed:.0f}sn")
-    # return res
 
 
 def parse_class_names(classes_fn):

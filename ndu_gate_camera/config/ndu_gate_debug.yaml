@@ -20,9 +20,9 @@ video_source:
     CAP_PROP_FPS: 10
 
 
-  type: IMAGE_FILE # VIDEO_FILE, PI_CAMERA, CAMERA, IP_CAMERA, VIDEO_URL, YOUTUBE
+#  type: IMAGE_FILE # VIDEO_FILE, PI_CAMERA, CAMERA, IP_CAMERA, VIDEO_URL, YOUTUBE
 #  type: YOUTUBE
-#  type: VIDEO_FILE
+  type: VIDEO_FILE
 #  type: CAMERA
 
 #  file_path: iett_1.avi
@@ -91,7 +91,7 @@ video_source:
 #  url: https://www.youtube.com/watch?v=R3JK2xqYK1o  #emotion
 #  url: https://www.youtube.com/watch?v=g-dyHadto2Y  #mask
 #  url: https://youtu.be/TlInDQgg2G4  #mask
-#  url: https://youtu.be/MNn9qKG2UFI  #highway
+  url: https://youtu.be/MNn9qKG2UFI  #highway
 
 
 #  url: https://www.youtube.com/watch?v=CjJynPk007w #helmet
