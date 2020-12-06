@@ -288,117 +288,121 @@ class NDUCameraService:
             cv2.namedWindow(winname)  # Create a named window
             cv2.moveWindow(winname, 40, 30)
 
-        for i, frame in self.video_source.get_frames():
-            if i % 500 == 0:
-                log.debug("frame count %s ", i)
-                print("frame {}".format(i))
-            if self.__skip_frame > 1 and i % self.__skip_frame != 0:
-                continue
+        try:
+            for i, frame in self.video_source.get_frames():
+                if i % 500 == 0:
+                    log.debug("frame count %s ", i)
+                    print("frame {}".format(i))
+                if self.__skip_frame > 1 and i % self.__skip_frame != 0:
+                    continue
 
-            if i % self.frame_send_interval == 0:
-                try:
-                    camera_capture_base64 = image_helper.frame2base64(frame)
-                    log.info("CAMERA_CAPTURE size : %s", len(camera_capture_base64))
-                    print("CAMERA_CAPTURE size : {}".format(len(camera_capture_base64)))
-                    if self.frame_sent:
-                        self.__result_handler.save_result([{"data": {"CAMERA_CAPTURE": camera_capture_base64}}], data_type='attribute')
-                    self.__result_handler.save_result([{"data": {"FRAME_COUNT": i}}], data_type='attribute')
-                    self.frame_sent = True
-                except Exception as e:
-                    log.exception(e)
-                    log.error("can not create CAMERA_CAPTURE")
-
-            if self.__max_frame_dim is not None:
-                frame = image_helper.resize_if_larger(frame, self.__max_frame_dim)
-            if self.__min_frame_dim is not None:
-                frame = image_helper.resize_if_smaller(frame, self.__min_frame_dim)
-
-            results = []
-            if skip <= 0:
-                if self.__preview_show:
-                    start_total = time.time()
-                extra_data = {
-                    constants.EXTRA_DATA_KEY_RESULTS: {}
-                }
-
-                # TODO - check runner settings before send the frame to runner
-                for runner_unique_key in self.available_runners:
+                if i % self.frame_send_interval == 0:
                     try:
-                        runner_conf = self.runners_configs_by_key[runner_unique_key]
-                        start = time.time()
-                        result = self.available_runners[runner_unique_key].process_frame(frame, extra_data=extra_data)
-                        elapsed = time.time() - start
-                        if self.__preview_show and result is not None:
-                            result.append({"elapsed_time": '{}: {:.4f}sn fps:{:.0f}'.format(runner_conf["type"], elapsed, 1.0 / max(elapsed, 0.001))})
-                        extra_data[constants.EXTRA_DATA_KEY_RESULTS][runner_unique_key] = result
-                        log.debug("result : %s", result)
-
-                        if result is not None:
-                            self.__result_handler.save_result(result, runner_name=runner_conf["name"])
-
-                            # def _save_result(result_handler_, result_, runner_name_):
-                            #     result_handler_.save_result(result_, runner_name=runner_name_)
-                            # import threading
-                            # thr = threading.Thread(target=_save_result( self.__result_handler, result, runner_conf["name"]), args=(), kwargs={})
-                            # thr.start()  # Will run "foo"
-                            # # thr.is_alive()  # Will return whether foo is running currently
-                            # # thr.join()  # Will wait till "foo" is done
-
-                            results.append(result)
+                        camera_capture_base64 = image_helper.frame2base64(frame)
+                        log.info("CAMERA_CAPTURE size : %s", len(camera_capture_base64))
+                        print("CAMERA_CAPTURE size : {}".format(len(camera_capture_base64)))
+                        if self.frame_sent:
+                            self.__result_handler.save_result([{"data": {"CAMERA_CAPTURE": camera_capture_base64}}], data_type='attribute')
+                        self.__result_handler.save_result([{"data": {"FRAME_COUNT": i}}], data_type='attribute')
+                        self.frame_sent = True
                     except Exception as e:
                         log.exception(e)
+                        log.error("can not create CAMERA_CAPTURE")
 
-            if self.__preview_show:
-                if skip > 0:
-                    skip = skip - 1
-                    preview = frame
-                else:
-                    total_elapsed_time = time.time() - start_total
-                    results.append([{"total_elapsed_time": '{:.0f}msec fps:{:.0f}sn'.format(total_elapsed_time * 1000, 1.0 / total_elapsed_time)}])
-                    preview = self._get_preview(frame, results)
+                if self.__max_frame_dim is not None:
+                    frame = image_helper.resize_if_larger(frame, self.__max_frame_dim)
+                if self.__min_frame_dim is not None:
+                    frame = image_helper.resize_if_smaller(frame, self.__min_frame_dim)
 
-                cv2.imshow(winname, preview)
-                # while True:
-                #     k = cv2.waitKey(100) & 0xFF
-                #     print(k)
-                exit_requested = False
-                while True:
-                    k = cv2.waitKey(1) & 0xFF
-                    if k == ord("q"):
-                        exit_requested = True
+                results = []
+                if skip <= 0:
+                    if self.__preview_show:
+                        start_total = time.time()
+                    extra_data = {
+                        constants.EXTRA_DATA_KEY_RESULTS: {}
+                    }
+
+                    # TODO - check runner settings before send the frame to runner
+                    for runner_unique_key in self.available_runners:
+                        try:
+                            runner_conf = self.runners_configs_by_key[runner_unique_key]
+                            start = time.time()
+                            result = self.available_runners[runner_unique_key].process_frame(frame, extra_data=extra_data)
+                            elapsed = time.time() - start
+                            if self.__preview_show and result is not None:
+                                result.append({"elapsed_time": '{}: {:.4f}sn fps:{:.0f}'.format(runner_conf["type"], elapsed, 1.0 / max(elapsed, 0.001))})
+                            extra_data[constants.EXTRA_DATA_KEY_RESULTS][runner_unique_key] = result
+                            log.debug("result : %s", result)
+
+                            if result is not None:
+                                self.__result_handler.save_result(result, runner_name=runner_conf["name"])
+
+                                # def _save_result(result_handler_, result_, runner_name_):
+                                #     result_handler_.save_result(result_, runner_name=runner_name_)
+                                # import threading
+                                # thr = threading.Thread(target=_save_result( self.__result_handler, result, runner_conf["name"]), args=(), kwargs={})
+                                # thr.start()  # Will run "foo"
+                                # # thr.is_alive()  # Will return whether foo is running currently
+                                # # thr.join()  # Will wait till "foo" is done
+
+                                results.append(result)
+                        except Exception as e:
+                            log.exception(e)
+
+                if self.__preview_show:
+                    if skip > 0:
+                        skip = skip - 1
+                        preview = frame
+                    else:
+                        total_elapsed_time = time.time() - start_total
+                        results.append([{"total_elapsed_time": '{:.0f}msec fps:{:.0f}sn'.format(total_elapsed_time * 1000, 1.0 / total_elapsed_time)}])
+                        preview = self._get_preview(frame, results)
+
+                    cv2.imshow(winname, preview)
+                    # while True:
+                    #     k = cv2.waitKey(100) & 0xFF
+                    #     print(k)
+                    exit_requested = False
+                    while True:
+                        k = cv2.waitKey(1) & 0xFF
+                        if k == ord("q"):
+                            exit_requested = True
+                            break
+                        elif k == ord("s"):
+                            skip = 10
+                        elif k == 32:  # space key
+                            pause = not pause
+                        if not pause:
+                            break
+                    if exit_requested:
                         break
-                    elif k == ord("s"):
-                        skip = 10
-                    elif k == 32:  # space key
-                        pause = not pause
-                    if not pause:
-                        break
-                if exit_requested:
-                    break
-                if self.__preview_write:
-                    self._write_frame(preview)
-            elif self.__preview_write:
-                self._write_frame(frame)
+                    if self.__preview_write:
+                        self._write_frame(preview)
+                elif self.__preview_write:
+                    self._write_frame(frame)
 
-        if self.__preview_write and self.__out is not None:
-            self.__out.release()
-            import ffmpeg  # pip3 install ffmpeg-python & brew install ffmpeg
-            try:
-                # daha az sıkışmış, quicktime çalabiliyor
-                fn = self.__preview_write_file_name
-                ffmpeg.input(fn).output(fn + '.mp4').run(capture_stdout=True, capture_stderr=True)
+            if self.__preview_write and self.__out is not None:
+                self.__out.release()
+                import ffmpeg  # pip3 install ffmpeg-python & brew install ffmpeg
+                try:
+                    # daha az sıkışmış, quicktime çalabiliyor
+                    fn = self.__preview_write_file_name
+                    ffmpeg.input(fn).output(fn + '.mp4').run(capture_stdout=True, capture_stderr=True)
 
-                # # süper sıkışmış ama quicktime çalamıyor. Benim denemelerimde yarım yamalak kaydedebildi!
-                ffmpeg.input(fn) \
-                    .output(fn + '2.mp4', vcodec='libx265', crf=24, t=5) \
-                    .run(capture_stdout=True, capture_stderr=True)
-                # # os.remove(fn)
-            except ffmpeg.Error as e:
-                print('stdout:', e.stdout.decode('utf8'))
-                print('stderr:', e.stderr.decode('utf8'))
-                raise e
+                    # # süper sıkışmış ama quicktime çalamıyor. Benim denemelerimde yarım yamalak kaydedebildi!
+                    ffmpeg.input(fn) \
+                        .output(fn + '2.mp4', vcodec='libx265', crf=24, t=5) \
+                        .run(capture_stdout=True, capture_stderr=True)
+                    # # os.remove(fn)
+                except ffmpeg.Error as e:
+                    print('stdout:', e.stdout.decode('utf8'))
+                    print('stderr:', e.stderr.decode('utf8'))
+                    raise e
 
-        # TODO - set camera_perspective
+            # TODO - set camera_perspective
+        except Exception as e:
+            log.exception(e)
+
         log.info("Video source is finished")
 
     def _write_frame(self, frame):
