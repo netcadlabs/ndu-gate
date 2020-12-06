@@ -1,14 +1,9 @@
 {
+  "gates":[],
+  "track": "center",
   "classes": {
     "kisi": [
       "person"
-    ],
-    "arac": [
-      "car",
-      "bicycle",
-      "motorbike",
-      "truck",
-      "bus"
     ]
   }
 }

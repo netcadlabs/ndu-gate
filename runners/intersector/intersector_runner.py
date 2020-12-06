@@ -253,7 +253,7 @@ class IntersectorRunner(Thread, NDUCameraRunner):
                             if has_touch(r, rect_names0, rects0):
                                 count += 1
                         elif r.style == self._ST_DIST:
-                            if gr.obj_detection.ground is None or len(gr.)
+                            # if gr.obj_detection.ground is None or len(gr.)
 
                             pass  ####
 

@@ -20,10 +20,10 @@ video_source:
     CAP_PROP_FPS: 10
 
 
-#  type: IMAGE_FILE # VIDEO_FILE, PI_CAMERA, CAMERA, IP_CAMERA, VIDEO_URL, YOUTUBE
+  type: IMAGE_FILE # VIDEO_FILE, PI_CAMERA, CAMERA, IP_CAMERA, VIDEO_URL, YOUTUBE
 #  type: YOUTUBE
 #  type: VIDEO_FILE
-  type: CAMERA
+#  type: CAMERA
 
 #  file_path: iett_1.avi
 #  file_path: iett_2.avi
@@ -38,7 +38,7 @@ video_source:
 #  file_path: crowded_720x.mp4
 #  file_path: pedestrian_survaillance.mp4
 #  file_path: vehicle_survaillance.mp4
-#  file_path: vid_short.mp4 #pedestrians
+  file_path: vid_short.mp4 #pedestrians
 #  file_path: çanakkale.mp4 #car - pedestrians
 #  file_path: çanakkale0.mp4 #pedestrians
 #  file_path: çanakkale_yaya.mp4 #pedestrians
@@ -66,9 +66,12 @@ video_source:
 #  image_path: faces.jpg
 #  image_path: _emotion_mask2.jpg
 #  image_path: _emotion7.jpg
-  image_path: plaka.jpg
+#  image_path: plaka.jpg
 #  image_path: plaka_ch_1.jpg
 #  image_path: plaka_ch_2.jpg
+  image_path: __canakkale_cam1.png
+
+
 
 
   data_folder: C:/_koray/test_data/
@@ -151,11 +154,11 @@ runners:
 #    class: Yolov3TinyRunner
 #    priority: 10
 #
-  - name: yolov4 - Object detection with 80 classes
-    type: yolov4
-    configuration: yolov4.json
-    class: Yolov4Runner
-    priority: 10
+#  - name: yolov4 - Object detection with 80 classes
+#    type: yolov4
+#    configuration: yolov4.json
+#    class: Yolov4Runner
+#    priority: 10
 #
 #  - name: yolov5s - Object detection with 80 classes (Fastest)
 #    type: yolov5s
@@ -163,11 +166,11 @@ runners:
 #    class: Yolov5sRunner
 #    priority: 10
 #
-#  - name: yolov5m - Object detection with 80 classes (Fast)
-#    type: yolov5m
-#    configuration: yolov5m.json
-#    class: Yolov5mRunner
-#    priority: 10
+  - name: yolov5m - Object detection with 80 classes (Fast)
+    type: yolov5m
+    configuration: yolov5m.json
+    class: Yolov5mRunner
+    priority: 10
 
 #  - name: yolov5l - Object detection with 80 classes (Accurate)
 #    type: yolov5l
@@ -235,11 +238,11 @@ runners:
 ##    class: GenderAgeRunner
 ##    priority: 100
 ##
-##  - name: Object Counter
-##    type: object_counter
-##    configuration: object_counter.json
-##    class: ObjectCounterRunner
-##    priority: 100
+  - name: Object Counter
+    type: object_counter
+    configuration: object_counter.json
+    class: ObjectCounterRunner
+    priority: 100
 ##
 ##  - name: Objects In Area
 ##    type: objects_in_area
@@ -253,11 +256,11 @@ runners:
 ##    class: PointOccupiedRunner
 ##    priority: 100
 #
-##  - name: Intersector
-##    type: intersector
-##    configuration: intersector.json
-##    class: IntersectorRunner
-##    priority: 100
+#  - name: Intersector
+#    type: intersector
+#    configuration: intersector.json
+#    class: IntersectorRunner
+#    priority: 100
 
 
 #  - name: Hard Hat Detector

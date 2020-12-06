@@ -124,7 +124,7 @@ def select_areas(frame, window_name, color=(0, 0, 255), opacity=0.3, thickness=4
                 if len(area) > 0:
                     pts = np.array(area, np.int32)
                     fill_polyline_transparent(image, [pts], color=color, opacity=opacity,
-                                                          thickness=thickness)
+                                              thickness=thickness)
                     for pnt in area:
                         cv2.circle(image, pnt, thickness * 2, color, thickness)
             else:
@@ -243,3 +243,53 @@ def frame2base64(frame, scale=40):
     res, frame = cv2.imencode('.png', scaled_frame)
     base64_data = base64.b64encode(frame)
     return base64_data.decode('utf-8')
+
+
+def normalize_coordinates(image, coords):
+    h, w = image.shape[:2]
+    pnts = []
+    for x, y in coords:
+        pnts.append((x / w, y / h))
+    return pnts
+
+
+def denormalize_coordinates(image, coords):
+    h, w = image.shape[:2]
+    pnts = []
+    for x, y in coords:
+        pnts.append((int(x * w), int(y * h)))
+    return pnts
+
+
+def normalize_lines(image, lines):
+    lines1 = []
+    for line in lines:
+        lines1.append(normalize_coordinates(image, line))
+    return lines1
+
+
+def denormalize_lines(image, lines):
+    lines1 = []
+    for line in lines:
+        lines1.append(denormalize_coordinates(image, line))
+    return lines1
+
+
+def convert_lines_list2tuple(lines):
+    res = []
+    for line in lines:
+        line1 = []
+        for c in line:
+            line1.append(tuple(c))
+        res.append(line1)
+    return res
+
+
+def convert_lines_tuple2list(lines):
+    res = []
+    for line in lines:
+        line1 = []
+        for c in line:
+            line1.append(list(c))
+        res.append(line1)
+    return res

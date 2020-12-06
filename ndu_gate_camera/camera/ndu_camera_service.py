@@ -329,7 +329,7 @@ class NDUCameraService:
                         result = self.available_runners[runner_unique_key].process_frame(frame, extra_data=extra_data)
                         elapsed = time.time() - start
                         if self.__preview_show and result is not None:
-                            result.append({"elapsed_time": '{}: {:.4f}sn fps:{:.0f}'.format(runner_conf["type"], elapsed, 1.0 / elapsed)})
+                            result.append({"elapsed_time": '{}: {:.4f}sn fps:{:.0f}'.format(runner_conf["type"], elapsed, 1.0 / max(elapsed, 0.001))})
                         extra_data[constants.EXTRA_DATA_KEY_RESULTS][runner_unique_key] = result
                         log.debug("result : %s", result)
 
