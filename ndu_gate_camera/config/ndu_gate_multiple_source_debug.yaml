@@ -6,38 +6,37 @@ result_handler:
 
 instances:
   - source:
-      type: CAMERA
-      url: rtsp://admin:Catab234@10.10.0.85:554/1
-      device: "CAMERA-1"
+      type: VIDEO_FILE # CAMERA
+      data_folder: C:/_koray/test_data/
+      file_path: iett_2.avi
+      device: "iett_2"
       preview_show: True
     runners:
-#      - name: yolov5m - Object detection with 80 classes (Fast)
-#        type: yolov5m
-#        configuration: yolov5m.json
-#        class: Yolov5mRunner
-#        priority: 10
-#      - name: Cigarette Detector
-#        type: cigarette_detector
-#        configuration: cigarette_detector.json
-#        class: CigaretteDetectorRunner
-#        priority: 10
+      - name: yolov5m - Object detection with 80 classes (Fast)
+        type: yolov5m
+        configuration: yolov5m.json
+        class: Yolov5mRunner
+        priority: 10
+      - name: Cigarette Detector
+        type: cigarette_detector
+        configuration: cigarette_detector.json
+        class: CigaretteDetectorRunner
+        priority: 10
 
   - source:
-      type: CAMERA
-      url: https://www.youtube.com/watch?v=8Ts9M2f11HE
-      device: "DEVICE-YOUTUBE"
-      cam_gear_options:
-        CAP_PROP_FRAME_WIDTH: 320
-        CAP_PROP_FRAME_HEIGHT: 240
-        CAP_PROP_FPS: 10
+      type: VIDEO_FILE # CAMERA
+      data_folder: C:/_koray/test_data/
+      file_path: iett_2.avi
+      device: "iett_2_2"
+      preview_show: True
     runners:
-#      - name: yolov5m - Object detection with 80 classes (Fast)
-#        type: yolov5m
-#        configuration: yolov5m.json
-#        class: Yolov5mRunner
-#        priority: 10
-#      - name: Person Counter
-#        type: personcounter
-#        configuration: person_counter.json
-#        class: person_counter_runner
-#        priority: 100
+      - name: yolov5m - Object detection with 80 classes (Fast)
+        type: yolov5m
+        configuration: yolov5m.json
+        class: Yolov5mRunner
+        priority: 10
+      - name: Person Counter
+        type: personcounter
+        configuration: person_counter.json
+        class: person_counter_runner
+        priority: 100
