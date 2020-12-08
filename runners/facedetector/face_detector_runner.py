@@ -6,9 +6,8 @@ import os
 import errno
 from os import path
 
-
 from ndu_gate_camera.api.ndu_camera_runner import NDUCameraRunner, log
-from ndu_gate_camera.utility import constants, image_helper
+from ndu_gate_camera.utility import constants, image_helper, onnx_helper
 
 
 class FaceDetectorRunner(NDUCameraRunner):
@@ -16,26 +15,15 @@ class FaceDetectorRunner(NDUCameraRunner):
         super().__init__()
         self.__threshold = config.get("threshold", 0.8)
 
-        onnx_fn = path.dirname(path.abspath(__file__)) + "/data/version-RFB-640.onnx"
+        self.onnx_fn = path.dirname(path.abspath(__file__)) + "/data/version-RFB-640.onnx"
         class_names_fn = path.dirname(path.abspath(__file__)) + "/data/voc-model-labels.txt"
 
-        if not path.isfile(onnx_fn):
-            raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), onnx_fn)
+        if not path.isfile(self.onnx_fn):
+            raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), self.onnx_fn)
         if not path.isfile(class_names_fn):
             raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), class_names_fn)
 
-        # self.__onnx_sess, self.__onnx_input_name, self.__onnx_class_names = FaceDetectorRunner._create_session(onnx_fn, class_names_fn)
-        def _create_session(onnx_fn, classes_fn):
-            sess = rt.InferenceSession(onnx_fn)
-            input_name = sess.get_inputs()[0].name
-            outputs = sess.get_outputs()
-            output_names = []
-            for output in outputs:
-                output_names.append(output.name)
-            class_names = [line.rstrip('\n') for line in open(classes_fn, encoding='utf-8')]
-            return sess, input_name, output_names, class_names
-
-        self.__onnx_sess, self.__onnx_input_name, self.__onnx_output_names, self.__onnx_class_names = _create_session(onnx_fn, class_names_fn)
+        self.class_names = onnx_helper.parse_class_names(class_names_fn)
 
         ## onnx export örneği
         # self.__candidate_size = config.get("candidate_size", 1000)
@@ -73,9 +61,9 @@ class FaceDetectorRunner(NDUCameraRunner):
         image = np.transpose(image, [2, 0, 1])
         image = np.expand_dims(image, axis=0)
         image = image.astype(np.float32)
-        confidences, boxes = self.__onnx_sess.run(self.__onnx_output_names, {self.__onnx_input_name: image})
+        confidences, boxes = onnx_helper.run(self.onnx_fn, [image])
 
-        out_boxes, out_classes, out_scores = FaceDetectorRunner._predict_faces(w, h, confidences, boxes, self.__threshold, self.__onnx_class_names)
+        out_boxes, out_classes, out_scores = FaceDetectorRunner._predict_faces(w, h, confidences, boxes, self.__threshold, self.class_names)
 
         res = []
         for i in range(len(out_boxes)):
@@ -99,9 +87,9 @@ class FaceDetectorRunner(NDUCameraRunner):
             subset_boxes = boxes[mask, :]
             box_probs = np.concatenate([subset_boxes, probs.reshape(-1, 1)], axis=1)
             box_probs = FaceDetectorRunner._hard_nms(box_probs,
-                                                       iou_threshold=iou_threshold,
-                                                       top_k=top_k,
-                                                       )
+                                                     iou_threshold=iou_threshold,
+                                                     top_k=top_k,
+                                                     )
             for box_prob in box_probs:
                 y1 = int(box_prob[0] * width)
                 x1 = int(box_prob[1] * height)
@@ -112,7 +100,6 @@ class FaceDetectorRunner(NDUCameraRunner):
                 out_names.append(class_names[class_index])
 
         return out_boxes, out_names, out_scores
-
 
     @staticmethod
     def _hard_nms(box_scores, iou_threshold, top_k=-1, candidate_size=200):

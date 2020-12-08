@@ -21,7 +21,7 @@ class IntersectorRunner(Thread, NDUCameraRunner):
             raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), onnx_fn)
         if not path.isfile(class_names_fn):
             raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), class_names_fn)
-        self.__onnx_sess_tu = onnx_helper.create_sess_tuple(onnx_fn)
+        self.__onnx_fn = onnx_fn
         self.__onnx_classify_names = onnx_helper.parse_class_names(class_names_fn)
 
     _ST_OR = "or"
@@ -155,7 +155,7 @@ class IntersectorRunner(Thread, NDUCameraRunner):
         image = frame[y1:y2, x1:x2]
 
         blob = cv2.dnn.blobFromImage(image, 1, (224, 224), (123.68, 116.779, 103.939))
-        preds = onnx_helper.run(self.__onnx_sess_tu, [blob])[0]
+        preds = onnx_helper.run(self.__onnx_fn, [blob])[0]
 
         # cv2.imshow(str(classify_indexes), image)
         # cv2.waitKey(100)

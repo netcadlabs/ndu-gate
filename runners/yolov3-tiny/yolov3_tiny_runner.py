@@ -4,7 +4,8 @@ import onnxruntime as rt
 import os
 
 from ndu_gate_camera.api.ndu_camera_runner import NDUCameraRunner, log
-from ndu_gate_camera.utility import constants, image_helper
+from ndu_gate_camera.utility import constants, image_helper, onnx_helper
+
 
 class Yolov3TinyRunner(NDUCameraRunner):
     def __init__(self, config, connector_type):
@@ -16,13 +17,10 @@ class Yolov3TinyRunner(NDUCameraRunner):
         if not os.path.isfile(self.onnx_fn):
             self.onnx_fn = os.path.dirname(os.path.abspath(__file__)) + self.onnx_fn.replace("/", os.path.sep)
 
-        self.classes_filename = config.get("classes_filename", "coco.names")
-        if not os.path.isfile(self.classes_filename):
-            self.classes_filename = os.path.dirname(os.path.abspath(__file__)) + self.classes_filename.replace("/", os.path.sep)
-
-        # os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
-
-        self.yolo_sess, self.yolo_input_name, self.yolo_class_names = self._create_session(self.onnx_fn, self.classes_filename)
+        classes_filename = config.get("classes_filename", "coco.names")
+        if not os.path.isfile(classes_filename):
+            classes_filename = os.path.dirname(os.path.abspath(__file__)) + classes_filename.replace("/", os.path.sep)
+        self.class_names = onnx_helper.parse_class_names(classes_filename)
 
     def get_name(self):
         return "yolov3-tiny"
@@ -33,10 +31,10 @@ class Yolov3TinyRunner(NDUCameraRunner):
 
     def process_frame(self, frame, extra_data=None):
         super().process_frame(frame)
-        return self._predict(self.yolo_sess, self.yolo_input_name, self.input_size, self.yolo_class_names, frame)
+        return self._predict(self.onnx_fn, self.class_names, self.input_size, frame)
 
     @staticmethod
-    def _predict(sess, input_name, input_size, class_names, frame):
+    def _predict(onnx_fn, class_names, input_size, frame):
         image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         img_processed, w, h, nw, nh, dw, dh = Yolov3TinyRunner._image_preprocess(np.copy(image), [input_size, input_size])
         # img_processed, w, h, nw, nh, dw, dh = Yolov3TinyRunner._image_preprocess(np.copy(frame), [input_size, input_size])
@@ -45,7 +43,8 @@ class Yolov3TinyRunner(NDUCameraRunner):
 
         # yolov3-tiny için özel kısım
         img_size = np.array([input_size, input_size], dtype=np.float32).reshape(1, 2)
-        boxes, scores, indices = sess.run(None, {input_name: image_data, "image_shape": img_size})
+        # boxes, scores, indices = sess.run(None, {input_name: image_data, "image_shape": img_size})
+        boxes, scores, indices = onnx_helper.run(onnx_fn, [image_data, img_size])
         out_boxes, out_scores, out_classes = Yolov3TinyRunner._postprocess_tiny_yolov3(boxes, scores, indices, class_names)
 
         out_boxes = Yolov3TinyRunner._remove_padding(out_boxes, w, h, nw, nh, dw, dh)
@@ -91,19 +90,6 @@ class Yolov3TinyRunner(NDUCameraRunner):
                     out_boxes.append(boxes[idx_1])
         return out_boxes, out_scores, out_classes
 
-    def postprocess_tiny_yoloV3(boxes, scores, indices, class_names):
-        objects_identified = indices.shape[0]
-        out_boxes, out_scores, out_classes = [], [], []
-        if objects_identified > 0:
-            for idx_0 in indices:
-                for idx_ in idx_0:
-                    classIndex = idx_[1]
-                    out_classes.append(class_names[classIndex])
-                    out_scores.append(scores[tuple(idx_)])
-                    idx_1 = (idx_[0], idx_[2])
-                    out_boxes.append(boxes[idx_1])
-        return out_boxes, out_scores, out_classes
-
     @staticmethod
     def _remove_padding(bboxes, w, h, nw, nh, dw, dh):
         rw = w / nw
@@ -121,11 +107,3 @@ class Yolov3TinyRunner(NDUCameraRunner):
             bbox[3] = int((w2 - dw) * rw)
 
         return bboxes
-
-    @staticmethod
-    def _create_session(onnx_fn, classes_filename):
-        class_names = [line.rstrip('\n') for line in open(classes_filename, encoding='utf-8')]
-
-        sess = rt.InferenceSession(onnx_fn)
-        input_name = sess.get_inputs()[0].name  # "input_1"
-        return sess, input_name, class_names

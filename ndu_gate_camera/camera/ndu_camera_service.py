@@ -355,7 +355,7 @@ class NDUCameraService:
                         preview = frame
                     else:
                         total_elapsed_time = time.time() - start_total
-                        results.append([{"total_elapsed_time": '{:.0f}msec fps:{:.0f}sn'.format(total_elapsed_time * 1000, 1.0 / total_elapsed_time)}])
+                        results.append([{"total_elapsed_time": '{:.0f}msec fps:{:.0f}'.format(total_elapsed_time * 1000, (1.0 / max(total_elapsed_time, 0.001)))}])
                         preview = self._get_preview(frame, results)
 
                     cv2.imshow(winname, preview)

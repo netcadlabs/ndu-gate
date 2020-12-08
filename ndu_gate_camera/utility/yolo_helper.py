@@ -5,7 +5,7 @@ import time
 from ndu_gate_camera.utility import constants, onnx_helper, image_helper
 
 
-def predict_v5(sess_tuple, input_size, class_names, frame):
+def predict_v5(onnx_fn, input_size, class_names, frame):
     # https://github.com/ultralytics/yolov5
     # torch ve torchvision bağımlılığını kaldırmak için birçok değişiklik yapılmıştır, kod üstteki linktekinden değişiktir.
 
@@ -157,7 +157,7 @@ def predict_v5(sess_tuple, input_size, class_names, frame):
     image_data = np.transpose(image_data, [0, 3, 1, 2])
 
     inputs = [image_data]
-    pred = onnx_helper.run(sess_tuple, inputs)[0]
+    pred = onnx_helper.run(onnx_fn, inputs)[0]
 
     batch_detections = np.array(pred)
     batch_detections = non_max_suppression(batch_detections, conf_thres=0.4, iou_thres=0.5, agnostic=False)
@@ -179,7 +179,7 @@ def predict_v5(sess_tuple, input_size, class_names, frame):
     return res
 
 
-def predict_v4(sess_tuple, input_size, class_names, frame):
+def predict_v4(onnx_fn, input_size, class_names, frame):
     h, w, _ = frame.shape
 
     def nms_cpu(boxes_, confs, nms_thresh=0.5, min_mode=False):
@@ -288,7 +288,7 @@ def predict_v4(sess_tuple, input_size, class_names, frame):
     # input_name = sess.get_inputs()[0].name
     # outputs = sess.run(None, {input_name: img_in})
     inputs = [img_in]
-    outputs = onnx_helper.run(sess_tuple, inputs)
+    outputs = onnx_helper.run(onnx_fn, inputs)
 
     boxes = post_processing(0.4, 0.6, outputs)
 

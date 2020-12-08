@@ -1,35 +1,22 @@
 from threading import Thread
 import numpy as np
-import cv2
-import onnxruntime as rt
 import os
 
 import errno
 from os import path
 
-from ndu_gate_camera.api.ndu_camera_runner import NDUCameraRunner, log
-from ndu_gate_camera.utility import constants, image_helper
-from ndu_gate_camera.utility.ndu_utility import NDUUtility
+from ndu_gate_camera.api.ndu_camera_runner import NDUCameraRunner
+from ndu_gate_camera.utility import constants, image_helper, onnx_helper
 
 
 class GenderAgeRunner(Thread, NDUCameraRunner):
-    def __init__(self, config, connector_type):
-        def _create_session(onnx_fn):
-            sess = rt.InferenceSession(onnx_fn)
-            input_name = sess.get_inputs()[0].name
-            outputs = sess.get_outputs()
-            output_names = []
-            for output in outputs:
-                output_names.append(output.name)
-            return sess, input_name, output_names
-
+    def __init__(self, _config, _connector_type):
         super().__init__()
 
-        onnx_fn = path.dirname(path.abspath(__file__)) + "/data/weights.29-3.76_utk.hdf5.onnx"
+        self.onnx_fn = path.dirname(path.abspath(__file__)) + "/data/weights.29-3.76_utk.hdf5.onnx"
 
-        if not path.isfile(onnx_fn):
-            raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), onnx_fn)
-        self.__onnx_sess, self.__onnx_input_name, self.__onnx_output_names = _create_session(onnx_fn)
+        if not path.isfile(self.onnx_fn):
+            raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), self.onnx_fn)
 
     def get_name(self):
         return "GenderAgeRunner"
@@ -90,7 +77,7 @@ class GenderAgeRunner(Thread, NDUCameraRunner):
                             img_data = np.array(image).astype(np.float32)
                             img_data = np.resize(img_data, input_shape)
 
-                            pred = self.__onnx_sess.run(self.__onnx_output_names, {self.__onnx_input_name: img_data})
+                            pred = onnx_helper.run(self.onnx_fn, [img_data])
 
                             predicted_gender = pred[0][0]
                             ages = np.arange(0, 101).reshape(101, 1)

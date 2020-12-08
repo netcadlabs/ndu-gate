@@ -26,7 +26,7 @@ video_source:
 #  type: CAMERA
 
 #  file_path: iett_1.avi
-#  file_path: iett_2.avi
+  file_path: iett_2.avi
 
 #  file_path: smoke_film.mp4
 #  file_path: smoke_women.mp4
@@ -38,7 +38,7 @@ video_source:
 #  file_path: crowded_720x.mp4
 #  file_path: pedestrian_survaillance.mp4
 #  file_path: vehicle_survaillance.mp4
-  file_path: vid_short.mp4 #pedestrians
+#  file_path: vid_short.mp4 #pedestrians
 #  file_path: çanakkale.mp4 #car - pedestrians
 #  file_path: çanakkale0.mp4 #pedestrians
 #  file_path: çanakkale_yaya.mp4 #pedestrians
@@ -64,12 +64,12 @@ video_source:
 #  image_path: faces_age_gender2.jpg
 #  image_path: faces_age_gender3.png
 #  image_path: faces.jpg
-#  image_path: _emotion_mask2.jpg
+  image_path: _emotion_mask2.jpg
 #  image_path: _emotion7.jpg
 #  image_path: plaka.jpg
 #  image_path: plaka_ch_1.jpg
 #  image_path: plaka_ch_2.jpg
-  image_path: __canakkale_cam1.png
+#  image_path: __canakkale_cam1.png
 
 
 
@@ -166,11 +166,11 @@ runners:
 #    class: Yolov5sRunner
 #    priority: 10
 #
-  - name: yolov5m - Object detection with 80 classes (Fast)
-    type: yolov5m
-    configuration: yolov5m.json
-    class: Yolov5mRunner
-    priority: 10
+#  - name: yolov5m - Object detection with 80 classes (Fast)
+#    type: yolov5m
+#    configuration: yolov5m.json
+#    class: Yolov5mRunner
+#    priority: 10
 
 #  - name: yolov5l - Object detection with 80 classes (Accurate)
 #    type: yolov5l
@@ -190,17 +190,17 @@ runners:
 #    class: SsdMobilenetRunner
 #    priority: 10
 #
-#  - name: Cigarette Detector
-#    type: cigarette_detector
-#    configuration: cigarette_detector.json
-#    class: CigaretteDetectorRunner
-#    priority: 10
-#
-#  - name: Face Detector
-#    type: facedetector
-#    configuration: facedetector.json
-#    class: FaceDetectorRunner
-#    priority: 10
+  - name: Cigarette Detector
+    type: cigarette_detector
+    configuration: cigarette_detector.json
+    class: CigaretteDetectorRunner
+    priority: 10
+
+  - name: Face Detector
+    type: facedetector
+    configuration: facedetector.json
+    class: FaceDetectorRunner
+    priority: 10
 #
 ##  - name: Person Counter
 ##    type: personcounter
@@ -208,17 +208,17 @@ runners:
 ##    class: person_counter_runner
 ##    priority: 100
 ##
-##  - name: Driver Monitor
-##    type: drivermonitor
-##    configuration: drivermonitor.json
-##    class: driver_monitor_runner
-##    priority: 100
+#  - name: Driver Monitor
+#    type: drivermonitor
+#    configuration: drivermonitor.json
+#    class: driver_monitor_runner
+#    priority: 100
 ##
-##  - name: Emotion
-##    type: emotion
-##    configuration: emotion.json
-##    class: EmotionRunner
-##    priority: 100
+#  - name: Emotion
+#    type: emotion
+#    configuration: emotion.json
+#    class: EmotionRunner
+#    priority: 100
 #
 #  - name: Face Mask Detection
 #    type: facemask
@@ -232,17 +232,17 @@ runners:
 ##    class: social_distance_runner
 ##    priority: 100
 ##
-##  - name: Gender and Age Detection
-##    type: gender_age
-##    configuration: gender_age.json
-##    class: GenderAgeRunner
-##    priority: 100
+#  - name: Gender and Age Detection
+#    type: gender_age
+#    configuration: gender_age.json
+#    class: GenderAgeRunner
+#    priority: 100
 ##
-  - name: Object Counter
-    type: object_counter
-    configuration: object_counter.json
-    class: ObjectCounterRunner
-    priority: 100
+#  - name: Object Counter
+#    type: object_counter
+#    configuration: object_counter.json
+#    class: ObjectCounterRunner
+#    priority: 100
 ##
 ##  - name: Objects In Area
 ##    type: objects_in_area
