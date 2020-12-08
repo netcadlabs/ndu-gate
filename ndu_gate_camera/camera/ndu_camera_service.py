@@ -5,6 +5,7 @@ import time
 import logging
 import logging.config
 import logging.handlers
+from threading import Thread
 
 from yaml import safe_load
 from simplejson import load
@@ -37,24 +38,20 @@ DEFAULT_RUNNERS = {
     # "emotionanalysis": "EmotionAnalysisRunner",
 }
 
+from logging import getLogger
 
-class NDUCameraService:
-    def __init__(self, ndu_gate_config_file=None):
-        if ndu_gate_config_file is None:
-            ndu_gate_config_file = path.dirname(path.dirname(path.abspath(__file__))) + '/config/ndu_gate.yaml'.replace('/', path.sep)
+log = getLogger("service")
 
-        if not path.isfile(ndu_gate_config_file):
-            print('config parameter is not a file : ', ndu_gate_config_file)
-            sys.exit(2)
 
-        with open(ndu_gate_config_file) as general_config:
-            self.__ndu_gate_config = safe_load(general_config)
-        self._ndu_gate_config_dir = path.dirname(path.abspath(ndu_gate_config_file)) + path.sep
-
+class NDUCameraService(Thread):
+    def __init__(self, instance_config={}, ndu_gate_config_dir=""):
+        super().__init__()
+        self._ndu_gate_config_dir = ndu_gate_config_dir
+        self.RUNNERS = instance_config.get("runners", [])
         self.SOURCE_TYPE = VideoSourceType.CAMERA
         self.SOURCE_CONFIG = None
-        if self.__ndu_gate_config.get("video_source"):
-            self.SOURCE_CONFIG = self.__ndu_gate_config.get("video_source")
+        if instance_config.get("source"):
+            self.SOURCE_CONFIG = instance_config.get("source")
             type_str = self.SOURCE_CONFIG.get("type", "PI_CAMERA")
             if VideoSourceType[type_str]:
                 self.SOURCE_TYPE = VideoSourceType[type_str]
@@ -77,37 +74,6 @@ class NDUCameraService:
         self.__min_frame_dim = self.SOURCE_CONFIG.get("min_frame_dim", None)
         self.__skip_frame = self.SOURCE_CONFIG.get("skip_frame", 0)
         self.__color_toggle = None
-        logging_config_file = self._ndu_gate_config_dir + "logs.conf"
-        if NDUUtility.is_debug_mode():
-            logging_config_file = self._ndu_gate_config_dir + "logs_debug.conf"
-        try:
-            import platform
-            if platform.system() == "Darwin":
-                self._ndu_gate_config_dir + "logs_macosx.conf"
-            logging.config.fileConfig(logging_config_file, disable_existing_loggers=False)
-        except Exception as e:
-            print(e)
-            NDULoggerHandler.set_default_handler()
-
-        global log
-        log = logging.getLogger('service')
-        log.info("NDUCameraService starting...")
-        log.info("NDU-Gate config file: %s", ndu_gate_config_file)
-        log.info("NDU-Gate logging config file: %s", logging_config_file)
-        log.info("NDU-Gate logging service level: %s", log.level)
-
-        self.frame_send_interval = self.__ndu_gate_config.get("frame_send_interval", 1000)
-        result_hand_conf = self.__ndu_gate_config.get("result_handler", None)
-        default_result_file_path = "/var/lib/thingsboard_gateway/extensions/camera/"
-        if result_hand_conf is None:
-            result_hand_conf = {
-                "type": "FILE",
-                "file_path": default_result_file_path
-            }
-        if str(result_hand_conf.get("type", "FILE")) == str("SOCKET"):
-            self.__result_handler = ResultHandlerSocket(result_hand_conf.get("socket", {}), result_hand_conf.get("device", None))
-        else:
-            self.__result_handler = ResultHandlerFile(result_hand_conf.get("file_path", default_result_file_path))
 
         self.frame_sent = self.SOURCE_CONFIG.get("frame_sent", False)
 
@@ -122,8 +88,10 @@ class NDUCameraService:
 
         self.video_source = None
         self._set_video_source()
-        self._start()
-        log.info("NDUCameraService exiting...")
+        # self._start()
+
+    # def run(self):
+    #     self.start()
 
     def _load_runners(self):
         """
@@ -133,8 +101,8 @@ class NDUCameraService:
         runners_configs_temp = {}
         last_priority = 1000000
 
-        if self.__ndu_gate_config.get("runners"):
-            for runner in self.__ndu_gate_config['runners']:
+        if self.RUNNERS:
+            for runner in self.RUNNERS:
                 log.debug("runner config : %s", runner)
                 try:
                     if runner.get("status", 1) == 0:  # runner status default value is 1>>>
@@ -267,15 +235,16 @@ class NDUCameraService:
                 self.video_source = ImageVideoSource(self.SOURCE_CONFIG)
             else:
                 log.error("Video source type is not supported : %s ", self.SOURCE_TYPE.value)
-                exit(101)
+                # exit(101)
         except Exception as e:
             log.error("Error during setting up video source")
             log.error(e)
 
-    def _start(self):
+    def run(self):
         if self.video_source is None:
             log.error("video source is not set!")
-            exit(102)
+            return
+            # exit(102)
         start_total = None
         skip = 0
         pause = False
@@ -292,22 +261,22 @@ class NDUCameraService:
             for i, frame in self.video_source.get_frames():
                 if i % 500 == 0:
                     log.debug("frame count %s ", i)
-                    print("frame {}".format(i))
+                    print("Source Device : {} - frame {}".format(self.SOURCE_CONFIG.get("device"), i))
                 if self.__skip_frame > 1 and i % self.__skip_frame != 0:
                     continue
 
-                if i % self.frame_send_interval == 0:
-                    try:
-                        camera_capture_base64 = image_helper.frame2base64(frame)
-                        log.info("CAMERA_CAPTURE size : %s", len(camera_capture_base64))
-                        print("CAMERA_CAPTURE size : {}".format(len(camera_capture_base64)))
-                        if self.frame_sent:
-                            self.__result_handler.save_result([{"data": {"CAMERA_CAPTURE": camera_capture_base64}}], data_type='attribute')
-                        self.__result_handler.save_result([{"data": {"FRAME_COUNT": i}}], data_type='attribute')
-                        self.frame_sent = True
-                    except Exception as e:
-                        log.exception(e)
-                        log.error("can not create CAMERA_CAPTURE")
+                # if i % self.frame_send_interval == 0:
+                #     try:
+                #         camera_capture_base64 = image_helper.frame2base64(frame)
+                #         log.info("CAMERA_CAPTURE size : %s", len(camera_capture_base64))
+                #         print("CAMERA_CAPTURE size : {}".format(len(camera_capture_base64)))
+                #         if self.frame_sent:
+                #             self.__result_handler.save_result([{"data": {"CAMERA_CAPTURE": camera_capture_base64}}], data_type='attribute')
+                #         self.__result_handler.save_result([{"data": {"FRAME_COUNT": i}}], data_type='attribute')
+                #         self.frame_sent = True
+                #     except Exception as e:
+                #         log.exception(e)
+                #         log.error("can not create CAMERA_CAPTURE")
 
                 if self.__max_frame_dim is not None:
                     frame = image_helper.resize_if_larger(frame, self.__max_frame_dim)

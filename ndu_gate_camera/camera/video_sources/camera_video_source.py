@@ -19,7 +19,7 @@ class CameraVideoSource(VideoSource):
             while self.__capture.isOpened():
                 ok, frame = self.__capture.read()
                 if not ok:
-                    break
+                    continue
                 if self.__mirror:
                     frame = cv2.flip(frame, 1)
                 count += 1

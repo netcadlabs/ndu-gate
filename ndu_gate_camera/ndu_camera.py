@@ -1,8 +1,15 @@
 import getopt
+import logging
 import sys
 import traceback
 from os import path, listdir, mkdir, curdir
+
+from yaml import safe_load
+
 from ndu_gate_camera.camera.ndu_camera_service import NDUCameraService
+from ndu_gate_camera.camera.ndu_logger import NDULoggerHandler
+from ndu_gate_camera.camera.result_handlers.result_handler_file import ResultHandlerFile
+from ndu_gate_camera.camera.result_handlers.result_handler_socket import ResultHandlerSocket
 from ndu_gate_camera.utility.constants import DEFAULT_NDU_GATE_CONF
 from ndu_gate_camera.utility.ndu_utility import NDUUtility
 
@@ -22,13 +29,78 @@ def main(argv):
         mkdir("logs")
 
     if not ndu_gate_config_file:
-        config_file_name = "ndu_gate.yaml"
+        config_file_name = "ndu_gate_multiple_source.yaml"
         if NDUUtility.is_debug_mode():
-            config_file_name = "ndu_gate_debug.yaml"
+            config_file_name = "ndu_gate_multiple_source_debug.yaml"
         ndu_gate_config_file = path.dirname(path.abspath(__file__)) + '/config/'.replace('/', path.sep) + config_file_name
 
     try:
-        NDUCameraService(ndu_gate_config_file=ndu_gate_config_file)
+        if ndu_gate_config_file is None:
+            ndu_gate_config_file = path.dirname(path.dirname(path.abspath(__file__))) + '/config/ndu_gate.yaml'.replace('/', path.sep)
+
+        if not path.isfile(ndu_gate_config_file):
+            print('config parameter is not a file : ', ndu_gate_config_file)
+            sys.exit(2)
+
+        with open(ndu_gate_config_file) as general_config:
+            ndu_gate_config = safe_load(general_config)
+
+        ndu_gate_config_dir = path.dirname(path.abspath(ndu_gate_config_file)) + path.sep
+
+        logging_config_file = ndu_gate_config_dir + "logs.conf"
+        if NDUUtility.is_debug_mode():
+            logging_config_file = ndu_gate_config_dir + "logs_debug.conf"
+        try:
+            import platform
+            if platform.system() == "Darwin":
+                ndu_gate_config_dir + "logs_macosx.conf"
+            logging.config.fileConfig(logging_config_file, disable_existing_loggers=False)
+        except Exception as e:
+            print(e)
+            NDULoggerHandler.set_default_handler()
+
+        global log
+        log = logging.getLogger('service')
+        log.info("NDUCameraService starting...")
+        log.info("NDU-Gate logging config file: %s", logging_config_file)
+        log.info("NDU-Gate logging service level: %s", log.level)
+
+        frame_send_interval = ndu_gate_config.get("frame_send_interval", 1000)
+        result_hand_conf = ndu_gate_config.get("result_handler", None)
+        default_result_file_path = "/var/lib/thingsboard_gateway/extensions/camera/"
+        if result_hand_conf is None:
+            result_hand_conf = {
+                "type": "FILE",
+                "file_path": default_result_file_path
+            }
+        if str(result_hand_conf.get("type", "FILE")) == str("SOCKET"):
+            result_handler = ResultHandlerSocket(result_hand_conf.get("socket", {}), result_hand_conf.get("device", None))
+        else:
+            result_handler = ResultHandlerFile(result_hand_conf.get("file_path", default_result_file_path))
+
+        if len(ndu_gate_config.get("instances")) > 1:
+            services = []
+
+            for instance in ndu_gate_config.get("instances"):
+                instance["source"]["preview_show"] = False
+                camera_service = NDUCameraService(instance_config=instance, ndu_gate_config_dir=ndu_gate_config_dir)
+                camera_service.start()
+                services.append(camera_service)
+                log.info("NDU-Gate an instance started")
+
+            log.info("NDU-Gate all instances are started")
+
+            for service in services:
+                service.join()
+
+        elif len(ndu_gate_config.get("instances")) == 1:
+            camera_service = NDUCameraService(instance_config=ndu_gate_config.get("instances")[0], ndu_gate_config_dir=ndu_gate_config_dir)
+            camera_service.run()
+        else:
+            log.error("NDUCameraService no source found!")
+        log.info("NDUCameraService exiting...")
+
+
     except Exception as e:
         print("NDUCameraService PATLADI")
         print(e)
