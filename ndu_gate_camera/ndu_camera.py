@@ -65,7 +65,6 @@ def main(argv):
         log.info("NDU-Gate logging config file: %s", logging_config_file)
         log.info("NDU-Gate logging service level: %s", log.level)
 
-        frame_send_interval = ndu_gate_config.get("frame_send_interval", 1000)
         result_hand_conf = ndu_gate_config.get("result_handler", None)
         default_result_file_path = "/var/lib/thingsboard_gateway/extensions/camera/"
         if result_hand_conf is None:
@@ -94,7 +93,7 @@ def main(argv):
                 service.join()
 
         elif len(ndu_gate_config.get("instances")) == 1:
-            camera_service = NDUCameraService(instance_config=ndu_gate_config.get("instances")[0], ndu_gate_config_dir=ndu_gate_config_dir)
+            camera_service = NDUCameraService(instance_config=ndu_gate_config.get("instances")[0], ndu_gate_config_dir=ndu_gate_config_dir, result_handler=result_handler)
             camera_service.run()
         else:
             log.error("NDUCameraService no source found!")

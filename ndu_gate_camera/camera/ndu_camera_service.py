@@ -44,12 +44,14 @@ log = getLogger("service")
 
 
 class NDUCameraService(Thread):
-    def __init__(self, instance_config={}, ndu_gate_config_dir=""):
+    def __init__(self, instance_config={}, ndu_gate_config_dir="", result_handler=None):
         super().__init__()
+        self.__result_handler = result_handler
         self._ndu_gate_config_dir = ndu_gate_config_dir
         self.RUNNERS = instance_config.get("runners", [])
         self.SOURCE_TYPE = VideoSourceType.CAMERA
         self.SOURCE_CONFIG = None
+
         if instance_config.get("source"):
             self.SOURCE_CONFIG = instance_config.get("source")
             type_str = self.SOURCE_CONFIG.get("type", "PI_CAMERA")
@@ -58,6 +60,7 @@ class NDUCameraService(Thread):
             else:
                 self.SOURCE_TYPE = VideoSourceType.PI_CAMERA
 
+        self.__frame_send_interval = self.SOURCE_CONFIG.get("frame_send_interval", 1000)
         self.__preview_show = self.SOURCE_CONFIG.get("preview_show", False)
         self.__preview_show_debug_texts = self.SOURCE_CONFIG.get("preview_show_debug_texts", True)
         self.__preview_show_runner_info = self.SOURCE_CONFIG.get("preview_show_runner_info", True)
@@ -265,18 +268,18 @@ class NDUCameraService(Thread):
                 if self.__skip_frame > 1 and i % self.__skip_frame != 0:
                     continue
 
-                # if i % self.frame_send_interval == 0:
-                #     try:
-                #         camera_capture_base64 = image_helper.frame2base64(frame)
-                #         log.info("CAMERA_CAPTURE size : %s", len(camera_capture_base64))
-                #         print("CAMERA_CAPTURE size : {}".format(len(camera_capture_base64)))
-                #         if self.frame_sent:
-                #             self.__result_handler.save_result([{"data": {"CAMERA_CAPTURE": camera_capture_base64}}], data_type='attribute')
-                #         self.__result_handler.save_result([{"data": {"FRAME_COUNT": i}}], data_type='attribute')
-                #         self.frame_sent = True
-                #     except Exception as e:
-                #         log.exception(e)
-                #         log.error("can not create CAMERA_CAPTURE")
+                if i % self.__frame_send_interval == 0:
+                    try:
+                        camera_capture_base64 = image_helper.frame2base64(frame)
+                        log.info("CAMERA_CAPTURE size : %s", len(camera_capture_base64))
+                        print("CAMERA_CAPTURE size : {}".format(len(camera_capture_base64)))
+                        if self.frame_sent:
+                            self.__result_handler.save_result([{"data": {"CAMERA_CAPTURE": camera_capture_base64}}], data_type='attribute')
+                        self.__result_handler.save_result([{"data": {"FRAME_COUNT": i}}], data_type='attribute')
+                        self.frame_sent = True
+                    except Exception as e:
+                        log.exception(e)
+                        log.error("can not create CAMERA_CAPTURE")
 
                 if self.__max_frame_dim is not None:
                     frame = image_helper.resize_if_larger(frame, self.__max_frame_dim)
