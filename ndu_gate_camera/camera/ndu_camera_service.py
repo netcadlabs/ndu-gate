@@ -1,22 +1,15 @@
 import os
 import random
-import sys
 import time
-import logging
-import logging.config
-import logging.handlers
 from threading import Thread
+from os import path
+from logging import getLogger
 
-from yaml import safe_load
 from simplejson import load
-
 import cv2
 import numpy as np
 
 from ndu_gate_camera.api.video_source import VideoSourceType
-from ndu_gate_camera.camera.ndu_logger import NDULoggerHandler
-from ndu_gate_camera.camera.result_handlers.result_handler_file import ResultHandlerFile
-from ndu_gate_camera.camera.result_handlers.result_handler_socket import ResultHandlerSocket
 from ndu_gate_camera.camera.video_sources.camera_video_source import CameraVideoSource
 from ndu_gate_camera.camera.video_sources.file_video_source import FileVideoSource
 from ndu_gate_camera.camera.video_sources.ip_camera_video_source import IPCameraVideoSource
@@ -26,11 +19,6 @@ from ndu_gate_camera.camera.video_sources.image_video_source import ImageVideoSo
 from ndu_gate_camera.utility import constants, image_helper
 from ndu_gate_camera.utility.ndu_utility import NDUUtility
 
-# uname windows'ta çalışmadığı için kaldırıldı
-# from os import path, uname
-from os import path
-
-# name = uname()
 
 DEFAULT_RUNNERS = {
     # "drivermonitor": "DriverMonitorRunner",
@@ -38,22 +26,21 @@ DEFAULT_RUNNERS = {
     # "emotionanalysis": "EmotionAnalysisRunner",
 }
 
-from logging import getLogger
 
 log = getLogger("service")
 
 
 class NDUCameraService(Thread):
-    def __init__(self, instance_config={}, ndu_gate_config_dir="", result_handler=None):
+    def __init__(self, instance={}, config_dir="", handler=None):
         super().__init__()
-        self.__result_handler = result_handler
-        self._ndu_gate_config_dir = ndu_gate_config_dir
-        self.RUNNERS = instance_config.get("runners", [])
+        self.__result_handler = handler
+        self._ndu_gate_config_dir = config_dir
+        self.RUNNERS = instance.get("runners", [])
         self.SOURCE_TYPE = VideoSourceType.CAMERA
         self.SOURCE_CONFIG = None
 
-        if instance_config.get("source"):
-            self.SOURCE_CONFIG = instance_config.get("source")
+        if instance.get("source"):
+            self.SOURCE_CONFIG = instance.get("source")
             type_str = self.SOURCE_CONFIG.get("type", "PI_CAMERA")
             if VideoSourceType[type_str]:
                 self.SOURCE_TYPE = VideoSourceType[type_str]

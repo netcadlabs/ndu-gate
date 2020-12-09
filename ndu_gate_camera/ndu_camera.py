@@ -69,9 +69,13 @@ def main(argv):
         default_result_file_path = "/var/lib/thingsboard_gateway/extensions/camera/"
         if result_hand_conf is None:
             result_hand_conf = {
-                "type": "FILE",
-                "file_path": default_result_file_path
+                "type": "SOCKET",
+                "socket": {
+                    "port": 60060,
+                    "host": "127.0.0.1"
+                }
             }
+
         if str(result_hand_conf.get("type", "FILE")) == str("SOCKET"):
             result_handler = ResultHandlerSocket(result_hand_conf.get("socket", {}), result_hand_conf.get("device", None))
         else:
@@ -79,26 +83,23 @@ def main(argv):
 
         if len(ndu_gate_config.get("instances")) > 1:
             services = []
-
             for instance in ndu_gate_config.get("instances"):
                 instance["source"]["preview_show"] = False
-                camera_service = NDUCameraService(instance_config=instance, ndu_gate_config_dir=ndu_gate_config_dir)
+                camera_service = NDUCameraService(instance=instance, config_dir=ndu_gate_config_dir, handler=result_handler)
                 camera_service.start()
                 services.append(camera_service)
                 log.info("NDU-Gate an instance started")
 
             log.info("NDU-Gate all instances are started")
-
             for service in services:
                 service.join()
-
         elif len(ndu_gate_config.get("instances")) == 1:
-            camera_service = NDUCameraService(instance_config=ndu_gate_config.get("instances")[0], ndu_gate_config_dir=ndu_gate_config_dir, result_handler=result_handler)
+            camera_service = NDUCameraService(instance=ndu_gate_config.get("instances")[0], config_dir=ndu_gate_config_dir, handler=result_handler)
             camera_service.run()
         else:
             log.error("NDUCameraService no source found!")
-        log.info("NDUCameraService exiting...")
 
+        log.info("NDUCameraService exiting...")
 
     except Exception as e:
         print("NDUCameraService PATLADI")
