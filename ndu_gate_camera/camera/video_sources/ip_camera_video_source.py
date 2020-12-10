@@ -44,7 +44,7 @@ class IPCameraVideoSource(VideoSource):
                 self.count += 1
         else:
             while self.count == 0:
-                time.sleep(10)
+                time.sleep(1)
             while True:
                 yield self.count, self.frame
 

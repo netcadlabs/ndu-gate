@@ -29,7 +29,8 @@ log = getLogger("service")
 
 
 class NDUCameraService(Thread):
-    def __init__(self, instance=None, config_dir="", handler=None):
+    def __init__(self, instance=None, config_dir="", handler=None, is_main_thread=True):
+        self.__is_main_thread = is_main_thread
         if instance is None:
             instance = {}
         super().__init__()
@@ -49,17 +50,21 @@ class NDUCameraService(Thread):
 
         self.__frame_send_interval = self.SOURCE_CONFIG.get("frame_send_interval", 1000)
         self.__preview_show = self.SOURCE_CONFIG.get("preview_show", False)
-        self.__preview_show_debug_texts = self.SOURCE_CONFIG.get("preview_show_debug_texts", True)
-        self.__preview_show_runner_info = self.SOURCE_CONFIG.get("preview_show_runner_info", True)
-        self.__preview_show_score = self.SOURCE_CONFIG.get("preview_show_score", True)
-        self.__preview_show_rect_name = self.SOURCE_CONFIG.get("preview_show_rect_name", True)
-        self.__preview_show_rect_filter = self.SOURCE_CONFIG.get("preview_show_rect_filter", None)
+        if self.__preview_show:
+            self.__preview_inited = False
+            self.__last_preview_image = None
+            self.__preview_show_debug_texts = self.SOURCE_CONFIG.get("preview_show_debug_texts", True)
+            self.__preview_show_runner_info = self.SOURCE_CONFIG.get("preview_show_runner_info", True)
+            self.__preview_show_score = self.SOURCE_CONFIG.get("preview_show_score", True)
+            self.__preview_show_rect_name = self.SOURCE_CONFIG.get("preview_show_rect_name", True)
+            self.__preview_show_rect_filter = self.SOURCE_CONFIG.get("preview_show_rect_filter", None)
 
-        self.__preview_write = self.SOURCE_CONFIG.get("preview_write", False)
-        self.__preview_last_data = []
-        self.__preview_last_data_show_counts = []
-        self.__preview_write_file_name = self.SOURCE_CONFIG.get("preview_write_file_name", "")
+            self.__preview_write = self.SOURCE_CONFIG.get("preview_write", False)
+            self.__preview_last_data = []
+            self.__preview_last_data_show_counts = []
+            self.__preview_write_file_name = self.SOURCE_CONFIG.get("preview_write_file_name", "")
 
+        self._exit_requested = False
         self.__max_frame_dim = self.SOURCE_CONFIG.get("max_frame_dim", None)
         self.__min_frame_dim = self.SOURCE_CONFIG.get("min_frame_dim", None)
         self.__skip_frame = self.SOURCE_CONFIG.get("skip_frame", 0)
@@ -230,6 +235,63 @@ class NDUCameraService(Thread):
             log.error("Error during setting up video source")
             log.error(e)
 
+    # main thread tarafından çağırılabilir
+    def check_for_preview(self):
+        if self.__is_main_thread:
+            raise Exception('Main thread does not need to call check_for_preview!')
+        if self.__preview_show:
+            return self._show_preview()
+
+    def _show_preview(self):
+        if not self.__preview_inited:
+            self._winname = self.SOURCE_CONFIG.get("device", "ndu_gate_camera preview")
+            self._pause = False
+            cv2.namedWindow(self._winname)  # Create a named window
+            cv2.moveWindow(self._winname, 40, 30)
+            self.__preview_inited = True
+
+        preview = self.__last_preview_image
+        if preview is not None:
+            self.__last_preview_image = None
+            cv2.imshow(self._winname, preview)
+            # while True:
+            #     k = cv2.waitKey(100) & 0xFF
+            #     print(k)
+            while True:
+                k = cv2.waitKey(1) & 0xFF
+                if k == ord("q"):
+                    self._exit_requested = True
+                    break
+                elif k == ord("s"):
+                    skip = 10
+                elif k == 32:  # space key
+                    self._pause = not self._pause
+                if not self._pause:
+                    break
+            if self.__preview_write:
+                self._write_frame(preview)
+
+    def finish_preview(self):
+        if self.__preview_show and self.__preview_write and self.__out is not None:
+            self.__out.release()
+            import ffmpeg  # pip3 install ffmpeg-python & brew install ffmpeg
+            try:
+                # daha az sıkışmış, quicktime çalabiliyor
+                fn = self.__preview_write_file_name
+                ffmpeg.input(fn).output(fn + '_ffmpeg.mp4').run(capture_stdout=True, capture_stderr=True)
+
+                # # # süper sıkışmış ama quicktime çalamıyor. Benim denemelerimde yarım yamalak kaydedebildi!
+                # ffmpeg.input(fn) \
+                #     .output(fn + '2.mp4', vcodec='libx265', crf=24, t=5) \
+                #     .run(capture_stdout=True, capture_stderr=True)
+                # # os.remove(fn)
+            except ffmpeg.Error as e:
+                print('stdout:', e.stdout.decode('utf8'))
+                print('stderr:', e.stderr.decode('utf8'))
+                raise e
+            finally:
+                self.__out = None
+
     def run(self):
         if self.video_source is None:
             log.error("video source is not set!")
@@ -237,19 +299,15 @@ class NDUCameraService(Thread):
             # exit(102)
         start_total = None
         skip = 0
-        pause = False
         # TODO - çalıştırma sırasına göre sonuçlar bir sonraki runnera aktarılabilir
         # TODO - runner dependency ile kimin çıktısı kimn giridisi olacak şeklinde de olabilir
-
-        if self.__preview_show:
-            winname = "ndu_gate_camera preview"
-            cv2.namedWindow(winname)  # Create a named window
-            cv2.moveWindow(winname, 40, 30)
 
         try:
             device = self.SOURCE_CONFIG.get("device", None)
             i = -1
             for _frame_index, frame in self.video_source.get_frames():
+                if self._exit_requested:
+                    break
                 i += 1
                 if i % 500 == 0:
                     log.debug("frame count %s ", i)
@@ -311,46 +369,12 @@ class NDUCameraService(Thread):
                         results.append([{"total_elapsed_time": '{:.0f}msec fps:{:.0f}'.format(total_elapsed_time * 1000, (1.0 / max(total_elapsed_time, 0.001)))}])
                         preview = self._get_preview(frame, results)
 
-                    cv2.imshow(winname, preview)
-                    # while True:
-                    #     k = cv2.waitKey(100) & 0xFF
-                    #     print(k)
-                    exit_requested = False
-                    while True:
-                        k = cv2.waitKey(1) & 0xFF
-                        if k == ord("q"):
-                            exit_requested = True
-                            break
-                        elif k == ord("s"):
-                            skip = 10
-                        elif k == 32:  # space key
-                            pause = not pause
-                        if not pause:
-                            break
-                    if exit_requested:
-                        break
-                    if self.__preview_write:
-                        self._write_frame(preview)
-                elif self.__preview_write:
-                    self._write_frame(frame)
+                    self.__last_preview_image = preview
+                    if self.__is_main_thread:
+                        self._show_preview()
 
-            if self.__preview_write and self.__out is not None:
-                self.__out.release()
-                import ffmpeg  # pip3 install ffmpeg-python & brew install ffmpeg
-                try:
-                    # daha az sıkışmış, quicktime çalabiliyor
-                    fn = self.__preview_write_file_name
-                    ffmpeg.input(fn).output(fn + '.mp4').run(capture_stdout=True, capture_stderr=True)
-
-                    # # süper sıkışmış ama quicktime çalamıyor. Benim denemelerimde yarım yamalak kaydedebildi!
-                    ffmpeg.input(fn) \
-                        .output(fn + '2.mp4', vcodec='libx265', crf=24, t=5) \
-                        .run(capture_stdout=True, capture_stderr=True)
-                    # # os.remove(fn)
-                except ffmpeg.Error as e:
-                    print('stdout:', e.stdout.decode('utf8'))
-                    print('stderr:', e.stderr.decode('utf8'))
-                    raise e
+            if self.__preview_show and self.__is_main_thread:
+                self.finish_preview()
 
             # TODO - set camera_perspective
         except Exception as e:

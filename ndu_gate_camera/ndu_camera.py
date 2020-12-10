@@ -1,6 +1,7 @@
 import getopt
 import logging
 import sys
+import time
 import traceback
 from os import path, listdir, mkdir, curdir
 
@@ -89,18 +90,32 @@ def main(argv):
         instances = ndu_gate_config.get("instances")
         if len(instances) > 1:
             services = []
+            preview_exists = False
             for instance in instances:
-                instance["source"]["preview_show"] = False
-                camera_service = NDUCameraService(instance=instance, config_dir=ndu_gate_config_dir, handler=result_handler)
+                if instance["source"].get("preview_show", False):
+                    preview_exists = True
+                camera_service = NDUCameraService(instance=instance, config_dir=ndu_gate_config_dir, handler=result_handler, is_main_thread=False)
                 camera_service.start()
                 services.append(camera_service)
                 log.info("NDU-Gate an instance started")
 
             log.info("NDU-Gate all instances are started")
-            for service in services:
-                service.join()
+            if preview_exists:
+                alive_exists = True
+                while alive_exists:
+                    time.sleep(0.033333)
+                    alive_exists = False
+                    for s in services:
+                        if s.is_alive():
+                            alive_exists = True
+                            s.check_for_preview()
+                        else:
+                            s.finish_preview()
+            else:
+                for service in services:
+                    service.join()
         elif len(instances) == 1:
-            camera_service = NDUCameraService(instance=instances[0], config_dir=ndu_gate_config_dir, handler=result_handler)
+            camera_service = NDUCameraService(instance=instances[0], config_dir=ndu_gate_config_dir, handler=result_handler, is_main_thread=True)
             camera_service.run()
         else:
             log.error("NDUCameraService no source found!")

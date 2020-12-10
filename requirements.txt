@@ -11,6 +11,7 @@ pyzmq
 PyYAML
 simplejson
 picamera
+ffmpeg-python
 
 # macos: brew install libomp
 # linux: sudo apt install libgomp1
