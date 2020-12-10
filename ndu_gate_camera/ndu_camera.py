@@ -33,7 +33,7 @@ def main(argv):
         if NDUUtility.is_debug_mode():
             config_file_name = "ndu_gate_multiple_source_debug.yaml"
             import os
-            if os.environ['COMPUTERNAME'] == "KORAY":
+            if os.environ.get('COMPUTERNAME', None) == "KORAY":
                 config_file_name = "ndu_gate_multiple_source_debug_koray.yaml"
 
         ndu_gate_config_file = path.dirname(path.abspath(__file__)) + '/config/'.replace('/', path.sep) + config_file_name
@@ -46,6 +46,7 @@ def main(argv):
             print('config parameter is not a file : ', ndu_gate_config_file)
             sys.exit(2)
 
+        print("Using config file : {}".format(ndu_gate_config_file))
         with open(ndu_gate_config_file, encoding="utf-8") as general_config:
             ndu_gate_config = safe_load(general_config)
 
@@ -114,12 +115,13 @@ def main(argv):
 
 
 def daemon():
-    NDUCameraService(ndu_gate_config_file=DEFAULT_NDU_GATE_CONF.replace('/', path.sep))
+    print("Start daemon")
+    main(['-c', DEFAULT_NDU_GATE_CONF.replace('/', path.sep)])
 
 
 def daemon_with_conf(config_file):
     print("Start daemon_with_conf {} ".format(config_file))
-    NDUCameraService(ndu_gate_config_file=config_file.replace('/', path.sep))
+    main(['-c', config_file.replace('/', path.sep)])
 
 
 if __name__ == '__main__':
