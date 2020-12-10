@@ -90,7 +90,7 @@ class social_distance_runner(Thread, NDUCameraRunner):
             )
 
             # res.append({constants.RESULT_KEY_RECT: rect_face, constants.RESULT_KEY_CLASS_NAME: self.__onnx_class_names[class_id], constants.RESULT_KEY_SCORE: score})
-            res.append({constants.RESULT_KEY_CLASS_NAME: six_feet_violations})
+            res.append({constants.RESULT_KEY_DEBUG: "Sosyal mesafe ihlali: {}".format(six_feet_violations)})
 
             # # plot_violation_rectangles(pedestrian_boxes, )
             # total_pedestrians_detected += num_pedestrians

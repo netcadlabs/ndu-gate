@@ -1,16 +1,54 @@
 {
   "groups": {
-    "Sosyal mesafe ihlali": {
+    "Telefonla konusuyor": {
       "obj_detection": {
-        "ground": [],
-        "dist": [],
         "rects": [
           {
-            "padding": 0,
-            "style": "dist",
+            "style": "touch",
+            "padding": 0.1,
             "class_names": [
-              "person",
-              "person"
+              "face",
+              "*phone*"
+            ]
+          }
+        ]
+      }
+    },
+    "Emniyet kemeri takiyor": {
+      "classification": {
+        "threshold": 0.1,
+        "padding": 0,
+        "rect_names": [
+          "person"
+        ],
+        "classify_names": [
+          "*belt*"
+        ]
+      }
+    },
+    "Maske takmiyor": {
+      "obj_detection": {
+        "rects": [
+          {
+            "style": "touch",
+            "padding": 0.1,
+            "class_names": [
+              "face",
+              "no mask"
+            ]
+          }
+        ]
+      }
+    },
+    "Sigara iciyor": {
+      "obj_detection": {
+        "rects": [
+          {
+            "style": "touch",
+            "padding": 0.1,
+            "class_names": [
+              "face",
+              "cigarette"
             ]
           }
         ]

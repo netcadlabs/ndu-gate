@@ -42,7 +42,7 @@ def main(argv):
             print('config parameter is not a file : ', ndu_gate_config_file)
             sys.exit(2)
 
-        with open(ndu_gate_config_file) as general_config:
+        with open(ndu_gate_config_file, encoding="utf-8") as general_config:
             ndu_gate_config = safe_load(general_config)
 
         ndu_gate_config_dir = path.dirname(path.abspath(ndu_gate_config_file)) + path.sep
@@ -54,7 +54,7 @@ def main(argv):
             import platform
             if platform.system() == "Darwin":
                 ndu_gate_config_dir + "logs_macosx.conf"
-            logging.config.fileConfig(logging_config_file, disable_existing_loggers=False)
+            # logging.config.fileConfig(logging_config_file, disable_existing_loggers=False)
         except Exception as e:
             print(e)
             NDULoggerHandler.set_default_handler()

@@ -23,7 +23,7 @@ class ObjectCounterRunner(Thread, NDUCameraRunner):
         self.config = config
         self.track = config.get("track", "center")
         self.__gates = []
-        self.__debug = False
+        self.__debug = True ####koray
         self.__debug_last = {}
 
     def get_name(self):
@@ -272,7 +272,8 @@ class ObjectCounterRunner(Thread, NDUCameraRunner):
                     data = {telemetry_inside: all_inside, telemetry_enter: all_enter, telemetry_exit: all_exit}
                     res.append({constants.RESULT_KEY_DATA: data})
                     if self.__debug:
-                        debug_text = "{} - Giren:{} Cikan:{}".format(tel_name, all_enter, all_exit)
+                        # debug_text = "{} - Giren:{} Cikan:{}".format(tel_name.replace("Gate", "Kapi"), all_enter, all_exit)
+                        debug_text = "{} - Giren:{} Cikan:{}".format(gate_name.replace("Gate", "Kapi"), all_enter, all_exit)
                         self.__debug_last[tel_name] = debug_text
                         res.append({constants.RESULT_KEY_DEBUG: debug_text})
         elif self.__debug:

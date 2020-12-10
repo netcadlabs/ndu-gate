@@ -19,13 +19,11 @@ from ndu_gate_camera.camera.video_sources.image_video_source import ImageVideoSo
 from ndu_gate_camera.utility import constants, image_helper
 from ndu_gate_camera.utility.ndu_utility import NDUUtility
 
-
 DEFAULT_RUNNERS = {
     # "drivermonitor": "DriverMonitorRunner",
     # "socialdistance": "SocialDistanceRunner",
     # "emotionanalysis": "EmotionAnalysisRunner",
 }
-
 
 log = getLogger("service")
 
@@ -293,19 +291,18 @@ class NDUCameraService(Thread):
                             extra_data[constants.EXTRA_DATA_KEY_RESULTS][runner_unique_key] = result
                             log.debug("result : %s", result)
 
-                            # if result is not None:
-                            #     self.__result_handler.save_result(result, runner_name=runner_conf["name"])
-                            #
-                            #     # def _save_result(result_handler_, result_, runner_name_):
-                            #     #     result_handler_.save_result(result_, runner_name=runner_name_)
-                            #     # import threading
-                            #     # thr = threading.Thread(target=_save_result( self.__result_handler, result, runner_conf["name"]), args=(), kwargs={})
-                            #     # thr.start()  # Will run "foo"
-                            #     # # thr.is_alive()  # Will return whether foo is running currently
-                            #     # # thr.join()  # Will wait till "foo" is done
-                            #
-                            #     results.append(result)
-                            print(result)
+                            if result is not None:
+                                results.append(result)
+                                self.__result_handler.save_result(result, runner_name=runner_conf["name"])
+
+                                # def _save_result(result_handler_, result_, runner_name_):
+                                #     result_handler_.save_result(result_, runner_name=runner_name_)
+                                # import threading
+                                # thr = threading.Thread(target=_save_result( self.__result_handler, result, runner_conf["name"]), args=(), kwargs={})
+                                # thr.start()  # Will run "foo"
+                                # # thr.is_alive()  # Will return whether foo is running currently
+                                # # thr.join()  # Will wait till "foo" is done
+
 
 
                         except Exception as e:

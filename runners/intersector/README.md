@@ -49,35 +49,6 @@
 
 ### Örnekler:
 
-#### Maske takıyor, takmıyor:
-```java
-{
-  "groups": {
-    "Maske takmiyor": {
-      "obj_detection": {
-        "rects": [
-          {
-            "class_names": [
-              "no mask"
-            ]
-          }
-        ]
-      }
-    },
-    "Maske takiyor": {
-      "obj_detection": {
-        "rects": [
-          {
-            "class_names": [
-              "mask"
-            ]
-          }
-        ]
-      }
-    }
-  }
-}
-```
 
 #### Telefonla konuşuyor, emniyet kemeri takıyor, maske takmıyor, sigara içiyor:
 ```java
@@ -143,6 +114,59 @@
 
 ##### misc...
 ```java
+
+{
+  "groups": {
+    "Maske takmiyor": {
+      "obj_detection": {
+        "rects": [
+          {
+            "class_names": [
+              "no mask"
+            ]
+          }
+        ]
+      }
+    },
+    "Maske takiyor": {
+      "obj_detection": {
+        "rects": [
+          {
+            "class_names": [
+              "mask"
+            ]
+          }
+        ]
+      }
+    }
+  }
+}
+
+
+{
+  "groups": {
+    "Sosyal mesafe ihlali": {
+      "obj_detection": {
+        "ground": [],
+        "dist": [],
+        "rects": [
+          {
+            "padding": 0,
+            "style": "dist",
+            "class_names": [
+              "person",
+              "person"
+            ]
+          }
+        ]
+      }
+    }
+  }
+}
+
+
+
+
 {
   "groups": {
     "Sosyal mesafe ihlali": {

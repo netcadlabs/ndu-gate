@@ -221,10 +221,10 @@ class IntersectorRunner(Thread, NDUCameraRunner):
 
         def has_classification(gr_, rects0_):
             rects_css = []
-            for class_name, score, rect in rects0_:
+            for class_name_, score_, rect_ in rects0_:
                 for css_rect_name in gr_.classification.rect_names:
-                    if NDUUtility.wildcard(class_name, css_rect_name):
-                        rects_css.append(rect)
+                    if NDUUtility.wildcard(class_name_, css_rect_name):
+                        rects_css.append(rect_)
                         break
             for rect_css in rects_css:
                 if self._classify(frame, rect_css, gr.classification.threshold, gr.classification.classify_indexes):
