@@ -32,6 +32,11 @@ def main(argv):
         config_file_name = "ndu_gate_multiple_source.yaml"
         if NDUUtility.is_debug_mode():
             config_file_name = "ndu_gate_multiple_source_debug.yaml"
+            import os
+            if os.environ['COMPUTERNAME'] == "KORAY":
+                config_file_name = "ndu_gate_multiple_source_debug_koray.yaml"
+
+
         ndu_gate_config_file = path.dirname(path.abspath(__file__)) + '/config/'.replace('/', path.sep) + config_file_name
 
     try:
