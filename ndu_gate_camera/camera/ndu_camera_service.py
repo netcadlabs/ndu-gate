@@ -29,7 +29,9 @@ log = getLogger("service")
 
 
 class NDUCameraService(Thread):
-    def __init__(self, instance={}, config_dir="", handler=None):
+    def __init__(self, instance=None, config_dir="", handler=None):
+        if instance is None:
+            instance = {}
         super().__init__()
         self.__result_handler = handler
         self._ndu_gate_config_dir = config_dir
@@ -248,7 +250,9 @@ class NDUCameraService(Thread):
 
         try:
             device = self.SOURCE_CONFIG.get("device", None)
-            for i, frame in self.video_source.get_frames():
+            i = -1
+            for _frame_index, frame in self.video_source.get_frames():
+                i += 1
                 if i % 500 == 0:
                     log.debug("frame count %s ", i)
                     print("Source Device : {} - frame {}".format(device, i))
