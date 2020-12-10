@@ -22,3 +22,7 @@ python3-ndu-gate.deb
 for_build/etc/ndu-gate/config
 for_build/etc/ndu-gate/runners
 for_build/etc/ndu-gate/data
+
+ndu_gate_camera.egg-info/
+dist/
+build/
