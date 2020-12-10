@@ -1,0 +1,65 @@
+result_handler:
+  type: SOCKET
+  socket:
+    port: 60060
+    host: 127.0.0.1
+#result_handler:
+#  type: FILE
+#  file_path: C:/_koray/temp/
+#  socket:
+#    port: 60060
+#    host: 127.0.0.1
+
+instances:
+  - source:
+      type: VIDEO_FILE # CAMERA
+      data_folder: C:/_koray/test_data/
+      file_path: bakanlik.avi
+      device: "cam1"
+
+#      max_frame_dim: 1600
+
+      preview_show: True
+      preview_show_debug_texts: True
+      preview_show_runner_info: False
+      preview_show_score: False
+      preview_show_rect_name: True
+#      preview_show_rect_filter: "person"
+
+      preview_write: True
+      preview_write_file_name: C:/_koray/temp/preview.mp4
+      mirror: True
+#      sleep: 0.1
+#      skip_frame: 5
+
+    runners:
+      - name: yolov5x - Object detection with 80 classes (Most Accurate)
+        type: yolov5x
+        configuration: yolov5x.json
+        class: Yolov5xRunner
+        priority: 10
+
+      - name: Object Counter
+        type: object_counter
+        configuration: object_counter.json
+        class: ObjectCounterRunner
+        priority: 100
+
+
+#  - source:
+#      type: VIDEO_FILE # CAMERA
+#      data_folder: C:/_koray/test_data/
+#      file_path: iett_2.avi
+#      device: "iett_2_2"
+#      preview_show: True
+#    runners:
+#      - name: yolov5m - Object detection with 80 classes (Fast)
+#        type: yolov5m
+#        configuration: yolov5m.json
+#        class: Yolov5mRunner
+#        priority: 10
+#      - name: Person Counter
+#        type: personcounter
+#        configuration: person_counter.json
+#        class: person_counter_runner
+#        priority: 100
