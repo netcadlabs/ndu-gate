@@ -3,48 +3,84 @@ result_handler:
   socket:
     port: 60060
     host: 127.0.0.1
-#result_handler:
-#  type: FILE
-#  file_path: C:/_koray/temp/
-#  socket:
-#    port: 60060
-#    host: 127.0.0.1
 
 instances:
   - source:
-      type: VIDEO_FILE # CAMERA
-      data_folder: C:/_koray/test_data/
-      file_path: bakanlik.avi
-      device: "cam1"
-
-#      max_frame_dim: 1600
+      type: IP_CAMERA
+      url: rtsp://admin:Catab234@10.10.0.85:554/1
+      device: "CAMERA-10.10.0.85"
 
       preview_show: True
-      preview_show_debug_texts: True
-      preview_show_runner_info: False
-      preview_show_score: False
-      preview_show_rect_name: True
-#      preview_show_rect_filter: "person"
-
-      preview_write: True
-      preview_write_file_name: C:/_koray/temp/preview.mp4
-      mirror: True
-#      sleep: 0.1
-#      skip_frame: 5
-
+      max_frame_dim: 1200
     runners:
-      - name: yolov5x - Object detection with 80 classes (Most Accurate)
-        type: yolov5x
-        configuration: yolov5x.json
-        class: Yolov5xRunner
+      - name: yolov5m - Object detection with 80 classes (Fast)
+        type: yolov5m
+        configuration: yolov5m.json
+        class: Yolov5mRunner
         priority: 10
+#      - name: Cigarette Detector
+#        type: cigarette_detector
+#        configuration: cigarette_detector.json
+#        class: CigaretteDetectorRunner
+#        priority: 10
 
-      - name: Object Counter
-        type: object_counter
-        configuration: object_counter.json
-        class: ObjectCounterRunner
-        priority: 100
+#  - source:
+#      type: IP_CAMERA
+#      url: rtsp://admin:Ani6060@10.10.190.103:554/1
+#      file_path: iett_2.avi
+#      device: "CAMERA-10.10.190.103"
+#      preview_show: True
+#      max_frame_dim: 1200
+#    runners:
+#      - name: yolov5m - Object detection with 80 classes (Fast)
+#        type: yolov5m
+#        configuration: yolov5m.json
+#        class: Yolov5mRunner
+#        priority: 10
+#      - name: Cigarette Detector
+#        type: cigarette_detector
+#        configuration: cigarette_detector.json
+#        class: CigaretteDetectorRunner
+#        priority: 10
 
+## VİDEO SOURCE OLUŞMUYOR
+#  - source:
+#      type: IP_CAMERA
+#      url: rtsp://admin:Ani6060@10.10.190.122:554/1
+#      file_path: iett_2.avi
+#      device: "CAMERA-10.10.190.122"
+#      preview_show: True
+#      max_frame_dim: 1200
+#    runners:
+#      - name: yolov5m - Object detection with 80 classes (Fast)
+#        type: yolov5m
+#        configuration: yolov5m.json
+#        class: Yolov5mRunner
+#        priority: 10
+#      - name: Cigarette Detector
+#        type: cigarette_detector
+#        configuration: cigarette_detector.json
+#        class: CigaretteDetectorRunner
+#        priority: 10
+
+#  - source:
+#      type: IP_CAMERA
+#      url: rtsp://admin:Ani6060@10.10.190.173:554/1
+#      file_path: iett_2.avi
+#      device: "CAMERA-10.10.190.173"
+#      preview_show: True
+#      max_frame_dim: 1200
+#    runners:
+#      - name: yolov5m - Object detection with 80 classes (Fast)
+#        type: yolov5m
+#        configuration: yolov5m.json
+#        class: Yolov5mRunner
+#        priority: 10
+#      - name: Cigarette Detector
+#        type: cigarette_detector
+#        configuration: cigarette_detector.json
+#        class: CigaretteDetectorRunner
+#        priority: 10
 
 #  - source:
 #      type: VIDEO_FILE # CAMERA
