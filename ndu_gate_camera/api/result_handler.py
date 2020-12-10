@@ -8,5 +8,5 @@ log = logging.getLogger("result")
 class ResultHandler(ABC):
 
     @abstractmethod
-    def save_result(self, result, runner_name=None, data_type='telem'):
+    def save_result(self, result, device=None, runner_name=None, data_type='telemetry'):
         pass

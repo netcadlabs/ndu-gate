@@ -23,12 +23,14 @@ class ResultHandlerFile(ResultHandler):
 
         log.info("ResultHandlerFile %s", self.__telemetry_file)
 
-    def save_result(self, result, runner_name=None, data_type='telem'):
+    def save_result(self, result, device=None, runner_name=None, data_type='telemetry'):
         """
         Verilen ölçümleri serviceTelemetry.txt dosyasına yazar.
         :param self:
         :param result: {"key" : "telem-key", "value": 1, "ts" : timestamp }
+        :param device:
         :param runner_name:
+        :param data_type:
         :return:
         """
         with open(self.__telemetry_file, 'r+') as f:

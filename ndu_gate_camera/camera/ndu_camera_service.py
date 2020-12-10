@@ -246,10 +246,11 @@ class NDUCameraService(Thread):
             cv2.moveWindow(winname, 40, 30)
 
         try:
+            device = self.SOURCE_CONFIG.get("device", None)
             for i, frame in self.video_source.get_frames():
                 if i % 500 == 0:
                     log.debug("frame count %s ", i)
-                    print("Source Device : {} - frame {}".format(self.SOURCE_CONFIG.get("device"), i))
+                    print("Source Device : {} - frame {}".format(device, i))
                 if self.__skip_frame > 1 and i % self.__skip_frame != 0:
                     continue
 
@@ -259,8 +260,8 @@ class NDUCameraService(Thread):
                         log.info("CAMERA_CAPTURE size : %s", len(camera_capture_base64))
                         print("CAMERA_CAPTURE size : {}".format(len(camera_capture_base64)))
                         if self.frame_sent:
-                            self.__result_handler.save_result([{"data": {"CAMERA_CAPTURE": camera_capture_base64}}], data_type='attribute')
-                        self.__result_handler.save_result([{"data": {"FRAME_COUNT": i}}], data_type='attribute')
+                            self.__result_handler.save_result([{"data": {"CAMERA_CAPTURE": camera_capture_base64}}], device=device, data_type='attribute')
+                        self.__result_handler.save_result([{"data": {"FRAME_COUNT": i}}], device=device, data_type='attribute')
                         self.frame_sent = True
                     except Exception as e:
                         log.exception(e)
@@ -293,17 +294,7 @@ class NDUCameraService(Thread):
 
                             if result is not None:
                                 results.append(result)
-                                self.__result_handler.save_result(result, runner_name=runner_conf["name"])
-
-                                # def _save_result(result_handler_, result_, runner_name_):
-                                #     result_handler_.save_result(result_, runner_name=runner_name_)
-                                # import threading
-                                # thr = threading.Thread(target=_save_result( self.__result_handler, result, runner_conf["name"]), args=(), kwargs={})
-                                # thr.start()  # Will run "foo"
-                                # # thr.is_alive()  # Will return whether foo is running currently
-                                # # thr.join()  # Will wait till "foo" is done
-
-
+                                self.__result_handler.save_result(result, device=device, runner_name=runner_conf["name"])
 
                         except Exception as e:
                             log.exception(e)
