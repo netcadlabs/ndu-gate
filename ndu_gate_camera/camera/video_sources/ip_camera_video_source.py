@@ -1,3 +1,5 @@
+import threading
+
 import cv2
 
 from ndu_gate_camera.api.video_source import VideoSource, log
@@ -10,21 +12,40 @@ class IPCameraVideoSource(VideoSource):
         if self.__video_url is None:
             raise ValueError("Video url is empty")
         self._set_capture()
+        self.mode = source_config.get("mode", 1)  # 1 - QUEUE , 0 = SEND ALL
+        self.count = 0
+        self.frame = None
+        if self.mode == 1:
+            p1 = threading.Thread(target=self.read_frame)
+            p1.start()
 
-    def get_frames(self):
-        log.debug("start ip camera video streaming..")
-        count = 0
+    def read_frame(self):
         while self.__capture.isOpened():
             ret, frame = self.__capture.read()
             if ret is False:
                 break
 
-            yield count, frame
-            count += 1
+            self.frame = frame
+            self.count += 1
 
         self.__capture.release()
-        cv2.destroyAllWindows()
-        pass
+
+    def get_frames(self):
+        log.debug("start ip camera video streaming..")
+
+        if self.mode == 0:
+            while self.__capture.isOpened():
+                ret, frame = self.__capture.read()
+                if ret is False:
+                    break
+
+                yield self.count, frame
+                self.count += 1
+        else:
+            while True:
+                yield self.count, self.frame
+
+        self.__capture.release()
 
     def reset(self):
         self._set_capture()
