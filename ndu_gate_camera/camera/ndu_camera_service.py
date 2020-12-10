@@ -65,6 +65,7 @@ class NDUCameraService(Thread):
 
         self.frame_sent = self.SOURCE_CONFIG.get("frame_sent", False)
 
+
         self.default_runners = DEFAULT_RUNNERS
         self.runners_configs = []
         self.runners_configs_by_key = {}
@@ -208,7 +209,7 @@ class NDUCameraService(Thread):
                 self.video_source = FileVideoSource(self.SOURCE_CONFIG)
                 pass
             elif self.SOURCE_TYPE is VideoSourceType.PI_CAMERA:
-                self.video_source = PiCameraVideoSource(preview_show=True)
+                self.video_source = PiCameraVideoSource(show_preview=True)
             elif self.SOURCE_TYPE is VideoSourceType.VIDEO_URL:
                 # TODO
                 pass
