@@ -1,4 +1,5 @@
 import threading
+import time
 
 import cv2
 
@@ -42,6 +43,8 @@ class IPCameraVideoSource(VideoSource):
                 yield self.count, frame
                 self.count += 1
         else:
+            while self.count == 0:
+                time.sleep(10)
             while True:
                 yield self.count, self.frame
 
