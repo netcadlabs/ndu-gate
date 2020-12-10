@@ -36,7 +36,6 @@ def main(argv):
             if os.environ['COMPUTERNAME'] == "KORAY":
                 config_file_name = "ndu_gate_multiple_source_debug_koray.yaml"
 
-
         ndu_gate_config_file = path.dirname(path.abspath(__file__)) + '/config/'.replace('/', path.sep) + config_file_name
 
     try:
@@ -86,9 +85,10 @@ def main(argv):
         else:
             result_handler = ResultHandlerFile(result_hand_conf.get("file_path", default_result_file_path))
 
-        if len(ndu_gate_config.get("instances")) > 1:
+        instances = ndu_gate_config.get("instances")
+        if len(instances) > 1:
             services = []
-            for instance in ndu_gate_config.get("instances"):
+            for instance in instances:
                 instance["source"]["preview_show"] = False
                 camera_service = NDUCameraService(instance=instance, config_dir=ndu_gate_config_dir, handler=result_handler)
                 camera_service.start()
@@ -98,8 +98,8 @@ def main(argv):
             log.info("NDU-Gate all instances are started")
             for service in services:
                 service.join()
-        elif len(ndu_gate_config.get("instances")) == 1:
-            camera_service = NDUCameraService(instance=ndu_gate_config.get("instances")[0], config_dir=ndu_gate_config_dir, handler=result_handler)
+        elif len(instances) == 1:
+            camera_service = NDUCameraService(instance=instances[0], config_dir=ndu_gate_config_dir, handler=result_handler)
             camera_service.run()
         else:
             log.error("NDUCameraService no source found!")

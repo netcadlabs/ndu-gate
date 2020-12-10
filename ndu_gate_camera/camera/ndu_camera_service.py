@@ -67,7 +67,6 @@ class NDUCameraService(Thread):
 
         self.frame_sent = self.SOURCE_CONFIG.get("frame_sent", False)
 
-
         self.default_runners = DEFAULT_RUNNERS
         self.runners_configs = []
         self.runners_configs_by_key = {}
@@ -242,7 +241,6 @@ class NDUCameraService(Thread):
         # TODO - çalıştırma sırasına göre sonuçlar bir sonraki runnera aktarılabilir
         # TODO - runner dependency ile kimin çıktısı kimn giridisi olacak şeklinde de olabilir
 
-        winname = None
         if self.__preview_show:
             winname = "ndu_gate_camera preview"
             cv2.namedWindow(winname)  # Create a named window
