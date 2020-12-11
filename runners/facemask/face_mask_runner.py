@@ -18,13 +18,14 @@ class FaceMaskRunner(Thread, NDUCameraRunner):
 
         self.__dont_use_face_rects = config.get("dont_use_face_rects", False)
 
-        self.onnx_fn = path.dirname(path.abspath(__file__)) + "/data/model360.onnx"
+        onnx_fn = path.dirname(path.abspath(__file__)) + "/data/model360.onnx"
         class_names_fn = path.dirname(path.abspath(__file__)) + "/data/face_mask.names"
-        if not path.isfile(self.onnx_fn):
-            raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), self.onnx_fn)
+        if not path.isfile(onnx_fn):
+            raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), onnx_fn)
         if not path.isfile(class_names_fn):
             raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), class_names_fn)
         self.class_names = onnx_helper.parse_class_names(class_names_fn)
+        self.sess_tuple = onnx_helper.get_sess_tuple(onnx_fn, config.get("max_engine_count", 0))
 
         def generate_anchors(feature_map_sizes_, anchor_sizes_, anchor_ratios_):
             """
@@ -236,7 +237,7 @@ class FaceMaskRunner(Thread, NDUCameraRunner):
 
         image_transposed = image_exp.transpose((0, 3, 1, 2))
 
-        y_bboxes_output, y_cls_output = onnx_helper.run(self.onnx_fn, [image_transposed])
+        y_bboxes_output, y_cls_output = onnx_helper.run(self.sess_tuple, [image_transposed])
 
         # remove the batch dimension, for batch is always 1 for inference.
         y_bboxes = decode_bbox(self.__anchors_exp, y_bboxes_output)[0]

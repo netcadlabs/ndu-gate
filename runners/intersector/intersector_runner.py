@@ -14,15 +14,15 @@ from ndu_gate_camera.utility.ndu_utility import NDUUtility
 
 class IntersectorRunner(Thread, NDUCameraRunner):
 
-    def _init_classification(self):
+    def _init_classification(self, config):
         onnx_fn = path.dirname(path.abspath(__file__)) + "/data/googlenet-9.onnx"
         class_names_fn = path.dirname(path.abspath(__file__)) + "/data/synset.txt"
         if not path.isfile(onnx_fn):
             raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), onnx_fn)
         if not path.isfile(class_names_fn):
             raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), class_names_fn)
-        self.__onnx_fn = onnx_fn
         self.__onnx_classify_names = onnx_helper.parse_class_names(class_names_fn)
+        self.sess_tuple = onnx_helper.get_sess_tuple(onnx_fn, self._onnx_max_engine_count)
 
     _ST_OR = "or"
     _ST_AND = "and"
@@ -139,6 +139,7 @@ class IntersectorRunner(Thread, NDUCameraRunner):
     def __init__(self, config, _):
         super().__init__()
         self._check_config(config.get("groups", None))
+        self._onnx_max_engine_count = config.get("max_engine_count", 0)
 
     def get_name(self):
         return "IntersectorRunner"
@@ -155,7 +156,7 @@ class IntersectorRunner(Thread, NDUCameraRunner):
         image = frame[y1:y2, x1:x2]
 
         blob = cv2.dnn.blobFromImage(image, 1, (224, 224), (123.68, 116.779, 103.939))
-        preds = onnx_helper.run(self.__onnx_fn, [blob])[0]
+        preds = onnx_helper.run(self.sess_tuple, [blob])[0]
 
         # cv2.imshow(str(classify_indexes), image)
         # cv2.waitKey(100)

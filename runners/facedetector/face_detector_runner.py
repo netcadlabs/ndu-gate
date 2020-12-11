@@ -15,15 +15,16 @@ class FaceDetectorRunner(NDUCameraRunner):
         super().__init__()
         self.__threshold = config.get("threshold", 0.8)
 
-        self.onnx_fn = path.dirname(path.abspath(__file__)) + "/data/version-RFB-640.onnx"
+        onnx_fn = path.dirname(path.abspath(__file__)) + "/data/version-RFB-640.onnx"
         class_names_fn = path.dirname(path.abspath(__file__)) + "/data/voc-model-labels.txt"
 
-        if not path.isfile(self.onnx_fn):
-            raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), self.onnx_fn)
+        if not path.isfile(onnx_fn):
+            raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), onnx_fn)
         if not path.isfile(class_names_fn):
             raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), class_names_fn)
 
         self.class_names = onnx_helper.parse_class_names(class_names_fn)
+        self.sess_tuple = onnx_helper.get_sess_tuple(onnx_fn, config.get("max_engine_count", 0))
 
         ## onnx export örneği
         # self.__candidate_size = config.get("candidate_size", 1000)
@@ -61,7 +62,7 @@ class FaceDetectorRunner(NDUCameraRunner):
         image = np.transpose(image, [2, 0, 1])
         image = np.expand_dims(image, axis=0)
         image = image.astype(np.float32)
-        confidences, boxes = onnx_helper.run(self.onnx_fn, [image])
+        confidences, boxes = onnx_helper.run(self.sess_tuple, [image])
 
         out_boxes, out_classes, out_scores = FaceDetectorRunner._predict_faces(w, h, confidences, boxes, self.__threshold, self.class_names)
 

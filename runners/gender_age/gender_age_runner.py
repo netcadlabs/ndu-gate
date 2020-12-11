@@ -10,13 +10,13 @@ from ndu_gate_camera.utility import constants, image_helper, onnx_helper
 
 
 class GenderAgeRunner(Thread, NDUCameraRunner):
-    def __init__(self, _config, _connector_type):
+    def __init__(self, config, _connector_type):
         super().__init__()
 
-        self.onnx_fn = path.dirname(path.abspath(__file__)) + "/data/weights.29-3.76_utk.hdf5.onnx"
-
-        if not path.isfile(self.onnx_fn):
-            raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), self.onnx_fn)
+        onnx_fn = path.dirname(path.abspath(__file__)) + "/data/weights.29-3.76_utk.hdf5.onnx"
+        if not path.isfile(onnx_fn):
+            raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), onnx_fn)
+        self.sess_tuple = onnx_helper.get_sess_tuple(onnx_fn, config.get("max_engine_count", 0))
 
     def get_name(self):
         return "GenderAgeRunner"
@@ -77,7 +77,7 @@ class GenderAgeRunner(Thread, NDUCameraRunner):
                             img_data = np.array(image).astype(np.float32)
                             img_data = np.resize(img_data, input_shape)
 
-                            pred = onnx_helper.run(self.onnx_fn, [img_data])
+                            pred = onnx_helper.run(self.sess_tuple, [img_data])
 
                             predicted_gender = pred[0][0]
                             ages = np.arange(0, 101).reshape(101, 1)

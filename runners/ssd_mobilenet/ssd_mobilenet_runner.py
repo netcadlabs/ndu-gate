@@ -18,15 +18,16 @@ class SsdMobilenetRunner(Thread, NDUCameraRunner):
 
     def __init__(self, config, connector_type):
         super().__init__()
-        self.onnx_fn = config.get("onnx_fn", "ssd_mobilenet_v1_10.onnx")
-        if not os.path.isfile(self.onnx_fn):
-            self.onnx_fn = os.path.dirname(os.path.abspath(__file__)) + self.onnx_fn.replace("/", os.path.sep)
+        onnx_fn = config.get("onnx_fn", "ssd_mobilenet_v1_10.onnx")
+        if not os.path.isfile(onnx_fn):
+            onnx_fn = os.path.dirname(os.path.abspath(__file__)) + onnx_fn.replace("/", os.path.sep)
 
         classes_filename = config.get("classes_filename", "mscoco_label_map.pbtxt.json")
         if not os.path.isfile(classes_filename):
             classes_filename = os.path.dirname(os.path.abspath(__file__)) + classes_filename.replace("/", os.path.sep)
 
         self.class_names = self._parse_pbtxt(classes_filename)
+        self.sess_tuple = onnx_helper.get_sess_tuple(onnx_fn, config.get("max_engine_count", 0))
 
     def _parse_pbtxt(self, file_name):
         import json
@@ -49,7 +50,7 @@ class SsdMobilenetRunner(Thread, NDUCameraRunner):
         image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         img_data = np.expand_dims(image.astype(np.uint8), axis=0)
 
-        result = onnx_helper.run(self.onnx_fn, [img_data])
+        result = onnx_helper.run(self.sess_tuple, [img_data])
 
         detection_boxes, detection_classes, detection_scores, num_detections = result
         h, w, *_ = image.shape

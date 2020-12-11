@@ -16,15 +16,16 @@ class EmotionRunner(Thread, NDUCameraRunner):
         self.__config = config
         self.__connector_type = connector_type
 
-        self.onnx_fn = path.dirname(path.abspath(__file__)) + "/data/emotion-ferplus-8.onnx"
+        onnx_fn = path.dirname(path.abspath(__file__)) + "/data/emotion-ferplus-8.onnx"
 
         class_names_fn = path.dirname(path.abspath(__file__)) + "/data/emotion.names"
-        if not path.isfile(self.onnx_fn):
-            raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), self.onnx_fn)
+        if not path.isfile(onnx_fn):
+            raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), onnx_fn)
         if not path.isfile(class_names_fn):
             raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), class_names_fn)
 
         self.class_names = onnx_helper.parse_class_names(class_names_fn)
+        self.sess_tuple = onnx_helper.get_sess_tuple(onnx_fn, config.get("max_engine_count", 0))
 
     def get_name(self):
         return "EmotionRunner"
@@ -94,7 +95,7 @@ class EmotionRunner(Thread, NDUCameraRunner):
                                 # img_data = np.array(img).astype(np.float32)
                                 # img_data = np.resize(img_data, input_shape)
 
-                                preds0 = onnx_helper.run(self.onnx_fn, [img_data])
+                                preds0 = onnx_helper.run(self.sess_tuple, [img_data])
                                 preds = preds0[0][0]
 
                                 index = int(np.argmax(preds))

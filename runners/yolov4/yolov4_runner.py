@@ -14,17 +14,18 @@ class Yolov4Runner(NDUCameraRunner):
         self.input_size = config.get("input_size", 512)
 
         # self.input_size = 512
-        # self.onnx_fn = "/data/yolov4_-1_3_512_512_dynamic.onnx"
+        # onnx_fn = "/data/yolov4_-1_3_512_512_dynamic.onnx"
         self.input_size = 608
-        self.onnx_fn = "/data/yolov4_-1_3_608_608_dynamic.onnx"
+        onnx_fn = "/data/yolov4_-1_3_608_608_dynamic.onnx"
 
-        if not os.path.isfile(self.onnx_fn):
-            self.onnx_fn = os.path.dirname(os.path.abspath(__file__)) + self.onnx_fn.replace("/", os.path.sep)
+        if not os.path.isfile(onnx_fn):
+            onnx_fn = os.path.dirname(os.path.abspath(__file__)) + onnx_fn.replace("/", os.path.sep)
 
         classes_filename = config.get("classes_filename", "coco.names")
         if not os.path.isfile(classes_filename):
             classes_filename = os.path.dirname(os.path.abspath(__file__)) + classes_filename.replace("/", os.path.sep)
         self.class_names = onnx_helper.parse_class_names(classes_filename)
+        self.sess_tuple = onnx_helper.get_sess_tuple(onnx_fn, config.get("max_engine_count", 0))
 
     def get_name(self):
         return "yolov4"
@@ -35,4 +36,4 @@ class Yolov4Runner(NDUCameraRunner):
 
     def process_frame(self, frame, extra_data=None):
         super().process_frame(frame)
-        return yolo_helper.predict_v4(self.onnx_fn, self.input_size, self.class_names, frame)
+        return yolo_helper.predict_v4(self.sess_tuple, self.input_size, self.class_names, frame)
