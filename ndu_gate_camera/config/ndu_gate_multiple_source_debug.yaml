@@ -9,10 +9,9 @@ instances:
       type: IP_CAMERA
       url: rtsp://admin:Catab234@10.10.0.85:554/1
       device: "CANAKKALE-10.10.0.85"
-      preview_show: True
       frame_sent: True
-#      max_frame_dim: 1200
-#      skip_frame: 5
+      preview_show: True
+      max_frame_dim: 640
     runners:
       - name: yolov5s - Object detection with 80 classes (Fastest)
         type: yolov5s
@@ -25,45 +24,44 @@ instances:
         class: ObjectCounterRunner
         priority: 100
 
-  - source:
-      type: IP_CAMERA
-      url: rtsp://admin:Ani6060@10.10.190.103:554/1
-      device: "CANAKKALE-10.10.190.103"
-      preview_show: True
-      frame_sent: True
-#      max_frame_dim: 1200
-#      skip_frame: 5
-    runners:
-      - name: yolov5s - Object detection with 80 classes (Fastest)
-        type: yolov5s
-        configuration: yolov5s.json
-        class: Yolov5sRunner
-        priority: 10
-      - name: Object Counter
-        type: object_counter
-        configuration: object_counter_CAMERA-10.10.190.103.json
-        class: ObjectCounterRunner
-        priority: 100
+#  - source:
+#      type: IP_CAMERA
+#      url: rtsp://admin:Ani6060@10.10.190.103:554/1
+#      device: "CANAKKALE-10.10.190.103"
+#      frame_sent: True
+##      preview_show: True
+#      max_frame_dim: 640
+#    runners:
+#      - name: yolov5s - Object detection with 80 classes (Fastest)
+#        type: yolov5s
+#        configuration: yolov5s.json
+#        class: Yolov5sRunner
+#        priority: 10
+#      - name: Object Counter
+#        type: object_counter
+#        configuration: object_counter_CAMERA-10.10.190.103.json
+#        class: ObjectCounterRunner
+#        priority: 100
+#
+#  - source:
+#      type: IP_CAMERA
+#      url: rtsp://admin:Ani6060@10.10.190.173:554/1
+#      device: "CANAKKALE-10.10.190.173"
+#      frame_sent: True
+##      preview_show: True
+#      max_frame_dim: 640
+#    runners:
+#      - name: yolov5s - Object detection with 80 classes (Fastest)
+#        type: yolov5s
+#        configuration: yolov5s.json
+#        class: Yolov5sRunner
+#        priority: 10
+#      - name: Object Counter
+#        type: object_counter
+#        configuration: object_counter_CAMERA-10.10.190.173.json
+#        class: ObjectCounterRunner
+#        priority: 100
 
-  - source:
-      type: IP_CAMERA
-      url: rtsp://admin:Ani6060@10.10.190.173:554/1
-      device: "CANAKKALE-10.10.190.173"
-      preview_show: True
-      frame_sent: True
-#      max_frame_dim: 1200
-#      skip_frame: 5
-    runners:
-      - name: yolov5s - Object detection with 80 classes (Fastest)
-        type: yolov5s
-        configuration: yolov5s.json
-        class: Yolov5sRunner
-        priority: 10
-      - name: Object Counter
-        type: object_counter
-        configuration: object_counter_CAMERA-10.10.190.173.json
-        class: ObjectCounterRunner
-        priority: 100
 
 #### çalışmadı
 #  - source:
@@ -91,65 +89,3 @@ instances:
 
 
 
-
-
-
-## 3 fps yolov5m 3 fps  yolov5s 5 fps çalıştı
-
-
-## VİDEO SOURCE OLUŞMUYOR
-#  - source:
-#      type: IP_CAMERA
-#      url: rtsp://admin:Ani6060@10.10.190.122:554/1
-#      file_path: iett_2.avi
-#      device: "CAMERA-10.10.190.122"
-#      preview_show: True
-#      max_frame_dim: 1200
-#    runners:
-#      - name: yolov5m - Object detection with 80 classes (Fast)
-#        type: yolov5m
-#        configuration: yolov5m.json
-#        class: Yolov5mRunner
-#        priority: 10
-#      - name: Cigarette Detector
-#        type: cigarette_detector
-#        configuration: cigarette_detector.json
-#        class: CigaretteDetectorRunner
-#        priority: 10
-
-#  - source:
-#      type: IP_CAMERA
-#      url: rtsp://admin:Ani6060@10.10.190.173:554/1
-#      file_path: iett_2.avi
-#      device: "CAMERA-10.10.190.173"
-#      preview_show: True
-#      max_frame_dim: 1200
-#    runners:
-#      - name: yolov5m - Object detection with 80 classes (Fast)
-#        type: yolov5m
-#        configuration: yolov5m.json
-#        class: Yolov5mRunner
-#        priority: 10
-#      - name: Cigarette Detector
-#        type: cigarette_detector
-#        configuration: cigarette_detector.json
-#        class: CigaretteDetectorRunner
-#        priority: 10
-
-#  - source:
-#      type: VIDEO_FILE # CAMERA
-#      data_folder: C:/_koray/test_data/
-#      file_path: iett_2.avi
-#      device: "iett_2_2"
-#      preview_show: True
-#    runners:
-#      - name: yolov5m - Object detection with 80 classes (Fast)
-#        type: yolov5m
-#        configuration: yolov5m.json
-#        class: Yolov5mRunner
-#        priority: 10
-#      - name: Person Counter
-#        type: personcounter
-#        configuration: person_counter.json
-#        class: person_counter_runner
-#        priority: 100

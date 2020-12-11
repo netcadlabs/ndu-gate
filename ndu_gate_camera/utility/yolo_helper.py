@@ -15,7 +15,10 @@ def predict_v5(sess_tuple, input_size, class_names, frame):
 
         scale = min(iw / w1, ih / h1)
         nw, nh = int(scale * w1), int(scale * h1)
-        image_resized = image_helper.resize_best_quality(image1, (nw, nh))
+        if nh != h1 or nw != w1:
+            image_resized = image_helper.resize_best_quality(image1, (nw, nh))
+        else:
+            image_resized = image1
 
         image_padded = np.full(shape=[ih, iw, 3], fill_value=128.0)
         dw, dh = (iw - nw) // 2, (ih - nh) // 2

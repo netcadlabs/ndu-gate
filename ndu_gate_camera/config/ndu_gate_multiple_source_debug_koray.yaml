@@ -66,6 +66,7 @@ instances:
       data_folder: C:/_koray/test_data/
       file_path: bakanlik.avi
       device: "cam21"
+      max_frame_dim: 640
       preview_show: True
     runners:
       - name: yolov5x - Object detection with 80 classes (Most Accurate)
@@ -79,59 +80,59 @@ instances:
         class: ObjectCounterRunner
         priority: 100
 
-  - source:
-      type: VIDEO_FILE # CAMERA
-      data_folder: C:/_koray/test_data/
-      file_path: bakanlik.avi
-      device: "cam22"
-      preview_show: True
-    runners:
-      - name: yolov5x - Object detection with 80 classes (Most Accurate)
-        type: yolov5x
-        configuration: yolov5x.json
-        class: Yolov5xRunner
-        priority: 10
-      - name: Object Counter
-        type: object_counter
-        configuration: object_counter.json
-        class: ObjectCounterRunner
-        priority: 100
-
-  - source:
-      type: VIDEO_FILE # CAMERA
-      data_folder: C:/_koray/test_data/
-      file_path: bakanlik.avi
-      device: "cam23"
-      preview_show: True
-    runners:
-      - name: yolov5x - Object detection with 80 classes (Most Accurate)
-        type: yolov5x
-        configuration: yolov5x.json
-        class: Yolov5xRunner
-        priority: 10
-      - name: Object Counter
-        type: object_counter
-        configuration: object_counter.json
-        class: ObjectCounterRunner
-        priority: 100
-
-  - source:
-      type: VIDEO_FILE # CAMERA
-      data_folder: C:/_koray/test_data/
-      file_path: bakanlik.avi
-      device: "cam24"
-      preview_show: True
-    runners:
-      - name: yolov5x - Object detection with 80 classes (Most Accurate)
-        type: yolov5x
-        configuration: yolov5x.json
-        class: Yolov5xRunner
-        priority: 10
-      - name: Object Counter
-        type: object_counter
-        configuration: object_counter.json
-        class: ObjectCounterRunner
-        priority: 100
+#  - source:
+#      type: VIDEO_FILE # CAMERA
+#      data_folder: C:/_koray/test_data/
+#      file_path: bakanlik.avi
+#      device: "cam22"
+#      preview_show: True
+#    runners:
+#      - name: yolov5x - Object detection with 80 classes (Most Accurate)
+#        type: yolov5x
+#        configuration: yolov5x.json
+#        class: Yolov5xRunner
+#        priority: 10
+#      - name: Object Counter
+#        type: object_counter
+#        configuration: object_counter.json
+#        class: ObjectCounterRunner
+#        priority: 100
+#
+#  - source:
+#      type: VIDEO_FILE # CAMERA
+#      data_folder: C:/_koray/test_data/
+#      file_path: bakanlik.avi
+#      device: "cam23"
+#      preview_show: True
+#    runners:
+#      - name: yolov5x - Object detection with 80 classes (Most Accurate)
+#        type: yolov5x
+#        configuration: yolov5x.json
+#        class: Yolov5xRunner
+#        priority: 10
+#      - name: Object Counter
+#        type: object_counter
+#        configuration: object_counter.json
+#        class: ObjectCounterRunner
+#        priority: 100
+#
+#  - source:
+#      type: VIDEO_FILE # CAMERA
+#      data_folder: C:/_koray/test_data/
+#      file_path: bakanlik.avi
+#      device: "cam24"
+#      preview_show: True
+#    runners:
+#      - name: yolov5x - Object detection with 80 classes (Most Accurate)
+#        type: yolov5x
+#        configuration: yolov5x.json
+#        class: Yolov5xRunner
+#        priority: 10
+#      - name: Object Counter
+#        type: object_counter
+#        configuration: object_counter.json
+#        class: ObjectCounterRunner
+#        priority: 100
 
 
 

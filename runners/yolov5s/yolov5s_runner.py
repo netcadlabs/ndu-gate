@@ -27,5 +27,5 @@ class Yolov5sRunner(NDUCameraRunner):
         return settings
 
     def process_frame(self, frame, extra_data=None):
-        super().process_frame(frame)
+        # super().process_frame(frame)
         return yolo_helper.predict_v5(self.sess_tuple, self.input_size, self.class_names, frame)
