@@ -10,7 +10,7 @@ vidgear
 pyzmq
 PyYAML
 simplejson
-picamera
+# picamera
 ffmpeg-python
 
 # macos: brew install libomp
