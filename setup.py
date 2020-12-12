@@ -6,7 +6,7 @@ this_directory = path.abspath(path.dirname(__file__))
 with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
-VERSION = "0.1.6.3"
+VERSION = "0.1.7"
 
 setup(
     name='ndu_gate_camera',
@@ -39,6 +39,5 @@ setup(
     entry_points={
         'console_scripts': [
             'ndu-gate = ndu_gate_camera.ndu_camera:daemon'
-        ]},
-    scripts=['bin/ndu-gate']
+        ]}
 )

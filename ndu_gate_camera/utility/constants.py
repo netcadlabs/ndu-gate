@@ -1,7 +1,16 @@
 DEFAULT_TB_GATEWAY_CONF = "/etc/thingsboard-gateway/config/tb_gateway.yaml"
 DEFAULT_NDU_GATE_CONF = "/etc/ndu-gate/config/ndu_gate.yaml"
+DEFAULT_NDU_GATE_CONF_WIN = "C:/ndu-gate/config/ndu_gate.yaml"
 
 NDU_GATE_MODEL_FOLDER = "/etc/ndu-gate/data"
+
+DEFAULT_HANDLER_SETTINGS = {
+    "type": "SOCKET",
+    "socket": {
+        "port": 60060,
+        "host": "127.0.0.1"
+    }
+}
 
 # [x1, y1, x2, y2]
 RESULT_KEY_RECT = "rect"

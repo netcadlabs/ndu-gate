@@ -4,6 +4,7 @@ import sys
 import time
 import traceback
 from os import path, listdir, mkdir, curdir
+from sys import platform
 
 from yaml import safe_load
 
@@ -11,33 +12,49 @@ from ndu_gate_camera.camera.ndu_camera_service import NDUCameraService
 from ndu_gate_camera.camera.ndu_logger import NDULoggerHandler
 from ndu_gate_camera.camera.result_handlers.result_handler_file import ResultHandlerFile
 from ndu_gate_camera.camera.result_handlers.result_handler_socket import ResultHandlerSocket
-from ndu_gate_camera.utility.constants import DEFAULT_NDU_GATE_CONF
+from ndu_gate_camera.utility.constants import DEFAULT_NDU_GATE_CONF, DEFAULT_NDU_GATE_CONF_WIN, DEFAULT_HANDLER_SETTINGS
 from ndu_gate_camera.utility.ndu_utility import NDUUtility
 
 
-def main(argv):
-    ndu_gate_config_file = ""
-    try:
-        opts, args = getopt.getopt(argv, "c:", ["config="])
-        for opt, arg in opts:
-            if opt in ['-c', '--config']:
-                ndu_gate_config_file = arg
-    except getopt.GetoptError:
-        print('ndu_camera.py -c <config_file_path>')
-        sys.exit(2)
+def _get_config():
+    print(sys.argv)
+    ndu_gate_config_file = None
 
+    if len(sys.argv) > 1:
+        try:
+            opts, _ = getopt.getopt(sys.argv[1:], "c:", ["config="])
+            for opt, arg in opts:
+                if opt in ['-c', '--config']:
+                    ndu_gate_config_file = arg
+        except getopt.GetoptError:
+            print('ndu_camera.py -c <config_file_path>')
+
+    config_file_name = "ndu_gate.yaml"
+    if ndu_gate_config_file is None:
+        config_file_name = "ndu_gate_debug.yaml"
+        import os
+        if os.environ.get('COMPUTERNAME', None) == "KORAY":
+            config_file_name = "ndu_gate_multiple_source_debug_koray.yaml"
+
+        config_file = path.dirname(path.abspath(__file__)) + '/config/'.replace('/', path.sep) + config_file_name
+        if path.isfile(config_file):
+            ndu_gate_config_file = config_file
+
+    if ndu_gate_config_file is None:
+        print("Config file not specified, going to use default")
+        if platform == "win32":
+            ndu_gate_config_file = DEFAULT_NDU_GATE_CONF_WIN.replace('/', path.sep)
+        else:
+            ndu_gate_config_file = DEFAULT_NDU_GATE_CONF.replace('/', path.sep)
+
+    print("Config file is {}".format(ndu_gate_config_file))
+
+    return ndu_gate_config_file
+
+
+def main(ndu_gate_config_file):
     if "logs" not in listdir(curdir):
         mkdir("logs")
-
-    if not ndu_gate_config_file:
-        config_file_name = "ndu_gate_multiple_source.yaml"
-        if NDUUtility.is_debug_mode():
-            config_file_name = "ndu_gate_multiple_source_debug.yaml"
-            import os
-            if os.environ.get('COMPUTERNAME', None) == "KORAY":
-                config_file_name = "ndu_gate_multiple_source_debug_koray.yaml"
-
-        ndu_gate_config_file = path.dirname(path.abspath(__file__)) + '/config/'.replace('/', path.sep) + config_file_name
 
     try:
         if ndu_gate_config_file is None:
@@ -72,20 +89,13 @@ def main(argv):
         log.info("NDU-Gate logging service level: %s", log.level)
 
         result_hand_conf = ndu_gate_config.get("result_handler", None)
-        default_result_file_path = "/var/lib/thingsboard_gateway/extensions/camera/"
         if result_hand_conf is None:
-            result_hand_conf = {
-                "type": "SOCKET",
-                "socket": {
-                    "port": 60060,
-                    "host": "127.0.0.1"
-                }
-            }
+            result_hand_conf = DEFAULT_HANDLER_SETTINGS
 
-        if str(result_hand_conf.get("type", "FILE")) == str("SOCKET"):
+        if str(result_hand_conf.get("type", "SOCKET")) == str("SOCKET"):
             result_handler = ResultHandlerSocket(result_hand_conf.get("socket", {}), result_hand_conf.get("device", None))
         else:
-            result_handler = ResultHandlerFile(result_hand_conf.get("file_path", default_result_file_path))
+            result_handler = ResultHandlerFile(result_hand_conf.get("file_path", None))
 
         instances = ndu_gate_config.get("instances")
         if len(instances) > 1:
@@ -123,21 +133,21 @@ def main(argv):
         log.info("NDUCameraService exiting...")
 
     except Exception as e:
-        print("NDUCameraService PATLADI")
+        print("NDUCameraService Exited")
         print(e)
         print("----------------------")
         print(traceback.format_exc())
 
 
 def daemon():
-    print("Start daemon")
-    main(['-c', DEFAULT_NDU_GATE_CONF.replace('/', path.sep)])
+    print("Starting as daemon")
+    main(_get_config())
 
 
 def daemon_with_conf(config_file):
-    print("Start daemon_with_conf {} ".format(config_file))
-    main(['-c', config_file.replace('/', path.sep)])
+    print("Starting as daemon with conf {} ".format(config_file))
+    main(config_file)
 
 
 if __name__ == '__main__':
-    main(sys.argv[1:])
+    main(_get_config())
