@@ -53,7 +53,6 @@ def resize(image, width=None, height=None, interpolation=None):
         return image
 
     h, w = image.shape[:2]
-    dim = None
     if width is None:
         r = height / float(h)
         dim = (int(w * r), height)

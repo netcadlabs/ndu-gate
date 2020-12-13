@@ -34,7 +34,7 @@ def _get_config():
         config_file_name = "ndu_gate_debug.yaml"
         import os
         if os.environ.get('COMPUTERNAME', None) == "KORAY":
-            config_file_name = "ndu_gate_multiple_source_debug_koray.yaml"
+            config_file_name = "ndu_gate_debug_koray.yaml"
 
         config_file = path.dirname(path.abspath(__file__)) + '/config/'.replace('/', path.sep) + config_file_name
         if path.isfile(config_file):
