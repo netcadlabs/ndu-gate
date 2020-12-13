@@ -16,7 +16,7 @@ class IPCameraVideoSource(VideoSource):
         self.mode = source_config.get("mode", 1)  # 1 - QUEUE , 0 = SEND ALL
         self.count = 0
         self.frame = None
-        if self.mode == 1:
+        if self.mode != 0:
             p1 = threading.Thread(target=self.read_frame)
             p1.start()
 
@@ -29,6 +29,7 @@ class IPCameraVideoSource(VideoSource):
             self.frame = frame
             self.count += 1
 
+        self.count = -1
         self.__capture.release()
 
     def get_frames(self):
@@ -45,6 +46,8 @@ class IPCameraVideoSource(VideoSource):
         else:
             while self.count == 0:
                 time.sleep(1)
+            if self.count == -1:
+                raise Exception('Cannot capture ip camera')
             while True:
                 yield self.count, self.frame
 
