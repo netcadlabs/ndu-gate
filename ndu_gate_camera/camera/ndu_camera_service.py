@@ -235,6 +235,9 @@ class NDUCameraService(Thread):
             log.error("Error during setting up video source")
             log.error(e)
 
+    def exit_signal(self):
+        self._exit_requested = True
+
     # main thread tarafından çağırılabilir
     def check_for_preview(self):
         if self.__is_main_thread:
