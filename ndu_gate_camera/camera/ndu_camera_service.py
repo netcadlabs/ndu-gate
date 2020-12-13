@@ -49,6 +49,8 @@ class NDUCameraService(Thread):
                 self.SOURCE_TYPE = VideoSourceType.PI_CAMERA
 
         self.__frame_send_interval = self.SOURCE_CONFIG.get("frame_send_interval", 1000)
+        self.__motion_kernel = self.SOURCE_CONFIG.get("motion_kernel", None)
+        self.__preview_show_motion_kernel = self.SOURCE_CONFIG.get("preview_show_motion_kernel", False)
         self.__preview_show = self.SOURCE_CONFIG.get("preview_show", False)
         if self.__preview_show:
             self.__preview_inited = False
@@ -308,9 +310,27 @@ class NDUCameraService(Thread):
         try:
             device = self.SOURCE_CONFIG.get("device", None)
             i = -1
+            last_thresh = last_gray = None
+            has_motion_kernel = self.__motion_kernel is not None
             for _frame_index, frame in self.video_source.get_frames():
                 if self._exit_requested:
                     break
+                if has_motion_kernel:
+                    gray = image_helper.resize(frame, width=500, interpolation=cv2.INTER_NEAREST)
+                    gray = cv2.cvtColor(gray, cv2.COLOR_BGR2GRAY)
+                    gray = cv2.GaussianBlur(gray, (self.__motion_kernel, self.__motion_kernel), 0)
+                    if last_gray is not None:
+                        frame_delta = cv2.absdiff(last_gray, gray)
+                        last_thresh = cv2.threshold(frame_delta, 25, 255, cv2.THRESH_BINARY)[1]
+                        no_zero = cv2.countNonZero(last_thresh)
+                        if self.__preview_show_motion_kernel:
+                            image_helper.put_text(last_thresh, str(no_zero), [50, 50])
+                        # cv2.imshow("aaa", last_thresh)
+                        # cv2.waitKey(1)
+                        if no_zero <= 1:
+                            continue
+                    last_gray = gray
+
                 i += 1
                 if i % 500 == 0:
                     log.debug("frame count %s ", i)
@@ -371,6 +391,10 @@ class NDUCameraService(Thread):
                         total_elapsed_time = time.time() - start_total
                         results.append([{"total_elapsed_time": '{:.0f}msec fps:{:.0f}'.format(total_elapsed_time * 1000, (1.0 / max(total_elapsed_time, 0.001)))}])
                         preview = self._get_preview(frame, results)
+                        if self.__preview_show_motion_kernel and last_thresh is not None:
+                            th = image_helper.resize(last_thresh, preview.shape[1], preview.shape[0], interpolation=cv2.INTER_NEAREST)
+                            th = cv2.cvtColor(th, cv2.COLOR_GRAY2BGR)
+                            preview = cv2.addWeighted(preview, 1, th, 1, 0)
 
                     self.__last_preview_image = preview
                     if self.__is_main_thread:

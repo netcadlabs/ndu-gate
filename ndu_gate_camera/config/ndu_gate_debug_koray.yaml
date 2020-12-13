@@ -11,172 +11,182 @@ result_handler:
     host: 127.0.0.1
 
 instances:
+  - source:
+#      motion_kernel: 11
+#      preview_show_motion_kernel: True
+
+      mirror: True
+#      type: CAMERA
+      type: VIDEO_FILE
+
+      data_folder: C:/_koray/test_data/çanakkale_stream/
+#      file_path: CANAKKALE-10.10.0.85.mp4
+      file_path: CANAKKALE-10.10.190.103.mp4
+#      file_path: CANAKKALE-10.10.190.173.mp4
+
+#      data_folder: C:/_koray/test_data/
+#      file_path: bakanlik.avi
+
+      device: "cam1"
+#      max_frame_dim: 1600
+      preview_show: True
+#      preview_show_debug_texts: True
+#      preview_show_runner_info: False
+#      preview_show_score: False
+#      preview_show_rect_name: True
+##      preview_show_rect_filter: "person"
+
+#      preview_write: True
+#      preview_write_file_name: C:/_koray/temp/preview.mp4
+#      sleep: 0.1
+#      skip_frame: 5
+    runners:
+      - name: yolov5s - Object detection with 80 classes (Most Accurate)
+        type: yolov5s
+        configuration: yolov5s.json
+        class: Yolov5sRunner
+        priority: 10
+
+      - name: Object Counter
+        type: object_counter
+        configuration: object_counter.json
+        class: ObjectCounterRunner
+        priority: 100
+
+
+
+
+
+
+
+#
+#
+##
+##small 525
+##large 2700 - gpu 180 pool 220
+#
+##large max_engine_count=0       :   cpu:2500 - gpu:230
+##large max_engine_count=0 + lock:   cpu:2680 - gpu:180
+##large max_engine_count=1       :   cpu:2500 - gpu:230
+##large max_engine_count=1 + lock:   cpu:2680 - gpu:180
+##large max_engine_count=4       :   cpu:2500 - gpu:230
+##large max_engine_count=4 + lock:   cpu:2680 - gpu:180
+#
+##small 6 video:   cpu:570 - gpu:160
+##small 3 video:   cpu:275 - gpu:70
 #  - source:
 #      type: VIDEO_FILE # CAMERA
 #      data_folder: C:/_koray/test_data/
 #      file_path: bakanlik.avi
 #      device: "cam1"
-##      max_frame_dim: 1600
+##      max_frame_dim: 640
 #      preview_show: True
-##      preview_show_debug_texts: True
-##      preview_show_runner_info: False
-##      preview_show_score: False
-##      preview_show_rect_name: True
-###      preview_show_rect_filter: "person"
-#
-##      preview_write: True
-#      preview_write_file_name: C:/_koray/temp/preview.mp4
-##      sleep: 0.1
-##      skip_frame: 5
 #    runners:
-##      - name: yolov5x - Object detection with 80 classes (Fast)
-##        type: yolov5x
-##        configuration: yolov5x.json
-##        class: Yolov5xRunner
-##        priority: 10
-##      - name: yolov5s - Object detection with 80 classes (Most Accurate)
-##        type: yolov5s
-##        configuration: yolov5s.json
-##        class: Yolov5sRunner
-##        priority: 10
 #      - name: yolov5s - Object detection with 80 classes (Most Accurate)
-#        type: yolov5s_test
+#        type: yolov5s
 #        configuration: yolov5s.json
 #        class: Yolov5sRunner
 #        priority: 10
-#
 #      - name: Object Counter
 #        type: object_counter
 #        configuration: object_counter.json
 #        class: ObjectCounterRunner
 #        priority: 100
-
 #
-#small 525
-#large 2700 - gpu 180 pool 220
-
-#large max_engine_count=0       :   cpu:2500 - gpu:230
-#large max_engine_count=0 + lock:   cpu:2680 - gpu:180
-#large max_engine_count=1       :   cpu:2500 - gpu:230
-#large max_engine_count=1 + lock:   cpu:2680 - gpu:180
-#large max_engine_count=4       :   cpu:2500 - gpu:230
-#large max_engine_count=4 + lock:   cpu:2680 - gpu:180
-
-#small 6 video:   cpu:570 - gpu:160
-#small 3 video:   cpu:275 - gpu:70
-  - source:
-      type: VIDEO_FILE # CAMERA
-      data_folder: C:/_koray/test_data/
-      file_path: bakanlik.avi
-      device: "cam1"
-#      max_frame_dim: 640
-      preview_show: True
-    runners:
-      - name: yolov5s - Object detection with 80 classes (Most Accurate)
-        type: yolov5s
-        configuration: yolov5s.json
-        class: Yolov5sRunner
-        priority: 10
-      - name: Object Counter
-        type: object_counter
-        configuration: object_counter.json
-        class: ObjectCounterRunner
-        priority: 100
-
-  - source:
-      type: VIDEO_FILE # CAMERA
-      data_folder: C:/_koray/test_data/
-      file_path: bakanlik.avi
-      device: "cam2"
-#      max_frame_dim: 640
-      preview_show: True
-    runners:
-      - name: yolov5s - Object detection with 80 classes (Most Accurate)
-        type: yolov5s
-        configuration: yolov5s.json
-        class: Yolov5sRunner
-        priority: 10
-      - name: Object Counter
-        type: object_counter
-        configuration: object_counter.json
-        class: ObjectCounterRunner
-        priority: 100
-
-  - source:
-      type: VIDEO_FILE # CAMERA
-      data_folder: C:/_koray/test_data/
-      file_path: bakanlik.avi
-      device: "cam3"
-#      max_frame_dim: 640
-      preview_show: True
-    runners:
-      - name: yolov5s - Object detection with 80 classes (Most Accurate)
-        type: yolov5s
-        configuration: yolov5s.json
-        class: Yolov5sRunner
-        priority: 10
-      - name: Object Counter
-        type: object_counter
-        configuration: object_counter.json
-        class: ObjectCounterRunner
-        priority: 100
-
-  - source:
-      type: VIDEO_FILE # CAMERA
-      data_folder: C:/_koray/test_data/
-      file_path: bakanlik.avi
-      device: "cam4"
-#      max_frame_dim: 640
-      preview_show: True
-    runners:
-      - name: yolov5s - Object detection with 80 classes (Most Accurate)
-        type: yolov5s
-        configuration: yolov5s.json
-        class: Yolov5sRunner
-        priority: 10
-      - name: Object Counter
-        type: object_counter
-        configuration: object_counter.json
-        class: ObjectCounterRunner
-        priority: 100
-
-  - source:
-      type: VIDEO_FILE # CAMERA
-      data_folder: C:/_koray/test_data/
-      file_path: bakanlik.avi
-      device: "cam5"
-#      max_frame_dim: 640
-      preview_show: True
-    runners:
-      - name: yolov5s - Object detection with 80 classes (Most Accurate)
-        type: yolov5s
-        configuration: yolov5s.json
-        class: Yolov5sRunner
-        priority: 10
-      - name: Object Counter
-        type: object_counter
-        configuration: object_counter.json
-        class: ObjectCounterRunner
-        priority: 100
-
-  - source:
-      type: VIDEO_FILE # CAMERA
-      data_folder: C:/_koray/test_data/
-      file_path: bakanlik.avi
-      device: "cam6"
-#      max_frame_dim: 640
-      preview_show: True
-    runners:
-      - name: yolov5s - Object detection with 80 classes (Most Accurate)
-        type: yolov5s
-        configuration: yolov5s.json
-        class: Yolov5sRunner
-        priority: 10
-      - name: Object Counter
-        type: object_counter
-        configuration: object_counter.json
-        class: ObjectCounterRunner
-        priority: 100
+#  - source:
+#      type: VIDEO_FILE # CAMERA
+#      data_folder: C:/_koray/test_data/
+#      file_path: bakanlik.avi
+#      device: "cam2"
+##      max_frame_dim: 640
+#      preview_show: True
+#    runners:
+#      - name: yolov5s - Object detection with 80 classes (Most Accurate)
+#        type: yolov5s
+#        configuration: yolov5s.json
+#        class: Yolov5sRunner
+#        priority: 10
+#      - name: Object Counter
+#        type: object_counter
+#        configuration: object_counter.json
+#        class: ObjectCounterRunner
+#        priority: 100
+#
+#  - source:
+#      type: VIDEO_FILE # CAMERA
+#      data_folder: C:/_koray/test_data/
+#      file_path: bakanlik.avi
+#      device: "cam3"
+##      max_frame_dim: 640
+#      preview_show: True
+#    runners:
+#      - name: yolov5s - Object detection with 80 classes (Most Accurate)
+#        type: yolov5s
+#        configuration: yolov5s.json
+#        class: Yolov5sRunner
+#        priority: 10
+#      - name: Object Counter
+#        type: object_counter
+#        configuration: object_counter.json
+#        class: ObjectCounterRunner
+#        priority: 100
+#
+#  - source:
+#      type: VIDEO_FILE # CAMERA
+#      data_folder: C:/_koray/test_data/
+#      file_path: bakanlik.avi
+#      device: "cam4"
+##      max_frame_dim: 640
+#      preview_show: True
+#    runners:
+#      - name: yolov5s - Object detection with 80 classes (Most Accurate)
+#        type: yolov5s
+#        configuration: yolov5s.json
+#        class: Yolov5sRunner
+#        priority: 10
+#      - name: Object Counter
+#        type: object_counter
+#        configuration: object_counter.json
+#        class: ObjectCounterRunner
+#        priority: 100
+#
+#  - source:
+#      type: VIDEO_FILE # CAMERA
+#      data_folder: C:/_koray/test_data/
+#      file_path: bakanlik.avi
+#      device: "cam5"
+##      max_frame_dim: 640
+#      preview_show: True
+#    runners:
+#      - name: yolov5s - Object detection with 80 classes (Most Accurate)
+#        type: yolov5s
+#        configuration: yolov5s.json
+#        class: Yolov5sRunner
+#        priority: 10
+#      - name: Object Counter
+#        type: object_counter
+#        configuration: object_counter.json
+#        class: ObjectCounterRunner
+#        priority: 100
+#
+#  - source:
+#      type: VIDEO_FILE # CAMERA
+#      data_folder: C:/_koray/test_data/
+#      file_path: bakanlik.avi
+#      device: "cam6"
+##      max_frame_dim: 640
+#      preview_show: True
+#    runners:
+#      - name: yolov5s - Object detection with 80 classes (Most Accurate)
+#        type: yolov5s
+#        configuration: yolov5s.json
+#        class: Yolov5sRunner
+#        priority: 10
+#      - name: Object Counter
+#        type: object_counter
+#        configuration: object_counter.json
+#        class: ObjectCounterRunner
+#        priority: 100
 
 
 
