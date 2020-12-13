@@ -12,16 +12,16 @@ result_handler:
 
 instances:
   - source:
-#      motion_kernel: 11
-#      preview_show_motion_kernel: True
+      motion_kernel: 11
+      preview_show_motion_kernel: True
 
       mirror: True
 #      type: CAMERA
       type: VIDEO_FILE
 
       data_folder: C:/_koray/test_data/çanakkale_stream/
-#      file_path: CANAKKALE-10.10.0.85.mp4
-      file_path: CANAKKALE-10.10.190.103.mp4
+      file_path: CANAKKALE-10.10.0.85.mp4
+#      file_path: CANAKKALE-10.10.190.103.mp4
 #      file_path: CANAKKALE-10.10.190.173.mp4
 
 #      data_folder: C:/_koray/test_data/

@@ -84,7 +84,6 @@ class NDUCameraService(Thread):
         self._connect_with_runners()
 
         self.video_source = None
-        self._set_video_source()
         # self._start()
 
     # def run(self):
@@ -298,6 +297,7 @@ class NDUCameraService(Thread):
                 self.__out = None
 
     def run(self):
+        self._set_video_source()
         if self.video_source is None:
             log.error("video source is not set!")
             return
