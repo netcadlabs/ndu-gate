@@ -13,10 +13,10 @@ from ndu_gate_camera.utility import constants, image_helper, onnx_helper
 class FaceMaskRunner(Thread, NDUCameraRunner):
     def __init__(self, config, connector_type):
         super().__init__()
-        self.__config = config
         self.__connector_type = connector_type
 
         self.__dont_use_face_rects = config.get("dont_use_face_rects", False)
+        self._max_rect = config.get("max_rect", 0)
         self._last_data = None
 
         onnx_fn = path.dirname(path.abspath(__file__)) + "/data/model360.onnx".replace("/", os.path.sep)
@@ -265,6 +265,11 @@ class FaceMaskRunner(Thread, NDUCameraRunner):
             score = float(bbox_max_scores[idx])
             class_id = bbox_max_score_classes[idx]
             bbox = y_bboxes[idx]
+
+            if self._max_rect > 0:
+                max_len = max(bbox[2] - bbox[0], bbox[3] - bbox[1])
+                if max_len > self._max_rect:
+                    continue
 
             if class_id == 0:
                 count_mask += 1
