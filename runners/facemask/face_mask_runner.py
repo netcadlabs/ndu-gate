@@ -17,6 +17,7 @@ class FaceMaskRunner(Thread, NDUCameraRunner):
         self.__connector_type = connector_type
 
         self.__dont_use_face_rects = config.get("dont_use_face_rects", False)
+        self._last_data = None
 
         onnx_fn = path.dirname(path.abspath(__file__)) + "/data/model360.onnx"
         class_names_fn = path.dirname(path.abspath(__file__)) + "/data/face_mask.names"
@@ -258,10 +259,17 @@ class FaceMaskRunner(Thread, NDUCameraRunner):
         # item.pop(constants.RESULT_KEY_SCORE)
         # item.pop(constants.RESULT_KEY_RECT)
 
+        count_no_mask = 0
+        count_mask = 0
         for idx in keep_idxs:
             score = float(bbox_max_scores[idx])
             class_id = bbox_max_score_classes[idx]
             bbox = y_bboxes[idx]
+
+            if class_id == 0:
+                count_mask += 1
+            else:
+                count_no_mask += 1
 
             xmin = max(0, int(bbox[0] * width)) + x1
             ymin = max(0, int(bbox[1] * height)) + y1
@@ -270,3 +278,8 @@ class FaceMaskRunner(Thread, NDUCameraRunner):
 
             rect_face = [ymin, xmin, ymax, xmax]
             res.append({constants.RESULT_KEY_RECT: rect_face, constants.RESULT_KEY_CLASS_NAME: self.class_names[class_id], constants.RESULT_KEY_SCORE: score})
+
+        data = {constants.RESULT_KEY_DATA: {"mask": count_mask, "no_mask": count_no_mask}}
+        if self._last_data != data:
+            self._last_data = data
+            res.append(data)
