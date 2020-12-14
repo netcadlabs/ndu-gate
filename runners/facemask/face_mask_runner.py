@@ -16,7 +16,7 @@ class FaceMaskRunner(Thread, NDUCameraRunner):
         self.__connector_type = connector_type
 
         self.__dont_use_face_rects = config.get("dont_use_face_rects", False)
-        self._max_rect = config.get("max_rect", 0)
+        self._max_rect = config.get("max_rect", 0) #örneğin 0.5 verilirse, max dim değeri frame'in yarısından büyük olan bbox'lar kabul edilmez.
         self._last_data = None
 
         onnx_fn = path.dirname(path.abspath(__file__)) + "/data/model360.onnx".replace("/", os.path.sep)
@@ -267,8 +267,7 @@ class FaceMaskRunner(Thread, NDUCameraRunner):
             bbox = y_bboxes[idx]
 
             if self._max_rect > 0:
-                max_len = max(bbox[2] - bbox[0], bbox[3] - bbox[1])
-                if max_len > self._max_rect:
+                if self._max_rect < bbox[2] - bbox[0] or self._max_rect < bbox[3] - bbox[1]:
                     continue
 
             if class_id == 0:
