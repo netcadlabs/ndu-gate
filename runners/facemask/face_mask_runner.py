@@ -19,8 +19,8 @@ class FaceMaskRunner(Thread, NDUCameraRunner):
         self.__dont_use_face_rects = config.get("dont_use_face_rects", False)
         self._last_data = None
 
-        onnx_fn = path.dirname(path.abspath(__file__)) + "/data/model360.onnx"
-        class_names_fn = path.dirname(path.abspath(__file__)) + "/data/face_mask.names"
+        onnx_fn = path.dirname(path.abspath(__file__)) + "/data/model360.onnx".replace("/", os.path.sep)
+        class_names_fn = path.dirname(path.abspath(__file__)) + "/data/face_mask.names".replace("/", os.path.sep)
         if not path.isfile(onnx_fn):
             raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), onnx_fn)
         if not path.isfile(class_names_fn):
