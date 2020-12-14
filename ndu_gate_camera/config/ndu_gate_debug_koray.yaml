@@ -17,18 +17,18 @@ instances:
 
       mirror: True
 #      type: CAMERA # VIDEO_FILE, PI_CAMERA, CAMERA, IP_CAMERA, VIDEO_URL, YOUTUBE
-#      type: VIDEO_FILE
-      type: YOUTUBE
+      type: VIDEO_FILE
+#      type: YOUTUBE
 
       url: https://youtu.be/TlInDQgg2G4  #mask
 
-      data_folder: C:/_koray/test_data/çanakkale_stream/
-      file_path: CANAKKALE-10.10.0.85.mp4
+#      data_folder: C:/_koray/test_data/çanakkale_stream/
+#      file_path: CANAKKALE-10.10.0.85.mp4
 #      file_path: CANAKKALE-10.10.190.103.mp4
 #      file_path: CANAKKALE-10.10.190.173.mp4
 
-#      data_folder: C:/_koray/test_data/
-#      file_path: bakanlik.avi
+      data_folder: C:/_koray/test_data/
+      file_path: bakanlik.avi
 
       device: "cam1"
 #      max_frame_dim: 1600
@@ -44,23 +44,23 @@ instances:
 #      sleep: 0.1
 #      skip_frame: 5
     runners:
-#      - name: yolov5s - Object detection with 80 classes (Most Accurate)
-#        type: yolov5s
-#        configuration: yolov5s.json
-#        class: Yolov5sRunner
-#        priority: 10
-#
-#      - name: Object Counter
-#        type: object_counter
-#        configuration: object_counter.json
-#        class: ObjectCounterRunner
-#        priority: 100
+      - name: yolov5s - Object detection with 80 classes (Most Accurate)
+        type: yolov5s
+        configuration: yolov5s.json
+        class: Yolov5sRunner
+        priority: 10
 
-      - name: Face Mask Detection
-        type: facemask
-        configuration: facemask.json
-        class: FaceMaskRunner
+      - name: Object Counter
+        type: object_counter
+        configuration: object_counter.json
+        class: ObjectCounterRunner
         priority: 100
+
+#      - name: Face Mask Detection
+#        type: facemask
+#        configuration: facemask.json
+#        class: FaceMaskRunner
+#        priority: 100
 
 
 
