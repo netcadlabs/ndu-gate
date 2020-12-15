@@ -267,7 +267,7 @@ class NDUCameraService(Thread):
                     self._exit_requested = True
                     break
                 elif k == ord("s"):
-                    skip = 10
+                    self._skip = 10
                 elif k == 32:  # space key
                     self._pause = not self._pause
                 if not self._pause:
@@ -303,7 +303,7 @@ class NDUCameraService(Thread):
             return
             # exit(102)
         start_total = None
-        skip = 0
+        self._skip = 0
         # TODO - çalıştırma sırasına göre sonuçlar bir sonraki runnera aktarılabilir
         # TODO - runner dependency ile kimin çıktısı kimn giridisi olacak şeklinde de olabilir
 
@@ -357,7 +357,7 @@ class NDUCameraService(Thread):
                     frame = image_helper.resize_if_smaller(frame, self.__min_frame_dim)
 
                 results = []
-                if skip <= 0:
+                if self._skip <= 0:
                     if self.__preview_show:
                         start_total = time.time()
                     extra_data = {
@@ -384,8 +384,8 @@ class NDUCameraService(Thread):
                             log.exception(e)
 
                 if self.__preview_show:
-                    if skip > 0:
-                        skip = skip - 1
+                    if self._skip > 0:
+                        self._skip -= 1
                         preview = frame
                     else:
                         total_elapsed_time = time.time() - start_total
