@@ -4,6 +4,11 @@ import base64
 import numpy as np
 
 
+def image_h_w(image):
+    # h, w = image.shape[:2]
+    return image.shape[:2]
+
+
 # Boyut değişikliğine en uygun interpolation yöntemi ile resize eder.
 def resize_best_quality(image, size):
     size0 = max(image.shape[0], image.shape[1])
@@ -11,7 +16,9 @@ def resize_best_quality(image, size):
     if size0 == size1:
         return image.copy()
     elif size0 > size1:
-        return cv2.resize(image, size, interpolation=cv2.INTER_LANCZOS4)
+        # if size0 > 2 * size1:
+        #     image = cv2.pyrDown(image)
+        return cv2.resize(image, size, interpolation=cv2.INTER_AREA)
     else:
         return cv2.resize(image, size, interpolation=cv2.INTER_CUBIC)
 
@@ -294,3 +301,11 @@ def convert_lines_tuple2list(lines):
             line1.append(list(c))
         res.append(line1)
     return res
+
+
+def crop(frame, rect):
+    y1 = max(int(rect[0]), 0)
+    x1 = max(int(rect[1]), 0)
+    y2 = max(int(rect[2]), 0)
+    x2 = max(int(rect[3]), 0)
+    return frame[y1:y2, x1:x2]

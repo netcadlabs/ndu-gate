@@ -75,6 +75,18 @@ def rects_intersect(rect1, rect2):
     return Rectangle(rect1).intersects(Rectangle(rect2))
 
 
+def rects_overlap(rect1, rect2, min_ratio):
+    w1 = rect1[2] - rect1[0]
+    w2 = rect2[2] - rect2[0]
+    w_min = min(rect1[2], rect2[2]) - max(rect1[0], rect2[0])
+    if (w_min / w1) >= min_ratio or (w_min / w2) >= min_ratio:
+        h1 = rect1[3] - rect1[1]
+        h2 = rect2[3] - rect2[1]
+        h_min = min(rect1[3], rect2[3]) - max(rect1[1], rect2[1])
+        return (h_min / h1) >= min_ratio or (h_min / h2) >= min_ratio
+    return False
+
+
 def add_padding_rect(rect, padding):
     x1, y1, x2, y2 = rect[0], rect[1], rect[2], rect[3]
     dw = (x2 - x1) * padding

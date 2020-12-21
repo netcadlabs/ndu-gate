@@ -1,3 +1,11 @@
 {
+  "min_confidence_percentage": 80,
+  "rects": [
+      "car",
+      "bicycle",
+      "motorbike",
+      "truck",
+      "bus"
+    ]
 }
 

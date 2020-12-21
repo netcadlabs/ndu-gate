@@ -14,6 +14,7 @@ DEFAULT_HANDLER_SETTINGS = {
 
 # [x1, y1, x2, y2]
 RESULT_KEY_RECT = "rect"
+RESULT_KEY_RECT_TRACK_ID = "rect_track_id"
 RESULT_KEY_RECT_COLOR = "rect_color"
 # string
 RESULT_KEY_CLASS_NAME = "class_name"

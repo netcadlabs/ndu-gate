@@ -30,7 +30,6 @@ class YoutubeVideoSource(VideoSource):
         if not NDUUtility.is_url_valid(url=self.__url):
             raise ValueError("Video url is not valid:  %s0", self.__url)
 
-        self.__sleep = source_config.get("sleep", 0)
         self.__cam_gear_options = source_config.get("cam_gear_options", {"CAP_PROP_FRAME_WIDTH ": 320, "CAP_PROP_FRAME_HEIGHT": 240, "CAP_PROP_FPS ": 1})
 
         self.__stream = None
@@ -48,8 +47,6 @@ class YoutubeVideoSource(VideoSource):
                     break
                 yield count, frame
                 count += 1
-                if self.__sleep > 0:
-                    time.sleep(self.__sleep)
         except StopIteration:
             pass
         finally:

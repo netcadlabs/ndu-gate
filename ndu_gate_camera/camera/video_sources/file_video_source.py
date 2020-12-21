@@ -23,12 +23,7 @@ class FileVideoSource(VideoSource):
 
         if path.isfile(self.__video_path) is False:
             raise ValueError("Video file is not exist : %s", self.__video_path)
-
-        self.__mirror = source_config.get("mirror", False)
-        self.__sleep = source_config.get("sleep", 0)
         self._set_capture()
-        if self.__sleep > 0:
-            self._calc_skip()
 
     def get_frames(self):
         log.debug("start video streaming..")
@@ -47,34 +42,19 @@ class FileVideoSource(VideoSource):
         cv2.destroyAllWindows()
 
         try:
-            skip = 0
+            count = 0
             while self.__capture.isOpened():
                 ok, frame = self.__capture.read()
                 if not ok:
                     break
-                if skip > 0:
-                    skip -= 1
-                else:
-                    if self.__mirror:
-                        frame = cv2.flip(frame, 1)
-                    count += 1
-                    yield count, frame
-                    if self.__sleep > 0:
-                        skip = self.__skip
+                yield count, frame
+                count += 1
         except Exception as e:
             log.error(e)
         finally:
             log.debug("video finished..")
             self.__capture.release()
             cv2.destroyAllWindows()
-
-    def _calc_skip(self):
-        fps = self.__capture.get(cv2.CAP_PROP_FPS)
-        if fps <= 0:
-            self.__skip = 24 * self.__sleep
-        else:
-            self.__skip = fps * self.__sleep
-
 
     def reset(self):
         self._set_capture()

@@ -25,7 +25,8 @@ class ObjectCounterRunner(Thread, NDUCameraRunner):
         self.__gates = []
         self.__debug = True  ####koray
         self.__debug_last = {}
-        self._result_style = config.get("result_style", 0) #0:cumulative - 1:aggregate
+        self._result_style = config.get("result_style", 0)  # 0:cumulative - 1:aggregate
+        self._track_pnts = {}
 
     def get_name(self):
         return "ObjectCounterRunner"
@@ -64,12 +65,6 @@ class ObjectCounterRunner(Thread, NDUCameraRunner):
     @staticmethod
     def get_center(line):
         return [(line[0][0] + line[1][0]) * 0.5, (line[0][1] + line[1][1]) * 0.5]
-
-    @staticmethod
-    def get_box_center(box):
-        (x, y) = (int(box[0]), int(box[1]))
-        (w, h) = (int(box[2]), int(box[3]))
-        return x + w / 2, y + h / 2
 
     @staticmethod
     def on_left(line, p):
@@ -149,115 +144,49 @@ class ObjectCounterRunner(Thread, NDUCameraRunner):
                 cv2.arrowedLine(frame, arrow[0], arrow[1], (0, 200, 200), thickness=2)
                 image_helper.put_text(frame, "giris", arrow[1], color=(0, 200, 200), font_scale=0.5)
 
-        box_class_names = []
-        active_counts = {}
-        class_dets = {}
+        changed = False
         results = extra_data.get(constants.EXTRA_DATA_KEY_RESULTS, None)
         if results is not None:
-            for runner_name, result in results.items():
-                for item in result:
-                    class_name = item.get(constants.RESULT_KEY_CLASS_NAME, None)
-                    for group_name, sub_classes in self.__classes.items():
-                        if class_name in sub_classes:
-                            rect = item.get(constants.RESULT_KEY_RECT, None)
-                            if rect is not None:
-                                if group_name not in class_dets:
-                                    class_dets[group_name] = []
-                                score = item.get(constants.RESULT_KEY_SCORE, 0.9)
-                                det = [rect[1], rect[0], rect[3], rect[2], score]
-                                class_dets[group_name].append(det)
-                                box_class_names.append({"center": self.get_box_center(det), "class_name": class_name})
-        changed = False
-        for gate in self.__gates:
-            g = gate.get("g")
-            g_sorts = g.get("sorts")
-            g_memory = g.get("memory")
-            g_handled_indexes = g.get("handled_indexes")
-            for name, dets in class_dets.items():
-                if name not in g_sorts:
-                    # g_sorts[name] = Sort(max_age=1, min_hits=3, iou_threshold=0.3)
-                    # g_sorts[name] = Sort()
-                    # g_sorts[name] = Sort(max_age=1, min_hits=1, iou_threshold=0.03)
-                    # g_sorts[name] = Sort(max_age=10, min_hits=0, iou_threshold=0.000001)
-                    g_sorts[name] = Sort(max_age=10, min_hits=1, iou_threshold=0.001)
-                    # g_sorts[name] = Sort(max_age=30, min_hits=1, iou_threshold=0.001)
+            for gate in self.__gates:
+                g = gate.get("g")
+                g_handled_indexes = g.get("handled_indexes")
+                for runner_name, result in results.items():
+                    if result is not None:
+                        for item in result:
+                            class_name = item.get(constants.RESULT_KEY_CLASS_NAME, None)
+                            for group_name, sub_classes in self.__classes.items():
+                                if class_name in sub_classes:
+                                    track_id = item.get(constants.RESULT_KEY_RECT_TRACK_ID, None)
+                                    if track_id is not None and track_id not in g_handled_indexes:
+                                        rect = item.get(constants.RESULT_KEY_RECT, None)
+                                        [x1, y1, x2, y2] = rect
 
-                sort = g_sorts[name]  # ref: https://github.com/abewley/sort   https://github.com/HodenX/python-traffic-counter-with-yolo-and-sort
-                dets1 = np.array(dets)
-                tracks = sort.update(dets1)
+                                        if self.track == "bottom":
+                                            p1 = int(y1 + (y2 - y1) * 0.5), int(x2)
+                                        else:  # center - default value
+                                            p1 = int(y1 + (y2 - y1) * 0.5), int(x1 + (x2 - x1) * 0.5)
 
-                active_counts[name] = len(tracks)
+                                        if track_id not in self._track_pnts:
+                                            self._track_pnts[track_id] = [p1]
+                                        else:
+                                            self._track_pnts[track_id].append(p1)
+                                            line = gate["line"]
+                                            p0 = self._track_pnts[track_id][0]
+                                            # p0 = self._track_pnts[track_id][-2]
 
-                boxes = []
-                index_ids = []
-                previous = g_memory.copy()
-                g_memory = {}
+                                            if self.__debug:
+                                                cv2.line(frame, p0, p1, [0, 0, 255], 3)
+                                                cv2.line(frame, p1, p1, [255, 255, 0], 5)
 
-                for track in tracks:
-                    boxes.append([track[0], track[1], track[2], track[3], track[4]])
-                    index_id = int(track[4])
-                    index_ids.append(index_id)
-                    if index_id in previous:
-                        track0 = previous[index_id]
-                        dist = (math.fabs(track[0] - track0[0]) + math.fabs(track[1] - track0[1]) + math.fabs(track[2] - track0[2]) + math.fabs(track[3] - track0[3])) / 4.0
-                        if dist > 30:
-                            g_memory[index_id] = boxes[-1]
-                        else:
-                            g_memory[index_id] = track0
-                    else:
-                        g_memory[index_id] = boxes[-1]
+                                            if self.intersect(p0, p1, line[0], line[1]):
+                                                g_handled_indexes.append(track_id)
 
-                if len(boxes) > 0:
-                    i = 0
-                    for box in boxes:
-                        (x, y) = (int(box[0]), int(box[1]))
-                        (w, h) = (int(box[2]), int(box[3]))
-
-                        index_id = index_ids[i]
-                        # if index_id not in g_handled_indexes and index_id in previous:
-                        if index_id in previous:
-                            previous_box = previous.get(index_id, None)
-                            if previous_box is not None:
-                                (x2, y2) = (int(previous_box[0]), int(previous_box[1]))
-                                (w2, h2) = (int(previous_box[2]), int(previous_box[3]))
-
-                                if self.track == "bottom":
-                                    p0 = (int(x + (w - x) / 2), int(y + (h - y)))
-                                    p1 = (int(x2 + (w2 - x2) / 2), int(y2 + (h2 - y2)))
-                                else:  # center - default value
-                                    p0 = (int(x + (w - x) / 2), int(y + (h - y) / 2))
-                                    p1 = (int(x2 + (w2 - x2) / 2), int(y2 + (h2 - y2) / 2))
-
-                                # if self.__debug:
-                                #     # cv2.line(frame, p0, p1, [0, 0, 255], 3)
-                                #     cv2.line(frame, p0, p0, [0, 0, 255], 4)
-
-                                line = gate["line"]
-                                if index_id not in g_handled_indexes and self.intersect(p0, p1, line[0], line[1]):
-                                    g_handled_indexes.append(index_id)
-
-                                    c = self.get_box_center(box)
-                                    min_dist = sys.maxsize
-                                    for item in box_class_names:
-                                        c0 = item["center"]
-                                        dist = geometry_helper.distance(c, c0)
-                                        if dist < min_dist:
-                                            min_dist = dist
-                                            name = item["class_name"]
-
-                                    group_name = self.__class_name_to_group_name[name]
-                                    if self.on_left(line, p1):
-                                        gate["groups"][group_name]["enter"] += 1
-                                    else:
-                                        gate["groups"][group_name]["exit"] += 1
-                                    changed = True
-
-                        i += 1
-
-            g["sorts"] = g_sorts
-            g["memory"] = g_memory
-            g["handled_indexes"] = g_handled_indexes
-            gate["g"] = g
+                                                group_name = self.__class_name_to_group_name[class_name]
+                                                if self.on_left(line, p0):
+                                                    gate["groups"][group_name]["enter"] += 1
+                                                else:
+                                                    gate["groups"][group_name]["exit"] += 1
+                                                changed = True
 
         if changed or self.frame_count == 1:
             for gate in self.__gates:
@@ -287,245 +216,3 @@ class ObjectCounterRunner(Thread, NDUCameraRunner):
                 res.append({constants.RESULT_KEY_DEBUG: debug_text})
 
         return res
-
-
-class Sort(object):
-    def __init__(self, max_age=1, min_hits=3, iou_threshold=0.3):
-        """
-        Sets key parameters for SORT
-        """
-        self.max_age = max_age
-        self.min_hits = min_hits
-        self.iou_threshold = iou_threshold
-        self.trackers = []
-        self.frame_count = 0
-
-    def update(self, dets=np.empty((0, 5))):
-
-        def associate_detections_to_trackers(detections, trackers, iou_threshold=0.3):
-
-            def iou_batch(bb_test, bb_gt):
-                """
-                From SORT: Computes IUO between two bboxes in the form [x1,y1,x2,y2]
-                """
-                bb_gt = np.expand_dims(bb_gt, 0)
-                bb_test = np.expand_dims(bb_test, 1)
-
-                xx1 = np.maximum(bb_test[..., 0], bb_gt[..., 0])
-                yy1 = np.maximum(bb_test[..., 1], bb_gt[..., 1])
-                xx2 = np.minimum(bb_test[..., 2], bb_gt[..., 2])
-                yy2 = np.minimum(bb_test[..., 3], bb_gt[..., 3])
-                w = np.maximum(0., xx2 - xx1)
-                h = np.maximum(0., yy2 - yy1)
-                wh = w * h
-                o = wh / ((bb_test[..., 2] - bb_test[..., 0]) * (bb_test[..., 3] - bb_test[..., 1])
-                          + (bb_gt[..., 2] - bb_gt[..., 0]) * (bb_gt[..., 3] - bb_gt[..., 1]) - wh)
-                return (o)
-
-            def linear_assignment(cost_matrix):
-                from scipy.optimize import linear_sum_assignment
-                x, y = linear_sum_assignment(cost_matrix)
-                return np.array(list(zip(x, y)))
-
-                # try:
-                #     _, x, y = lap.lapjv(cost_matrix, extend_cost=True)
-                #     row_sol, cost, v, u, cost_mat = lapjv_python(cost_matrix, calc_reduced_cost_matrix=True)
-                #     return np.array([[y[i], i] for i in x if i >= 0])  #
-                # except ImportError:
-                #     from scipy.optimize import linear_sum_assignment
-                #     x, y = linear_sum_assignment(cost_matrix)
-                #     return np.array(list(zip(x, y)))
-
-            """
-            Assigns detections to tracked object (both represented as bounding boxes)
-
-            Returns 3 lists of matches, unmatched_detections and unmatched_trackers
-            """
-            if (len(trackers) == 0):
-                return np.empty((0, 2), dtype=int), np.arange(len(detections)), np.empty((0, 5), dtype=int)
-
-            iou_matrix = iou_batch(detections, trackers)
-
-            if min(iou_matrix.shape) > 0:
-                a = (iou_matrix > iou_threshold).astype(np.int32)
-                if a.sum(1).max() == 1 and a.sum(0).max() == 1:
-                    matched_indices = np.stack(np.where(a), axis=1)
-                else:
-                    matched_indices = linear_assignment(-iou_matrix)
-            else:
-                matched_indices = np.empty(shape=(0, 2))
-
-            unmatched_detections = []
-            for d, det in enumerate(detections):
-                if (d not in matched_indices[:, 0]):
-                    unmatched_detections.append(d)
-            unmatched_trackers = []
-            for t, trk in enumerate(trackers):
-                if (t not in matched_indices[:, 1]):
-                    unmatched_trackers.append(t)
-
-            # filter out matched with low IOU
-            matches = []
-            for m in matched_indices:
-                if (iou_matrix[m[0], m[1]] < iou_threshold):
-                    unmatched_detections.append(m[0])
-                    unmatched_trackers.append(m[1])
-                else:
-                    matches.append(m.reshape(1, 2))
-
-            if (len(matches) == 0):
-                matches = np.empty((0, 2), dtype=int)
-            else:
-                matches = np.concatenate(matches, axis=0)
-
-            return matches, np.array(unmatched_detections), np.array(unmatched_trackers)
-
-        """
-        Params:
-          dets - a numpy array of detections in the format [[x1,y1,x2,y2,score],[x1,y1,x2,y2,score],...]
-        Requires: this method must be called once for each frame even with empty detections (use np.empty((0, 5)) for frames without detections).
-        Returns the a similar array, where the last column is the object ID.
-
-        NOTE: The number of objects returned may differ from the number of detections provided.
-        """
-        self.frame_count += 1
-        # get predicted locations from existing trackers.
-        trks = np.zeros((len(self.trackers), 5))
-        to_del = []
-        ret = []
-        for t, trk in enumerate(trks):
-            pos = self.trackers[t].predict()[0]
-            trk[:] = [pos[0], pos[1], pos[2], pos[3], 0]
-            if np.any(np.isnan(pos)):
-                to_del.append(t)
-        trks = np.ma.compress_rows(np.ma.masked_invalid(trks))
-        for t in reversed(to_del):
-            self.trackers.pop(t)
-        matched, unmatched_dets, unmatched_trks = associate_detections_to_trackers(dets, trks, self.iou_threshold)
-
-        # update matched trackers with assigned detections
-        for m in matched:
-            self.trackers[m[1]].update(dets[m[0], :])
-
-        # create and initialise new trackers for unmatched detections
-        for i in unmatched_dets:
-            trk = KalmanBoxTracker(dets[i, :])
-            self.trackers.append(trk)
-        i = len(self.trackers)
-        for trk in reversed(self.trackers):
-            d = trk.get_state()[0]
-            if (trk.time_since_update < self.max_age) and (trk.hit_streak >= self.min_hits or self.frame_count <= self.min_hits):  ##
-                ret.append(np.concatenate((d, [trk.id + 1])).reshape(1, -1))  # +1 as MOT benchmark requires positive
-
-            i -= 1
-            # remove dead tracklet
-            if (trk.time_since_update > self.max_age):
-                self.trackers.pop(i)
-
-        if (len(ret) > 0):
-            ret = np.concatenate(ret)
-            if len(dets) > len(ret):
-                ret = []
-                i = len(self.trackers)
-                for trk in reversed(self.trackers):
-                    d = trk.get_state()[0]
-                    if (trk.time_since_update < self.max_age) and (trk.hit_streak >= 0 or self.frame_count <= 0):  ##
-                        ret.append(np.concatenate((d, [trk.id + 1])).reshape(1, -1))  # +1 as MOT benchmark requires positive
-                    i -= 1
-            else:
-                return ret
-        else:
-            return np.empty((0, 5))
-
-        if (len(ret) > 0):
-            return np.concatenate(ret)
-        return np.empty((0, 5))
-
-
-def convert_bbox_to_z(bbox):
-    """
-    Takes a bounding box in the form [x1,y1,x2,y2] and returns z in the form
-      [x,y,s,r] where x,y is the centre of the box and s is the scale/area and r is
-      the aspect ratio
-    """
-    w = bbox[2] - bbox[0]
-    h = bbox[3] - bbox[1]
-    x = bbox[0] + w / 2.
-    y = bbox[1] + h / 2.
-    s = w * h  # scale is just area
-    r = w / float(h)
-    return np.array([x, y, s, r]).reshape((4, 1))
-
-
-def convert_x_to_bbox(x, score=None):
-    """
-    Takes a bounding box in the centre form [x,y,s,r] and returns it in the form
-      [x1,y1,x2,y2] where x1,y1 is the top left and x2,y2 is the bottom right
-    """
-    w = np.sqrt(x[2] * x[3])
-    h = x[2] / w
-    if (score == None):
-        return np.array([x[0] - w / 2., x[1] - h / 2., x[0] + w / 2., x[1] + h / 2.]).reshape((1, 4))
-    else:
-        return np.array([x[0] - w / 2., x[1] - h / 2., x[0] + w / 2., x[1] + h / 2., score]).reshape((1, 5))
-
-
-class KalmanBoxTracker(object):
-    """
-    This class represents the internal state of individual tracked objects observed as bbox.
-    """
-    count = 0
-
-    def __init__(self, bbox):
-        """
-        Initialises a tracker using initial bounding box.
-        """
-        # define constant velocity model
-        self.kf = KalmanFilter(dim_x=7, dim_z=4)
-        self.kf.F = np.array([[1, 0, 0, 0, 1, 0, 0], [0, 1, 0, 0, 0, 1, 0], [0, 0, 1, 0, 0, 0, 1], [0, 0, 0, 1, 0, 0, 0], [0, 0, 0, 0, 1, 0, 0], [0, 0, 0, 0, 0, 1, 0], [0, 0, 0, 0, 0, 0, 1]])
-        self.kf.H = np.array([[1, 0, 0, 0, 0, 0, 0], [0, 1, 0, 0, 0, 0, 0], [0, 0, 1, 0, 0, 0, 0], [0, 0, 0, 1, 0, 0, 0]])
-
-        self.kf.R[2:, 2:] *= 10.
-        self.kf.P[4:, 4:] *= 1000.  # give high uncertainty to the unobservable initial velocities
-        self.kf.P *= 10.
-        self.kf.Q[-1, -1] *= 0.01
-        self.kf.Q[4:, 4:] *= 0.01
-
-        self.kf.x[:4] = convert_bbox_to_z(bbox)
-        self.time_since_update = 0
-        self.id = KalmanBoxTracker.count
-        KalmanBoxTracker.count += 1
-        self.history = []
-        self.hits = 0
-        self.hit_streak = 0
-        self.age = 0
-
-    def update(self, bbox):
-        """
-        Updates the state vector with observed bbox.
-        """
-        self.time_since_update = 0
-        self.history = []
-        self.hits += 1
-        self.hit_streak += 1
-        self.kf.update(convert_bbox_to_z(bbox))
-
-    def predict(self):
-        """
-        Advances the state vector and returns the predicted bounding box estimate.
-        """
-        if ((self.kf.x[6] + self.kf.x[2]) <= 0):
-            self.kf.x[6] *= 0.0
-        self.kf.predict()
-        self.age += 1
-        if (self.time_since_update > 0):
-            self.hit_streak = 0
-        self.time_since_update += 1
-        self.history.append(convert_x_to_bbox(self.kf.x))
-        return self.history[-1]
-
-    def get_state(self):
-        """
-        Returns the current bounding box estimate.
-        """
-        return convert_x_to_bbox(self.kf.x)

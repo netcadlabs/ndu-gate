@@ -57,19 +57,23 @@ class NDUCameraService(Thread):
             self.__last_preview_image = None
             self.__preview_show_debug_texts = self.SOURCE_CONFIG.get("preview_show_debug_texts", True)
             self.__preview_show_runner_info = self.SOURCE_CONFIG.get("preview_show_runner_info", True)
-            self.__preview_show_score = self.SOURCE_CONFIG.get("preview_show_score", True)
+            self.__preview_show_score = self.SOURCE_CONFIG.get("preview_show_score", False)
             self.__preview_show_rect_name = self.SOURCE_CONFIG.get("preview_show_rect_name", True)
+            self.__preview_show_rect_track_id = self.SOURCE_CONFIG.get("preview_show_rect_track_id", True)
             self.__preview_show_rect_filter = self.SOURCE_CONFIG.get("preview_show_rect_filter", None)
 
             self.__preview_write = self.SOURCE_CONFIG.get("preview_write", False)
             self.__preview_last_data = []
             self.__preview_last_data_show_counts = []
             self.__preview_write_file_name = self.SOURCE_CONFIG.get("preview_write_file_name", "")
+            self.__total_elapsed_times = []
 
         self._exit_requested = False
         self.__max_frame_dim = self.SOURCE_CONFIG.get("max_frame_dim", None)
         self.__min_frame_dim = self.SOURCE_CONFIG.get("min_frame_dim", None)
+        self.__sleep = self.SOURCE_CONFIG.get("sleep", 0)
         self.__skip_frame = self.SOURCE_CONFIG.get("skip_frame", 0)
+        self._skip = 0
         self.__color_toggle = None
 
         self.frame_sent = self.SOURCE_CONFIG.get("frame_sent", False)
@@ -160,7 +164,8 @@ class NDUCameraService(Thread):
                         "config": runner_conf,
                         "priority": runner_priority,
                         "runner_key": runner_key,
-                        "runner_unique_key": runner_unique_key
+                        "runner_unique_key": runner_unique_key,
+                        "step": runner.get("step", None)
                     }
 
                 except Exception as e:
@@ -267,7 +272,7 @@ class NDUCameraService(Thread):
                     self._exit_requested = True
                     break
                 elif k == ord("s"):
-                    self._skip = 10
+                    self._skip = 30
                 elif k == 32:  # space key
                     self._pause = not self._pause
                 if not self._pause:
@@ -303,7 +308,6 @@ class NDUCameraService(Thread):
             return
             # exit(102)
         start_total = None
-        self._skip = 0
         # TODO - çalıştırma sırasına göre sonuçlar bir sonraki runnera aktarılabilir
         # TODO - runner dependency ile kimin çıktısı kimn giridisi olacak şeklinde de olabilir
 
@@ -315,6 +319,9 @@ class NDUCameraService(Thread):
             for _frame_index, frame in self.video_source.get_frames():
                 if self._exit_requested:
                     break
+                i += 1
+                if self.__skip_frame > 1 and i % self.__skip_frame != 0:
+                    continue
                 if has_motion_kernel:
                     gray = image_helper.resize(frame, width=500, interpolation=cv2.INTER_NEAREST)
                     gray = cv2.cvtColor(gray, cv2.COLOR_BGR2GRAY)
@@ -331,12 +338,9 @@ class NDUCameraService(Thread):
                             continue
                     last_gray = gray
 
-                i += 1
                 if i % 500 == 0:
                     log.debug("frame count %s ", i)
                     print("Source Device : {} - frame {}".format(device, i))
-                if self.__skip_frame > 1 and i % self.__skip_frame != 0:
-                    continue
 
                 if i % self.__frame_send_interval == 0:
                     try:
@@ -368,6 +372,9 @@ class NDUCameraService(Thread):
                     for runner_unique_key in self.available_runners:
                         try:
                             runner_conf = self.runners_configs_by_key[runner_unique_key]
+                            step = runner_conf["step"]
+                            if step is not None and i % step != 0:
+                                continue
                             start = time.time()
                             result = self.available_runners[runner_unique_key].process_frame(frame, extra_data=extra_data)
                             elapsed = time.time() - start
@@ -389,6 +396,11 @@ class NDUCameraService(Thread):
                         preview = frame
                     else:
                         total_elapsed_time = time.time() - start_total
+                        self.__total_elapsed_times.append(total_elapsed_time)
+                        len_times = len(self.__total_elapsed_times)
+                        total_elapsed_time =  sum(self.__total_elapsed_times) / len_times
+                        if len_times > 10000:
+                            self.__total_elapsed_times = []
                         results.append([{"total_elapsed_time": '{:.0f}msec fps:{:.0f}'.format(total_elapsed_time * 1000, (1.0 / max(total_elapsed_time, 0.001)))}])
                         preview = self._get_preview(frame, results)
                         if self.__preview_show_motion_kernel and last_thresh is not None:
@@ -399,6 +411,8 @@ class NDUCameraService(Thread):
                     self.__last_preview_image = preview
                     if self.__is_main_thread:
                         self._show_preview()
+                if self.__sleep > 0 and self._skip <= 0:
+                    time.sleep(self.__sleep)
 
             if self.__preview_show and self.__is_main_thread:
                 self.finish_preview()
@@ -461,6 +475,7 @@ class NDUCameraService(Thread):
         show_score = self.__preview_show_score
         rect_filter = self.__preview_show_rect_filter
         show_rect_name = self.__preview_show_rect_name
+        show_rect_track_id = self.__preview_show_rect_track_id
 
         h, w, *_ = image.shape
         line_height = 20
@@ -513,6 +528,11 @@ class NDUCameraService(Thread):
                             c1[1] = c1[1] + line_height
                             image_helper.put_text(image, text, c1)
                             text = ""
+                        if show_rect_track_id:
+                            track_id = item.get(constants.RESULT_KEY_RECT_TRACK_ID, None)
+                            if track_id is not None:
+                                c1[1] = c1[1] - line_height * 1.5
+                                image_helper.put_text(image, "{}".format(track_id), c1)
                     if elapsed_time is not None:
                         text_type = elapsed_time + " " + text_type
                     if len(text) > 0:

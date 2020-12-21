@@ -8,9 +8,7 @@ class CameraVideoSource(VideoSource):
     def __init__(self, source_config):
         super().__init__()
         self.__capture = self._find_vide_capture()
-        # self.__show_preview = source_config.get("show_preview", False)
         self.__mirror = source_config.get("mirror", False)
-        self.__sleep = source_config.get("sleep", 0)
 
     def get_frames(self):
         log.info("start camera streaming..")
@@ -24,8 +22,6 @@ class CameraVideoSource(VideoSource):
                     frame = cv2.flip(frame, 1)
                 count += 1
                 yield count, frame
-                if self.__sleep > 0:
-                    sleep(self.__sleep)
         except Exception as e:
             log.error(e)
         finally:

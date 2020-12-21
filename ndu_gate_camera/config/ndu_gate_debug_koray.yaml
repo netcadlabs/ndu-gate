@@ -12,14 +12,33 @@ result_handler:
 
 instances:
   - source:
-#      motion_kernel: 11
+      device: "cam1"
+#      max_frame_dim: 1600
+#      max_frame_dim: 600
+
+      preview_show: True
+#      preview_show_debug_texts: True
+#      preview_show_runner_info: False
+#      preview_show_score: False
+#      preview_show_rect_name: False
+#      preview_show_rect_track_id: True
+#      preview_show_rect_filter: "PL*"
+
+#      preview_write: True
+#      preview_write_file_name: C:/_koray/temp/preview.mp4
+#      sleep: 0.1
+#      skip_frame: 5
+#      skip_frame: 15
+
+
+#      motion_kernel: 21
 #      preview_show_motion_kernel: True
 
       mirror: True
 #      type: CAMERA # VIDEO_FILE, PI_CAMERA, CAMERA, IP_CAMERA, VIDEO_URL, YOUTUBE, IMAGE_FILE
+#      type: IMAGE_FILE
 #      type: VIDEO_FILE
       type: YOUTUBE
-#      type: IMAGE_FILE
 
 
 #      url: https://youtu.be/TlInDQgg2G4  #mask
@@ -30,49 +49,58 @@ instances:
 #      file_path: CANAKKALE-10.10.190.173.mp4
 
       data_folder: C:/_koray/test_data/
-      file_path: bakanlik.avi
+#      file_path: bakanlik.avi
+      file_path: lpr/canakkale_plaka (1).mp4
+#      file_path: lpr/canakkale_plaka (2).mp4
+#      file_path: vid_short.mp4 #pedestrians
+
+#      file_path: highway/highway_320.mp4
+#      file_path: highway/highway_600.mp4
+#      file_path: highway/highway_1024.mp4
+#      file_path: highway/highway_1600.mp4
+#      file_path: highway/highway_1600_trim.mp4
+#      file_path: highway/highway_max.mp4
+
+
 
 #      image_path: lpr/plaka.jpg
 #      image_path: lpr/tr_61.jpg
-      image_path: lpr/tr_06.jpg
+#      image_path: lpr/tr_06.jpg
+      image_path: lpr/*.jpg
 #      image_path: __canakkale_cam1.png
 
 #      url: https://www.youtube.com/watch?v=ho1QG2OEMFs&t=26s  #plaka tur
 #      url: https://www.youtube.com/watch?v=8Ts9M2f11HE  #plaka drag
       url: https://www.youtube.com/watch?v=z4IMAiYVF4g  #plaka trafik
+#      url: https://youtu.be/MNn9qKG2UFI  #highway
 
-
-      device: "cam1"
-#      max_frame_dim: 1600
-      preview_show: True
-#      preview_show_debug_texts: True
-#      preview_show_runner_info: False
-#      preview_show_score: False
-#      preview_show_rect_name: True
-##      preview_show_rect_filter: "person"
-
-      preview_write: True
-      preview_write_file_name: C:/_koray/temp/preview.mp4
-#      sleep: 0.1
-#      skip_frame: 5
     runners:
       - name: lpr - Licence Plate Recognition
         type: lpr
         configuration: lpr.json
         class: LprRunner
-        priority: 10
+        priority: 75
 
-#      - name: yolov5s - Object detection with 80 classes (Most Accurate)
-#        type: yolov5s
-#        configuration: yolov5s.json
-#        class: Yolov5sRunner
-#        priority: 10
-#
-#      - name: Object Counter
-#        type: object_counter
-#        configuration: object_counter.json
-#        class: ObjectCounterRunner
-#        priority: 100
+      - name: yolov5s - Object detection with 80 classes (Fastest)
+        type: yolov5s
+        configuration: yolov5s.json
+        class: Yolov5sRunner
+        priority: 10
+        step: 10
+
+      - name: Tracker
+        type: tracker
+        configuration: tracker.json
+        class: TrackerRunner
+#        class: TrackerRunner_deep_sort
+#        class: TrackerRunner_old_sort
+        priority: 50
+
+      - name: Object Counter
+        type: object_counter
+        configuration: object_counter.json
+        class: ObjectCounterRunner
+        priority: 100
 
 #      - name: Face Mask Detection
 #        type: facemask
@@ -107,7 +135,7 @@ instances:
 ##      max_frame_dim: 640
 #      preview_show: True
 #    runners:
-#      - name: yolov5s - Object detection with 80 classes (Most Accurate)
+#      - name: yolov5s - Object detection with 80 classes (Fastest)
 #        type: yolov5s
 #        configuration: yolov5s.json
 #        class: Yolov5sRunner
@@ -126,7 +154,7 @@ instances:
 ##      max_frame_dim: 640
 #      preview_show: True
 #    runners:
-#      - name: yolov5s - Object detection with 80 classes (Most Accurate)
+#      - name: yolov5s - Object detection with 80 classes (Fastest)
 #        type: yolov5s
 #        configuration: yolov5s.json
 #        class: Yolov5sRunner
@@ -145,7 +173,7 @@ instances:
 ##      max_frame_dim: 640
 #      preview_show: True
 #    runners:
-#      - name: yolov5s - Object detection with 80 classes (Most Accurate)
+#      - name: yolov5s - Object detection with 80 classes (Fastest)
 #        type: yolov5s
 #        configuration: yolov5s.json
 #        class: Yolov5sRunner
@@ -164,7 +192,7 @@ instances:
 ##      max_frame_dim: 640
 #      preview_show: True
 #    runners:
-#      - name: yolov5s - Object detection with 80 classes (Most Accurate)
+#      - name: yolov5s - Object detection with 80 classes (Fastest)
 #        type: yolov5s
 #        configuration: yolov5s.json
 #        class: Yolov5sRunner
@@ -183,7 +211,7 @@ instances:
 ##      max_frame_dim: 640
 #      preview_show: True
 #    runners:
-#      - name: yolov5s - Object detection with 80 classes (Most Accurate)
+#      - name: yolov5s - Object detection with 80 classes (Fastest)
 #        type: yolov5s
 #        configuration: yolov5s.json
 #        class: Yolov5sRunner
@@ -202,7 +230,7 @@ instances:
 ##      max_frame_dim: 640
 #      preview_show: True
 #    runners:
-#      - name: yolov5s - Object detection with 80 classes (Most Accurate)
+#      - name: yolov5s - Object detection with 80 classes (Fastest)
 #        type: yolov5s
 #        configuration: yolov5s.json
 #        class: Yolov5sRunner
@@ -244,7 +272,7 @@ instances:
 ##        configuration: yolov5x.json
 ##        class: Yolov5xRunner
 ##        priority: 10
-#      - name: yolov5s - Object detection with 80 classes (Most Accurate)
+#      - name: yolov5s - Object detection with 80 classes (Fastest)
 #        type: yolov5s
 #        configuration: yolov5s.json
 #        class: Yolov5sRunner
