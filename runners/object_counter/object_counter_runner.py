@@ -7,7 +7,7 @@ import cv2
 from threading import Thread
 
 from ndu_gate_camera.api.ndu_camera_runner import NDUCameraRunner
-from ndu_gate_camera.utility import constants, geometry_helper, image_helper
+from ndu_gate_camera.utility import constants, geometry_helper, image_helper, string_helper
 from filterpy.kalman import KalmanFilter
 
 np.random.seed(0)
@@ -17,16 +17,21 @@ class ObjectCounterRunner(Thread, NDUCameraRunner):
     def __init__(self, config, connector_type):
         super().__init__()
         self.connector_type = connector_type
+
         self.__classes = config.get("classes", None)
-        self.__class_name_to_group_name = {}
+        self.__concat_data_classes = config.get("concat_data_classes", None)
+
+        # self.__class_name_to_group_name = {}
         self.__frame_num = 0
         self.config = config
         self.track = config.get("track", "center")
         self.__gates = []
         self.__debug = True  ####koray
+        # self.__debug = False
         self.__debug_last = {}
         self._result_style = config.get("result_style", 0)  # 0:cumulative - 1:aggregate
         self._track_pnts = {}
+        self._last_data = {}
 
     def get_name(self):
         return "ObjectCounterRunner"
@@ -121,8 +126,9 @@ class ObjectCounterRunner(Thread, NDUCameraRunner):
                     gate["groups"][group_name] = {"enter": 0, "exit": 0}
                 self.__gates.append(gate)
             for group_name, sub_classes in self.__classes.items():
-                for class_name in sub_classes:
-                    self.__class_name_to_group_name[class_name] = group_name
+                self._last_data[group_name] = None
+                # for class_name in sub_classes:
+                #     self.__class_name_to_group_name[class_name] = group_name
 
         for gate in self.__gates:
             line = gate["line"]
@@ -154,39 +160,46 @@ class ObjectCounterRunner(Thread, NDUCameraRunner):
                     if result is not None:
                         for item in result:
                             class_name = item.get(constants.RESULT_KEY_CLASS_NAME, None)
-                            for group_name, sub_classes in self.__classes.items():
-                                if class_name in sub_classes:
-                                    track_id = item.get(constants.RESULT_KEY_RECT_TRACK_ID, None)
-                                    if track_id is not None and track_id not in g_handled_indexes:
-                                        rect = item.get(constants.RESULT_KEY_RECT, None)
-                                        [x1, y1, x2, y2] = rect
+                            if class_name is not None:
+                                for group_name, sub_classes in self.__classes.items():
+                                    if class_name in sub_classes:
+                                        track_id = item.get(constants.RESULT_KEY_RECT_TRACK_ID, None)
+                                        if track_id is not None and track_id not in g_handled_indexes:
+                                            rect = item.get(constants.RESULT_KEY_RECT, None)
+                                            [x1, y1, x2, y2] = rect
 
-                                        if self.track == "bottom":
-                                            p1 = int(y1 + (y2 - y1) * 0.5), int(x2)
-                                        else:  # center - default value
-                                            p1 = int(y1 + (y2 - y1) * 0.5), int(x1 + (x2 - x1) * 0.5)
+                                            if self.track == "bottom":
+                                                p1 = int(y1 + (y2 - y1) * 0.5), int(x2)
+                                            else:  # center - default value
+                                                p1 = int(y1 + (y2 - y1) * 0.5), int(x1 + (x2 - x1) * 0.5)
 
-                                        if track_id not in self._track_pnts:
-                                            self._track_pnts[track_id] = [p1]
-                                        else:
-                                            self._track_pnts[track_id].append(p1)
-                                            line = gate["line"]
-                                            p0 = self._track_pnts[track_id][0]
-                                            # p0 = self._track_pnts[track_id][-2]
+                                            if track_id not in self._track_pnts:
+                                                self._track_pnts[track_id] = [p1]
+                                            else:
+                                                self._track_pnts[track_id].append(p1)
+                                                line = gate["line"]
+                                                p0 = self._track_pnts[track_id][0]
+                                                # p0 = self._track_pnts[track_id][-2]
 
-                                            if self.__debug:
-                                                cv2.line(frame, p0, p1, [0, 0, 255], 3)
-                                                cv2.line(frame, p1, p1, [255, 255, 0], 5)
+                                                if self.__debug:
+                                                    cv2.line(frame, p0, p1, [0, 0, 255], 3)
+                                                    cv2.line(frame, p1, p1, [255, 255, 0], 5)
 
-                                            if self.intersect(p0, p1, line[0], line[1]):
-                                                g_handled_indexes.append(track_id)
+                                                if self.intersect(p0, p1, line[0], line[1]):
+                                                    g_handled_indexes.append(track_id)
 
-                                                group_name = self.__class_name_to_group_name[class_name]
-                                                if self.on_left(line, p0):
-                                                    gate["groups"][group_name]["enter"] += 1
-                                                else:
-                                                    gate["groups"][group_name]["exit"] += 1
-                                                changed = True
+                                                    # group_name = self.__class_name_to_group_name[class_name]
+                                                    if self.on_left(line, p0):
+                                                        gate["groups"][group_name]["enter"] += 1
+                                                    else:
+                                                        gate["groups"][group_name]["exit"] += 1
+                                                    changed = True
+                                for group_name, data_classes in self.__concat_data_classes.items():
+                                    for data_class_name in data_classes:
+                                        if string_helper.wildcard(class_name, data_class_name):
+                                            gate["groups"][group_name]["concat_data"] = class_name
+
+
 
         if changed or self.frame_count == 1:
             for gate in self.__gates:
@@ -205,10 +218,17 @@ class ObjectCounterRunner(Thread, NDUCameraRunner):
                         data = {telemetry_enter: all_enter, telemetry_exit: all_exit}
                         group["enter"] = 0
                         group["exit"] = 0
-                    res.append({constants.RESULT_KEY_DATA: data})
-                    if self.__debug:
-                        # debug_text = "{} - Giren:{} Cikan:{}".format(tel_name.replace("Gate", "Kapi"), all_enter, all_exit)
-                        debug_text = "{} - Giren:{} Cikan:{}".format(gate_name.replace("Gate", "Kapi"), all_enter, all_exit)
+                    concat_data = group.get("concat_data", None)
+                    if concat_data is not None:
+                        del group["concat_data"]
+                        data["concat_data"] = concat_data
+                    if self._last_data[group_name] != data:
+                        res.append({constants.RESULT_KEY_DATA: data})
+                        self._last_data[group_name] = data
+                    # if self.__debug:
+                    if self.__debug and (all_enter > 0 or all_exit > 0):
+                        debug_text = "{} - Giren:{} Cikan:{}".format(tel_name.replace("Gate", "Kapi"), all_enter, all_exit)
+                        # debug_text = "{} - Giren:{} Cikan:{}".format(gate_name.replace("Gate", "Kapi"), all_enter, all_exit)
                         self.__debug_last[tel_name] = debug_text
                         res.append({constants.RESULT_KEY_DEBUG: debug_text})
         elif self.__debug:

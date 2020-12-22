@@ -16,7 +16,7 @@ from ndu_gate_camera.camera.video_sources.ip_camera_video_source import IPCamera
 from ndu_gate_camera.camera.video_sources.pi_camera_video_source import PiCameraVideoSource
 from ndu_gate_camera.camera.video_sources.youtube_video_source import YoutubeVideoSource
 from ndu_gate_camera.camera.video_sources.image_video_source import ImageVideoSource
-from ndu_gate_camera.utility import constants, image_helper
+from ndu_gate_camera.utility import constants, image_helper, string_helper
 from ndu_gate_camera.utility.ndu_utility import NDUUtility
 
 DEFAULT_RUNNERS = {
@@ -64,10 +64,11 @@ class NDUCameraService(Thread):
 
             self.__preview_write = self.SOURCE_CONFIG.get("preview_write", False)
             self.__preview_last_data = []
-            self.__preview_last_data_show_counts = []
+            self.__preview_last_data_show_times = []
             self.__preview_write_file_name = self.SOURCE_CONFIG.get("preview_write_file_name", "")
             self.__total_elapsed_times = []
 
+        self._track_history = {}
         self._exit_requested = False
         self.__max_frame_dim = self.SOURCE_CONFIG.get("max_frame_dim", None)
         self.__min_frame_dim = self.SOURCE_CONFIG.get("min_frame_dim", None)
@@ -360,7 +361,7 @@ class NDUCameraService(Thread):
                 if self.__min_frame_dim is not None:
                     frame = image_helper.resize_if_smaller(frame, self.__min_frame_dim)
 
-                results = []
+                all_runner_results = []
                 if self._skip <= 0:
                     if self.__preview_show:
                         start_total = time.time()
@@ -376,20 +377,21 @@ class NDUCameraService(Thread):
                             if step is not None and i % step != 0:
                                 continue
                             start = time.time()
-                            result = self.available_runners[runner_unique_key].process_frame(frame, extra_data=extra_data)
+                            results = self.available_runners[runner_unique_key].process_frame(frame, extra_data=extra_data)
                             elapsed = time.time() - start
-                            if self.__preview_show and result is not None:
-                                result.append({"elapsed_time": '{}: {:.4f}sn fps:{:.0f}'.format(runner_conf["type"], elapsed, 1.0 / max(elapsed, 0.001))})
-                            extra_data[constants.EXTRA_DATA_KEY_RESULTS][runner_unique_key] = result
-                            log.debug("result : %s", result)
+                            if self.__preview_show and results is not None:
+                                results.append({"elapsed_time": '{}: {:.4f}sn fps:{:.0f}'.format(runner_conf["type"], elapsed, 1.0 / max(elapsed, 0.001))})
+                            extra_data[constants.EXTRA_DATA_KEY_RESULTS][runner_unique_key] = results
+                            log.debug("result : %s", results)
 
-                            if result is not None:
-                                results.append(result)
-                                self.__result_handler.save_result(result, device=device, runner_name=runner_conf["name"])
+                            if results is not None:
+                                self._check_track(runner_unique_key, results)
+                                all_runner_results.append(results)
+                                self.__result_handler.save_result(results, device=device, runner_name=runner_conf["name"])
 
                         except Exception as e:
                             log.exception(e)
-
+                self._age_track_history()
                 if self.__preview_show:
                     if self._skip > 0:
                         self._skip -= 1
@@ -398,11 +400,11 @@ class NDUCameraService(Thread):
                         total_elapsed_time = time.time() - start_total
                         self.__total_elapsed_times.append(total_elapsed_time)
                         len_times = len(self.__total_elapsed_times)
-                        total_elapsed_time =  sum(self.__total_elapsed_times) / len_times
+                        total_elapsed_time = sum(self.__total_elapsed_times) / len_times
                         if len_times > 10000:
                             self.__total_elapsed_times = []
-                        results.append([{"total_elapsed_time": '{:.0f}msec fps:{:.0f}'.format(total_elapsed_time * 1000, (1.0 / max(total_elapsed_time, 0.001)))}])
-                        preview = self._get_preview(frame, results)
+                        all_runner_results.append([{"total_elapsed_time": '{:.0f}msec fps:{:.0f}'.format(total_elapsed_time * 1000, (1.0 / max(total_elapsed_time, 0.001)))}])
+                        preview = self._get_preview(frame, all_runner_results)
                         if self.__preview_show_motion_kernel and last_thresh is not None:
                             th = image_helper.resize(last_thresh, preview.shape[1], preview.shape[0], interpolation=cv2.INTER_NEAREST)
                             th = cv2.cvtColor(th, cv2.COLOR_GRAY2BGR)
@@ -422,6 +424,39 @@ class NDUCameraService(Thread):
             log.exception(e)
 
         log.info("Video source is finished")
+
+    def _check_track(self, runner_unique_key, results):
+        for result in results:
+            if constants.RESULT_KEY_RECT_TRACK_ID in result:
+                if runner_unique_key not in self._track_history:
+                    self._track_history[runner_unique_key] = {}
+                history = self._track_history[runner_unique_key]
+                track_id = result[constants.RESULT_KEY_RECT_TRACK_ID]
+                if track_id not in history:
+                    history[track_id] = {"result": result, "age": 0}
+                else:
+                    result0 = history[track_id]["result"]
+                    history[track_id]["age"] = 0
+                    score = result.get(constants.RESULT_KEY_SCORE, 0.9)
+                    score0 = result0.get(constants.RESULT_KEY_SCORE, 0.9)
+                    if score < score0:
+                        for key in [constants.RESULT_KEY_DATA, constants.RESULT_KEY_CLASS_NAME, constants.RESULT_KEY_DEBUG]:
+                            if key in result0:
+                                result[key] = result0[key]
+                        result[constants.RESULT_KEY_SCORE] = score0
+                    else:
+                        history[track_id]["result"] = result
+
+    def _age_track_history(self):
+        for i, (runner_unique_key, history) in enumerate(self._track_history.items()):
+            del_lst = []
+            for track_id, h in history.items():
+                if h["age"] > 50:
+                    del_lst.append(track_id)
+                else:
+                    h["age"] += 1
+            for track_id in del_lst:
+                del history[track_id]
 
     def _write_frame(self, frame):
         def get_free_file_name(fn):
@@ -520,7 +555,7 @@ class NDUCameraService(Thread):
                         data_added.append(add_txt)
                         text = text + add_txt
                         has_data = True
-                    if rect is not None and (rect_filter is None or NDUUtility.wildcard(class_name, rect_filter)):
+                    if rect is not None and (rect_filter is None or string_helper.wildcard(class_name, rect_filter)):
                         c = np.array(rect[:4], dtype=np.int32)
                         c1, c2 = [c[1], c[0]], (c[3], c[2])
                         draw_rect(self, image, c1, c2, class_preview_key, item.get(constants.RESULT_KEY_RECT_COLOR, None))
@@ -551,17 +586,17 @@ class NDUCameraService(Thread):
 
         if show_runner_info:
             if len(data_added) > 0:
-                show_last_data_frame_count = 15
+                show_last_data_frame_time = time.time()
                 for data in data_added:
                     if data not in self.__preview_last_data:
                         self.__preview_last_data.append(data)
-                        self.__preview_last_data_show_counts.append(show_last_data_frame_count)
+                        self.__preview_last_data_show_times.append(show_last_data_frame_time)
                     else:
-                        self.__preview_last_data_show_counts[self.__preview_last_data.index(data)] = show_last_data_frame_count
+                        self.__preview_last_data_show_times[self.__preview_last_data.index(data)] = show_last_data_frame_time
             for i in reversed(range(len(self.__preview_last_data))):
-                self.__preview_last_data_show_counts[i] -= 1
-                if self.__preview_last_data_show_counts[i] <= 0:
-                    del self.__preview_last_data_show_counts[i]
+                elapsed = time.time() - self.__preview_last_data_show_times[i]
+                if elapsed > 5:
+                    del self.__preview_last_data_show_times[i]
                     del self.__preview_last_data[i]
             for last_data in self.__preview_last_data:
                 current_line[1] += line_height
@@ -569,12 +604,14 @@ class NDUCameraService(Thread):
 
         return image
 
-    def __get_runner_configuration_key(self, runner_type, class_name, configuration):
+    @staticmethod
+    def __get_runner_configuration_key(runner_type, class_name, configuration):
         if configuration is None:
             configuration = runner_type + ".json"
         return runner_type + "_" + class_name + "_" + configuration
 
-    def __get_runner_key(self, type, class_name):
+    @staticmethod
+    def __get_runner_key(type, class_name):
         return type + "_" + class_name
 
 

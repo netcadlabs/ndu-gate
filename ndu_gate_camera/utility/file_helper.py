@@ -4,6 +4,7 @@ import os
 import pathlib
 from typing import AnyStr
 
+from ndu_gate_camera.utility import string_helper
 from ndu_gate_camera.utility.ndu_utility import NDUUtility
 
 
@@ -33,7 +34,7 @@ def enumerate_files(dir_path, recursive=False, wildcard_pattern=None, case_insen
     #             yield os.path.join(dir_path, file_name_with_extension), file_name_with_extension
     #     else:
     #         for file_name_with_extension in [f for f in listdir(dir_path) if isfile(join(dir_path, f))]:
-    #             if str_helper.wildcard(file_name_with_extension, filter, case_insensitive):
+    #             if string_helper.wildcard(file_name_with_extension, filter, case_insensitive):
     #                 yield os.path.join(dir_path, file_name_with_extension), file_name_with_extension
     if wildcard_pattern is None:
         for root, sub_dirs, files in os.walk(dir_path):
@@ -45,7 +46,7 @@ def enumerate_files(dir_path, recursive=False, wildcard_pattern=None, case_insen
         for root, sub_dirs, files in os.walk(dir_path):
             for fn in files:
                 name = os.path.basename(fn)
-                if NDUUtility.wildcard(name, wildcard_pattern, case_insensitive=case_insensitive):
+                if string_helper.wildcard(name, wildcard_pattern, case_insensitive=case_insensitive):
                     yield fn
             if not recursive:
                 break

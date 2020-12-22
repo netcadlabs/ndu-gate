@@ -7,7 +7,7 @@ import numpy as np
 from threading import Thread
 
 from ndu_gate_camera.api.ndu_camera_runner import NDUCameraRunner
-from ndu_gate_camera.utility import constants, geometry_helper, image_helper
+from ndu_gate_camera.utility import constants, geometry_helper, image_helper, string_helper
 
 from filterpy.kalman import KalmanFilter
 from scipy.optimize import linear_sum_assignment
@@ -29,8 +29,9 @@ class TrackerRunner(Thread, NDUCameraRunner):
         self._tracker_algorithm = config.get("tracker_algorithm", "KCF_600")
         self._g = {}
         self._cv_tracker = CvTracker(self._tracker_algorithm)
-        self._history = {}
+        # self._history = {}
         self._last_items = []
+        self._groups = {}
 
     def get_name(self):
         return "TrackerRunner"
@@ -46,12 +47,24 @@ class TrackerRunner(Thread, NDUCameraRunner):
         return x + w / 2, y + h / 2
 
     def _get_group_name(self, class_name):
-        if self._classes is not None and len(self._classes) > 0:
-            for group_name, sub_classes in self._classes.items():
-                if class_name in sub_classes:
-                    return group_name
+        def get_group_name(class_name_):
+            if self._classes is not None and len(self._classes) > 0:
+                for group_name, sub_classes in self._classes.items():
+                    if class_name_ in sub_classes:
+                        return group_name
+                    else:
+                        for sub_class in sub_classes:
+                            string_helper.wildcard_has_match(class_name_, sub_class)
+                            return group_name
+                return None
+            else:
+                return class_name_
+
+        if class_name in self._groups:
+            return self._groups[class_name]
         else:
-            return class_name
+            self._groups[class_name] = get_group_name(class_name)
+            return self._groups[class_name]
 
     @staticmethod
     def _det_exists(dets, det, accept_ratio=0.8):
@@ -140,15 +153,6 @@ class TrackerRunner(Thread, NDUCameraRunner):
                     item["tr_bbox"] = bbox
                     item[constants.RESULT_KEY_RECT] = self._bbox_to_rect(bbox)
                     items_ok.append(item)
-                    # p1 = (int(bbox[0]), int(bbox[1]))
-                    # p2 = (int(bbox[0] + bbox[2]), int(bbox[1] + bbox[3]))
-                    # cv2.rectangle(frame, p1, p2, (255, 0, 0), 2, 1)
-                # else:
-                #     item = items[i]
-                #     bbox = item["tr_bbox"]
-                #     item[constants.RESULT_KEY_RECT] = self._bbox_to_rect(bbox)
-                #     items_ok.append(item)
-
             items = items_ok
 
         center_item_index = []
@@ -214,36 +218,33 @@ class TrackerRunner(Thread, NDUCameraRunner):
                             c = self._get_box_center(box)
                             min_dist = sys.maxsize
                             result_item = None
-                            # result_item_index = None
                             for center, item, i0 in center_item_index:
                                 dist = geometry_helper.distance(c, center)
                                 if dist < min_dist:
                                     min_dist = dist
                                     result_item = item
-                                    # result_item_index = i0
                             if result_item is not None:
                                 result_item[constants.RESULT_KEY_RECT_TRACK_ID] = track_id
                                 result_item[constants.RESULT_KEY_PREVIEW_KEY] = track_id
-                                if track_id not in self._history:
-                                    self._history[track_id] = {"item": result_item, "age": 0}
-                                else:
-                                    item0 = self._history[track_id]["item"]
-                                    self._history[track_id]["age"] = 0
-                                    if result_item.get(constants.RESULT_KEY_SCORE, 0.9) < item0.get(constants.RESULT_KEY_SCORE, 0.9):
-                                        result_item[constants.RESULT_KEY_CLASS_NAME] = item0[constants.RESULT_KEY_CLASS_NAME]
-                                        result_item[constants.RESULT_KEY_SCORE] = item0[constants.RESULT_KEY_SCORE]
-                                        # items[result_item_index] = item0
-                                    else:
-                                        self._history[track_id]["item"] = result_item
+                                # if track_id not in self._history:
+                                #     self._history[track_id] = {"item": result_item, "age": 0}
+                                # else:
+                                #     item0 = self._history[track_id]["item"]
+                                #     self._history[track_id]["age"] = 0
+                                #     if result_item.get(constants.RESULT_KEY_SCORE, 0.9) < item0.get(constants.RESULT_KEY_SCORE, 0.9):
+                                #         result_item[constants.RESULT_KEY_CLASS_NAME] = item0[constants.RESULT_KEY_CLASS_NAME]
+                                #         result_item[constants.RESULT_KEY_SCORE] = item0[constants.RESULT_KEY_SCORE]
+                                #     else:
+                                #         self._history[track_id]["item"] = result_item
 
-        del_lst = []
-        for track_id, hist in self._history.items():
-            if hist["age"] > 50:
-                del_lst.append(track_id)
-            else:
-                hist["age"] += 1
-        for track_id in del_lst:
-            del self._history[track_id]
+        # del_lst = []
+        # for track_id, hist in self._history.items():
+        #     if hist["age"] > 50:
+        #         del_lst.append(track_id)
+        #     else:
+        #         hist["age"] += 1
+        # for track_id in del_lst:
+        #     del self._history[track_id]
 
         g["sorts"] = g_sorts
         g["memory"] = g_memory

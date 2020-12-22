@@ -1,5 +1,6 @@
 {
-  "tracker_algorithm": "KCF_600",
+  "_tracker_algorithm": "KCF_600",
+  "tracker_algorithm": "MOSSE",
   "classes": {
     "arac": [
       "car",
@@ -10,6 +11,9 @@
     ],
     "kisi": [
       "person"
+    ],
+    "plaka": [
+      "PL:*"
     ]
   }
 }

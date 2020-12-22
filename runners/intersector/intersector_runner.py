@@ -7,7 +7,7 @@ from typing import Optional
 import cv2
 
 from ndu_gate_camera.api.ndu_camera_runner import NDUCameraRunner
-from ndu_gate_camera.utility import constants, onnx_helper, geometry_helper
+from ndu_gate_camera.utility import constants, onnx_helper, geometry_helper, string_helper
 from ndu_gate_camera.utility.geometry_helper import add_padding_rect
 from ndu_gate_camera.utility.ndu_utility import NDUUtility
 
@@ -108,7 +108,7 @@ class IntersectorRunner(Thread, NDUCameraRunner):
                 for name1 in cs0["classify_names"]:
                     for i in range(len(self.__onnx_classify_names)):
                         css_name = self.__onnx_classify_names[i]
-                        if NDUUtility.wildcard(css_name, name1):
+                        if string_helper.wildcard(css_name, name1):
                             cs.classify_indexes.append(i)
                             break
                 return cs
@@ -176,14 +176,14 @@ class IntersectorRunner(Thread, NDUCameraRunner):
         def has_or(r_, rect_names0_):
             _count = 0
             for r_name in r_.class_names:
-                if NDUUtility.wildcard_has_match(rect_names0_, r_name):
+                if string_helper.wildcard_has_match(rect_names0_, r_name):
                     return True
             return False
 
         def has_and(r_, rect_names0_):
             _all_ok = False
             for r_name in r_.class_names:
-                if not NDUUtility.wildcard_has_match(rect_names0_, r_name):
+                if not string_helper.wildcard_has_match(rect_names0_, r_name):
                     return False
                 else:
                     _all_ok = True
@@ -200,7 +200,7 @@ class IntersectorRunner(Thread, NDUCameraRunner):
                 for class_name1, score1, rect1 in rects0_:
                     ok = False
                     for r_name in r_.class_names:
-                        if NDUUtility.wildcard(class_name1, r_name):
+                        if string_helper.wildcard(class_name1, r_name):
                             ok = True
                             break
                     if ok:
@@ -224,7 +224,7 @@ class IntersectorRunner(Thread, NDUCameraRunner):
             rects_css = []
             for class_name_, score_, rect_ in rects0_:
                 for css_rect_name in gr_.classification.rect_names:
-                    if NDUUtility.wildcard(class_name_, css_rect_name):
+                    if string_helper.wildcard(class_name_, css_rect_name):
                         rects_css.append(rect_)
                         break
             for rect_css in rects_css:

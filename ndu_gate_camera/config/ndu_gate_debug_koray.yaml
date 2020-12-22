@@ -37,8 +37,8 @@ instances:
       mirror: True
 #      type: CAMERA # VIDEO_FILE, PI_CAMERA, CAMERA, IP_CAMERA, VIDEO_URL, YOUTUBE, IMAGE_FILE
 #      type: IMAGE_FILE
-#      type: VIDEO_FILE
-      type: YOUTUBE
+      type: VIDEO_FILE
+#      type: YOUTUBE
 
 
 #      url: https://youtu.be/TlInDQgg2G4  #mask
@@ -80,6 +80,7 @@ instances:
         configuration: lpr.json
         class: LprRunner
         priority: 75
+#        priority: 20
 
       - name: yolov5s - Object detection with 80 classes (Fastest)
         type: yolov5s
@@ -92,8 +93,6 @@ instances:
         type: tracker
         configuration: tracker.json
         class: TrackerRunner
-#        class: TrackerRunner_deep_sort
-#        class: TrackerRunner_old_sort
         priority: 50
 
       - name: Object Counter

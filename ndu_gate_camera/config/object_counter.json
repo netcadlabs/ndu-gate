@@ -9,9 +9,9 @@
       "motorbike",
       "truck",
       "bus"
-    ],
-    "kisi": [
-      "person"
     ]
+  },
+  "concat_data_classes": {
+      "arac": ["PL:*"]
   }
 }

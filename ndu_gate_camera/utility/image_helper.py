@@ -3,6 +3,8 @@ import cv2
 import base64
 import numpy as np
 
+from ndu_gate_camera.utility.ndu_utility import NDUUtility
+
 
 def image_h_w(image):
     # h, w = image.shape[:2]
@@ -222,7 +224,9 @@ def select_points(frame, window_name, color=(0, 255, 255), radius=8, thickness=4
         cv2.destroyWindow(window_name)
 
 
-def put_text(img, text_, center, color=None, font_scale=0.5, thickness=1, back_color=None):
+def put_text(img, text_, center, color=None, font_scale=0.5, thickness=1, back_color=None, replace_tur_chars= True):
+    if replace_tur_chars:
+        text_ = NDUUtility.debug_replace_tur_chars(text_)
     if back_color is None:
         back_color = [0, 0, 0]
     if color is None:

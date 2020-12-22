@@ -5,10 +5,9 @@ from platform import system
 from importlib import util
 from logging import getLogger
 from inspect import getmembers, isclass, isfunction
-from typing import Iterator, List
-from fnmatch import fnmatch
+from typing import Iterator
 
-from ndu_gate_camera.utility import constants
+from ndu_gate_camera.utility import constants, string_helper
 
 log = getLogger("service")
 
@@ -160,6 +159,13 @@ class NDUUtility:
 
         return class_name
 
+    # sadece preview/debug için kullanılmalıdır.
+    @staticmethod
+    def debug_replace_tur_chars(txt):
+        return txt \
+            .replace("İ", "I").replace("Ğ", "G").replace("Ü", "U").replace("Ş", "S").replace("Ç", "C").replace("Ö", "O").replace("Â", "A") \
+            .replace("ı", "i").replace("ğ", "g").replace("ü", "u").replace("ş", "s").replace("ç", "c").replace("ö", "o").replace("â", "a")
+
     # returns (class_name, score, rect) from extra_data. Score and rect can be None!
     @staticmethod
     def enumerate_results(extra_data, class_name_filters=None, use_wildcard=False, return_item=False) -> Iterator[tuple]:
@@ -175,7 +181,7 @@ class NDUUtility:
                         else:
                             if use_wildcard:
                                 for filter1 in class_name_filters:
-                                    if NDUUtility.wildcard(class_name, filter1):
+                                    if string_helper.wildcard(class_name, filter1):
                                         ok = True
                                         break
                             else:
@@ -188,24 +194,3 @@ class NDUUtility:
                             else:
                                 yield class_name, score, rect, item
 
-    @staticmethod
-    def wildcard(txt, pattern, case_insensitive=True):
-        if txt == pattern:
-            return True
-        else:
-            return fnmatch(txt.lower(), pattern.lower()) if case_insensitive else fnmatch(txt, pattern)
-
-    @staticmethod
-    def wildcard_match_count(list_txt, pattern, case_insensitive=True):
-        count = 0
-        for txt in list_txt:
-            if NDUUtility.wildcard(txt, pattern, case_insensitive):
-                count += 1
-        return count
-
-    @staticmethod
-    def wildcard_has_match(list_txt, pattern, case_insensitive=True):
-        for txt in list_txt:
-            if NDUUtility.wildcard(txt, pattern, case_insensitive):
-                return True
-        return False
