@@ -194,12 +194,11 @@ class ObjectCounterRunner(Thread, NDUCameraRunner):
                                                     else:
                                                         gate["groups"][group_name]["exit"] += 1
                                                     changed = True
-                                for group_name, data_classes in self.__concat_data_classes.items():
-                                    for data_class_name in data_classes:
-                                        if string_helper.wildcard(class_name, data_class_name):
-                                            gate["groups"][group_name]["concat_data"] = class_name
-
-
+                                if self.__concat_data_classes is not None:
+                                    for group_name, data_classes in self.__concat_data_classes.items():
+                                        for data_class_name in data_classes:
+                                            if string_helper.wildcard(class_name, data_class_name):
+                                                gate["groups"][group_name]["concat_data"] = class_name
 
         if changed or self.frame_count == 1:
             for gate in self.__gates:

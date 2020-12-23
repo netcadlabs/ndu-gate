@@ -50,7 +50,7 @@ instances:
 
       data_folder: C:/_koray/test_data/
 #      file_path: bakanlik.avi
-      file_path: lpr/canakkale_plaka (1).mp4
+#      file_path: lpr/canakkale_plaka (1).mp4
 #      file_path: lpr/canakkale_plaka (2).mp4
 #      file_path: vid_short.mp4 #pedestrians
 
@@ -60,6 +60,11 @@ instances:
 #      file_path: highway/highway_1600.mp4
 #      file_path: highway/highway_1600_trim.mp4
 #      file_path: highway/highway_max.mp4
+
+
+#      file_path: stock/tepeden_otopark.mp4
+#      file_path: stock/tepeden_insan.mp4
+      file_path: stock/driver.mp4
 
 
 
@@ -75,12 +80,12 @@ instances:
 #      url: https://youtu.be/MNn9qKG2UFI  #highway
 
     runners:
-      - name: lpr - Licence Plate Recognition
-        type: lpr
-        configuration: lpr.json
-        class: LprRunner
-        priority: 75
-#        priority: 20
+#      - name: lpr - Licence Plate Recognition
+#        type: lpr
+#        configuration: lpr.json
+#        class: LprRunner
+#        priority: 75
+##        priority: 20
 
       - name: yolov5s - Object detection with 80 classes (Fastest)
         type: yolov5s
@@ -94,12 +99,12 @@ instances:
         configuration: tracker.json
         class: TrackerRunner
         priority: 50
-
-      - name: Object Counter
-        type: object_counter
-        configuration: object_counter.json
-        class: ObjectCounterRunner
-        priority: 100
+#
+#      - name: Object Counter
+#        type: object_counter
+#        configuration: object_counter.json
+#        class: ObjectCounterRunner
+#        priority: 100
 
 #      - name: Face Mask Detection
 #        type: facemask
