@@ -26,13 +26,13 @@ instances:
 
 #      preview_write: True
 #      preview_write_file_name: C:/_koray/temp/preview.mp4
-#      sleep: 0.1
+      sleep: 0.1
 #      skip_frame: 5
-#      skip_frame: 15
+      skip_frame: 15
 
 
-#      motion_kernel: 21
-#      preview_show_motion_kernel: True
+      motion_kernel: 21
+      preview_show_motion_kernel: True
 
       mirror: True
 #      type: CAMERA # VIDEO_FILE, PI_CAMERA, CAMERA, IP_CAMERA, VIDEO_URL, YOUTUBE, IMAGE_FILE
@@ -41,16 +41,9 @@ instances:
 #      type: YOUTUBE
 
 
-#      url: https://youtu.be/TlInDQgg2G4  #mask
-
-#      data_folder: C:/_koray/test_data/çanakkale_stream/
-#      file_path: CANAKKALE-10.10.0.85.mp4
-#      file_path: CANAKKALE-10.10.190.103.mp4
-#      file_path: CANAKKALE-10.10.190.173.mp4
-
       data_folder: C:/_koray/test_data/
 #      file_path: bakanlik.avi
-#      file_path: lpr/canakkale_plaka (1).mp4
+      file_path: lpr/canakkale_plaka (1).mp4
 #      file_path: lpr/canakkale_plaka (2).mp4
 #      file_path: vid_short.mp4 #pedestrians
 
@@ -61,10 +54,9 @@ instances:
 #      file_path: highway/highway_1600_trim.mp4
 #      file_path: highway/highway_max.mp4
 
-
-#      file_path: stock/tepeden_otopark.mp4
-#      file_path: stock/tepeden_insan.mp4
-      file_path: stock/driver.mp4
+#      file_path: çanakkale_stream/CANAKKALE-10.10.0.85.mp4
+#      file_path: çanakkale_stream/CANAKKALE-10.10.190.103.mp4
+#      file_path: çanakkale_stream/CANAKKALE-10.10.190.173.mp4
 
 
 
@@ -74,10 +66,15 @@ instances:
       image_path: lpr/*.jpg
 #      image_path: __canakkale_cam1.png
 
+
+#      url: https://youtu.be/TlInDQgg2G4  #mask
 #      url: https://www.youtube.com/watch?v=ho1QG2OEMFs&t=26s  #plaka tur
 #      url: https://www.youtube.com/watch?v=8Ts9M2f11HE  #plaka drag
       url: https://www.youtube.com/watch?v=z4IMAiYVF4g  #plaka trafik
 #      url: https://youtu.be/MNn9qKG2UFI  #highway
+
+#      motion_kernel: 11
+#      preview_show_motion_kernel: True
 
     runners:
 #      - name: lpr - Licence Plate Recognition
@@ -92,19 +89,19 @@ instances:
         configuration: yolov5s.json
         class: Yolov5sRunner
         priority: 10
-        step: 10
+#        step: 10
 
       - name: Tracker
         type: tracker
         configuration: tracker.json
         class: TrackerRunner
         priority: 50
-#
-#      - name: Object Counter
-#        type: object_counter
-#        configuration: object_counter.json
-#        class: ObjectCounterRunner
-#        priority: 100
+
+      - name: Object Counter
+        type: object_counter
+        configuration: object_counter.json
+        class: ObjectCounterRunner
+        priority: 100
 
 #      - name: Face Mask Detection
 #        type: facemask
