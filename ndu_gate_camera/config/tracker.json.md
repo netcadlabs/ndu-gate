@@ -1,9 +1,8 @@
 ### tracker_algorithm değerleri
 
 ```
-  "tracker_algorithm": "KCF_600"    # fps:35  - Default  
-        - plaka tanıma işlerini bozuyor, rect yaklaşan araç için büyümüyor        
-  "tracker_algorithm": "KCF"        # fps:17  - plaka için uygun değil
+  "tracker_algorithm": "KCF_600"    # fps:35  - Default / step için uygun, plaka için uygun değil        
+  "tracker_algorithm": "KCF"        # fps:17  - step için uygun, plaka için uygun değil
   "tracker_algorithm": "CSRT"       # fps:4   - Başarısı daha iyi ama yavaş
   "tracker_algorithm": "MOSSE"      # fps:150 
         - Başarı düşük ama çok hızlı - plaka tanma işi için KCF'den daha iyi (rect boyutu daha iyi korundu)

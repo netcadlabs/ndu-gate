@@ -224,7 +224,7 @@ class TrackerRunner(Thread, NDUCameraRunner):
                                     min_dist = dist
                                     result_item = item
                             if result_item is not None:
-                                result_item[constants.RESULT_KEY_RECT_TRACK_ID] = track_id
+                                result_item[constants.RESULT_KEY_TRACK_ID] = track_id
                                 result_item[constants.RESULT_KEY_PREVIEW_KEY] = track_id
                                 # if track_id not in self._history:
                                 #     self._history[track_id] = {"item": result_item, "age": 0}

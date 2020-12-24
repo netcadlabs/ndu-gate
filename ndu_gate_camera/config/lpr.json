@@ -1,6 +1,7 @@
 {
   "min_confidence_percentage": 80,
-  "resize": 1200,
+  "resize_width": 1200,
+  "send_data": false,
   "rects": [
       "car",
       "bicycle",

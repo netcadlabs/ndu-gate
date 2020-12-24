@@ -163,7 +163,23 @@ class ObjectCounterRunner(Thread, NDUCameraRunner):
                             if class_name is not None:
                                 for group_name, sub_classes in self.__classes.items():
                                     if class_name in sub_classes:
-                                        track_id = item.get(constants.RESULT_KEY_RECT_TRACK_ID, None)
+                                        track_id = item.get(constants.RESULT_KEY_TRACK_ID, None)
+                                        #######
+                                        if self.__concat_data_classes is not None:
+                                            for runner_name1, result1 in results.items():
+                                                if result1 is not None:
+                                                    for item1 in result1:
+                                                        class_name1 = item1.get(constants.RESULT_KEY_CLASS_NAME, None)
+                                                        if class_name1 is not None:
+                                                            for group_name_, data_classes1 in self.__concat_data_classes.items():
+                                                                for data_class_name1 in data_classes1:
+                                                                    if string_helper.wildcard(class_name1, data_class_name1):
+                                                                        # item1[constants.RESULT_KEY_TRACK_ID] = track_id
+                                                                        # item1[constants.RESULT_KEY_DATA] = class_name1
+                                                                        key = "concat_data" + str(track_id)
+                                                                        gate["groups"][group_name_][key] = class_name1
+                                        #######
+
                                         if track_id is not None and track_id not in g_handled_indexes:
                                             rect = item.get(constants.RESULT_KEY_RECT, None)
                                             [x1, y1, x2, y2] = rect
@@ -181,24 +197,28 @@ class ObjectCounterRunner(Thread, NDUCameraRunner):
                                                 p0 = self._track_pnts[track_id][0]
                                                 # p0 = self._track_pnts[track_id][-2]
 
-                                                if self.__debug:
-                                                    cv2.line(frame, p0, p1, [0, 0, 255], 3)
-                                                    cv2.line(frame, p1, p1, [255, 255, 0], 5)
+                                                # if self.__debug:
+                                                #     cv2.line(frame, p0, p1, [0, 0, 255], 3)
+                                                #     cv2.line(frame, p1, p1, [255, 255, 0], 5)
 
                                                 if self.intersect(p0, p1, line[0], line[1]):
                                                     g_handled_indexes.append(track_id)
+                                                    del self._track_pnts[track_id]
 
                                                     # group_name = self.__class_name_to_group_name[class_name]
+                                                    group = gate["groups"][group_name]
                                                     if self.on_left(line, p0):
-                                                        gate["groups"][group_name]["enter"] += 1
+                                                        group["enter"] += 1
                                                     else:
-                                                        gate["groups"][group_name]["exit"] += 1
+                                                        group["exit"] += 1
+                                                    group[constants.RESULT_KEY_TRACK_ID] = track_id
                                                     changed = True
-                                if self.__concat_data_classes is not None:
-                                    for group_name, data_classes in self.__concat_data_classes.items():
-                                        for data_class_name in data_classes:
-                                            if string_helper.wildcard(class_name, data_class_name):
-                                                gate["groups"][group_name]["concat_data"] = class_name
+
+                                # if self.__concat_data_classes is not None:
+                                #     for group_name, data_classes in self.__concat_data_classes.items():
+                                #         for data_class_name in data_classes:
+                                #             if string_helper.wildcard(class_name, data_class_name):
+                                #                 gate["groups"][group_name]["concat_data"] = class_name
 
         if changed or self.frame_count == 1:
             for gate in self.__gates:
@@ -217,13 +237,20 @@ class ObjectCounterRunner(Thread, NDUCameraRunner):
                         data = {telemetry_enter: all_enter, telemetry_exit: all_exit}
                         group["enter"] = 0
                         group["exit"] = 0
-                    concat_data = group.get("concat_data", None)
-                    if concat_data is not None:
-                        del group["concat_data"]
-                        data["concat_data"] = concat_data
+                    track_id = group.get(constants.RESULT_KEY_TRACK_ID, None)
+                    if track_id is not None:
+                        key = "concat_data" + str(track_id)
+                        concat_data = group.get(key, None)
+                        if concat_data is not None:
+                            del group[key]
+                            data["concat_data"] = concat_data
                     if self._last_data[group_name] != data:
-                        res.append({constants.RESULT_KEY_DATA: data})
+                        if track_id is not None:
+                            res.append({constants.RESULT_KEY_DATA: data, constants.RESULT_KEY_TRACK_ID: track_id})
+                        else:
+                            res.append({constants.RESULT_KEY_DATA: data})
                         self._last_data[group_name] = data
+
                     # if self.__debug:
                     if self.__debug and (all_enter > 0 or all_exit > 0):
                         debug_text = "{} - Giren:{} Cikan:{}".format(tel_name.replace("Gate", "Kapi"), all_enter, all_exit)

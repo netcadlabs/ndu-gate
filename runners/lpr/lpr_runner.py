@@ -17,7 +17,8 @@ class LprRunner(NDUCameraRunner):
 
         self._rects = config.get("rects", None)
         self._min_confidence = config.get("min_confidence_percentage", 0) / 100.0
-        self._resize = config.get("resize", 0)
+        self._resize_width = config.get("resize_width", 0)
+        self._send_data = config.get("send_data", False)
 
         city_codes_fn = "/data/city_codes.json"
         if not os.path.isfile(city_codes_fn):
@@ -76,51 +77,67 @@ class LprRunner(NDUCameraRunner):
                 yield frame_, None, None
             else:
                 for _class_name, _score, rect_, item_ in NDUUtility.enumerate_results(extra_data, class_name_filters=self._rects, use_wildcard=False, return_item=True):
-                    yield image_helper.crop(frame, rect_), rect_, item_
+                    y1, x1, y2, x2 = rect_
+                    w = x2 - x1
+                    if w > 200:
+                        # yield image_helper.crop(frame, rect_), rect_, item_
+                        h = y2 - y1
+                        # h_margin = min(w, h) * 0.5
+                        h_margin = w * 0.5
+                        r = [y2 - h_margin, x1, y2 + h_margin * 0.5, x2]
+                        yield image_helper.crop(frame, r), r, item_
 
         res = []
         for image, rect, item in enumerate_images(frame):
             h0, w0 = image_helper.image_h_w(image)
-            if w0 > 200:
-                if self._resize > 0:
-                    image = image_helper.resize(image, width=self._resize)
+            if self._resize_width > 0:
+                image = image_helper.resize(image, width=self._resize_width)
+            # while w0 < 1200:
+            #     image = cv2.pyrUp(image)
+            #     h0, w0 = image_helper.image_h_w(image)
 
-                # image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-                # image = cv2.pyrUp(image)
-                # image = cv2.pyrUp(image)
-                cv2.imshow("lpr", image)
-                cv2.waitKey(1)
+            # # image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+            # # image = cv2.pyrUp(image)
+            # # image = cv2.pyrUp(image)
+            # cv2.imshow("lpr", image)
+            # cv2.waitKey(200)
 
-                h1, w1 = image_helper.image_h_w(image)
-                rh = h0 / h1
-                rw = h0 / h1
+            h1, w1 = image_helper.image_h_w(image)
+            rh = h0 / h1
+            rw = h0 / h1
 
-                success, encoded_image = cv2.imencode('.jpg', image)
-                content2 = encoded_image.tobytes()
-                results = self._alpr.recognize_array(content2)
+            success, encoded_image = cv2.imencode('.jpg', image)
+            content2 = encoded_image.tobytes()
+            results = self._alpr.recognize_array(content2)
 
-                for plate in results['results']:
-                    txt = plate["plate"]
-                    if len(txt) > 2:
-                        score = plate["confidence"] / 100.0
-                        if score > self._min_confidence:
-                            city_code = txt[0:2]
-                            city_name = None
-                            if city_code in self._cities:
-                                city_name = self._cities[city_code]
+            for plate in results['results']:
+                txt = plate["plate"]
+                if len(txt) > 2:
+                    score = plate["confidence"] / 100.0
+                    if score > self._min_confidence:
+                        city_code = txt[0:2]
+                        city_name = None
+                        if city_code in self._cities:
+                            city_name = self._cities[city_code]
+                        if city_name is None:
+                            class_name = "PL: {}".format(txt)
+                        else:
+                            class_name = "PL: {} {}".format(city_name, txt)
+
+                        val = {constants.RESULT_KEY_RECT: to_bbox(plate["coordinates"], rect, rh, rw),
+                               constants.RESULT_KEY_SCORE: score,
+                               constants.RESULT_KEY_CLASS_NAME: class_name}
+                        # if city_name is not None:
+                        #     val[constants.RESULT_KEY_DATA] = {"license_plate": city_name}
+                        if item is not None:
+                            track_id = item.get(constants.RESULT_KEY_TRACK_ID, None)
+                            if track_id is not None:
+                                val[constants.RESULT_KEY_TRACK_ID] = track_id
+                        if self._send_data:
                             if city_name is None:
-                                class_name = "PL: {}".format(txt)
+                                val[constants.RESULT_KEY_DATA] = {"pl": txt}
                             else:
-                                class_name = "PL: {} {}".format(city_name, txt)
+                                val[constants.RESULT_KEY_DATA] = {"pl": txt, "city": city_name}
 
-                            val = {constants.RESULT_KEY_RECT: to_bbox(plate["coordinates"], rect, rh, rw),
-                                   constants.RESULT_KEY_SCORE: score,
-                                   constants.RESULT_KEY_CLASS_NAME: class_name}
-                            # if city_name is not None:
-                            #     val[constants.RESULT_KEY_DATA] = {"license_plate": city_name}
-                            if item is not None:
-                                track_id = item.get(constants.RESULT_KEY_RECT_TRACK_ID, None)
-                                if track_id is not None:
-                                    val[constants.RESULT_KEY_RECT_TRACK_ID] = track_id
-                            res.append(val)
+                        res.append(val)
         return res

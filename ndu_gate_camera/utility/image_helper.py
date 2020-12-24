@@ -78,7 +78,7 @@ def resize(image, width=None, height=None, interpolation=None):
 
 
 # total_pixel_count sonucun width * height değeridir.
-# int yuvarlaması yüzünden sonuç w*h değer, tam total_pixel_count olmayabilir.
+# int yuvarlama yüzünden sonuç w*h değer, tam total_pixel_count olmayabilir.
 def resize_total_pixel_count(image, total_pixel_count):
     h, w = image.shape[:2]
     ratio = w / float(h)
@@ -224,7 +224,7 @@ def select_points(frame, window_name, color=(0, 255, 255), radius=8, thickness=4
         cv2.destroyWindow(window_name)
 
 
-def put_text(img, text_, center, color=None, font_scale=0.5, thickness=1, back_color=None, replace_tur_chars= True):
+def put_text(img, text_, center, color=None, font_scale=0.5, thickness=1, back_color=None, replace_tur_chars=True):
     if replace_tur_chars:
         text_ = NDUUtility.debug_replace_tur_chars(text_)
     if back_color is None:
@@ -313,3 +313,21 @@ def crop(frame, rect):
     y2 = max(int(rect[2]), 0)
     x2 = max(int(rect[3]), 0)
     return frame[y1:y2, x1:x2]
+
+
+def change_brightness(img, value):
+    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    h, s, v = cv2.split(hsv)
+
+    if value >0:
+        lim = 255 - value
+        v[v > lim] = 255
+        v[v <= lim] += value
+    else:
+        lim = 0 - value
+        v[v < lim] = 0
+        v[v >= lim] -= abs(value)
+
+    final_hsv = cv2.merge((h, s, v))
+    img = cv2.cvtColor(final_hsv, cv2.COLOR_HSV2BGR)
+    return img

@@ -59,7 +59,10 @@ class NDUCameraService(Thread):
             self.__preview_show_runner_info = self.SOURCE_CONFIG.get("preview_show_runner_info", True)
             self.__preview_show_score = self.SOURCE_CONFIG.get("preview_show_score", False)
             self.__preview_show_rect_name = self.SOURCE_CONFIG.get("preview_show_rect_name", True)
-            self.__preview_show_rect_track_id = self.SOURCE_CONFIG.get("preview_show_rect_track_id", True)
+            self.__preview_show_track_id = self.SOURCE_CONFIG.get("preview_show_track_id", True)
+            self.__preview_show_track_pnt = self.SOURCE_CONFIG.get("preview_show_track_pnt", True)
+            if self.__preview_show_track_pnt:
+                self._track_pnt_layer = None
             self.__preview_show_rect_filter = self.SOURCE_CONFIG.get("preview_show_rect_filter", None)
 
             self.__preview_write = self.SOURCE_CONFIG.get("preview_write", False)
@@ -89,6 +92,7 @@ class NDUCameraService(Thread):
         self._connect_with_runners()
 
         self.video_source = None
+        self._steps = {}
         # self._start()
 
     # def run(self):
@@ -166,7 +170,8 @@ class NDUCameraService(Thread):
                         "priority": runner_priority,
                         "runner_key": runner_key,
                         "runner_unique_key": runner_unique_key,
-                        "step": runner.get("step", None)
+                        "step_frame": runner.get("step_frame", None),
+                        "step_sec": runner.get("step_sec", None)
                     }
 
                 except Exception as e:
@@ -313,6 +318,13 @@ class NDUCameraService(Thread):
         # TODO - runner dependency ile kimin çıktısı kimn giridisi olacak şeklinde de olabilir
 
         try:
+            for runner_unique_key in self.available_runners:
+                runner_conf = self.runners_configs_by_key[runner_unique_key]
+                step_sec = runner_conf.get("step_sec", None)
+                step_frame = runner_conf.get("step_frame", None)
+                if step_sec is not None or step_frame is not None:
+                    self._steps[runner_unique_key] = [step_sec, 0, step_frame]
+
             device = self.SOURCE_CONFIG.get("device", None)
             i = -1
             last_thresh = last_gray = None
@@ -333,7 +345,7 @@ class NDUCameraService(Thread):
                         no_zero = cv2.countNonZero(last_thresh)
                         if self.__preview_show_motion_kernel:
                             image_helper.put_text(last_thresh, str(no_zero), [50, 50])
-                        # cv2.imshow("aaa", last_thresh)
+                        # cv2.imshow("last_thresh", last_thresh)
                         # cv2.waitKey(1)
                         if no_zero <= 1:
                             continue
@@ -372,22 +384,32 @@ class NDUCameraService(Thread):
                     # TODO - check runner settings before send the frame to runner
                     for runner_unique_key in self.available_runners:
                         try:
+                            start_time = time.time()
+                            step = self._steps.get(runner_unique_key, None)
+                            if step is not None:
+                                step_sec = step[0]
+                                last_time = step[1]
+                                step_frame = step[2]
+                                if step_frame is not None and i % step_frame != 0:
+                                    continue
+                                if step_sec is not None:
+                                    diff = (start_time - last_time)
+                                    if diff <= step_sec:
+                                        continue
+                                    else:
+                                        step[1] = start_time
+
                             runner_conf = self.runners_configs_by_key[runner_unique_key]
-                            step = runner_conf["step"]
-                            if step is not None and i % step != 0:
-                                continue
-                            start = time.time()
                             results = self.available_runners[runner_unique_key].process_frame(frame, extra_data=extra_data)
-                            elapsed = time.time() - start
+                            elapsed = time.time() - start_time
                             if self.__preview_show and results is not None:
                                 results.append({"elapsed_time": '{}: {:.4f}sn fps:{:.0f}'.format(runner_conf["type"], elapsed, 1.0 / max(elapsed, 0.001))})
                             extra_data[constants.EXTRA_DATA_KEY_RESULTS][runner_unique_key] = results
                             log.debug("result : %s", results)
 
-                            if results is not None:
-                                self._check_track(runner_unique_key, results)
-                                all_runner_results.append(results)
-                                self.__result_handler.save_result(results, device=device, runner_name=runner_conf["name"])
+                            results = self._check_track(runner_unique_key, results)
+                            all_runner_results.append(results)
+                            self.__result_handler.save_result(results, device=device, runner_name=runner_conf["name"])
 
                         except Exception as e:
                             log.exception(e)
@@ -426,37 +448,51 @@ class NDUCameraService(Thread):
         log.info("Video source is finished")
 
     def _check_track(self, runner_unique_key, results):
-        for result in results:
-            if constants.RESULT_KEY_RECT_TRACK_ID in result:
-                if runner_unique_key not in self._track_history:
-                    self._track_history[runner_unique_key] = {}
-                history = self._track_history[runner_unique_key]
-                track_id = result[constants.RESULT_KEY_RECT_TRACK_ID]
-                if track_id not in history:
-                    history[track_id] = {"result": result, "age": 0}
-                else:
-                    result0 = history[track_id]["result"]
-                    history[track_id]["age"] = 0
-                    score = result.get(constants.RESULT_KEY_SCORE, 0.9)
-                    score0 = result0.get(constants.RESULT_KEY_SCORE, 0.9)
-                    if score < score0:
-                        for key in [constants.RESULT_KEY_DATA, constants.RESULT_KEY_CLASS_NAME, constants.RESULT_KEY_DEBUG]:
-                            if key in result0:
-                                result[key] = result0[key]
-                        result[constants.RESULT_KEY_SCORE] = score0
+        res = []
+        if results is not None:
+            for result in results:
+                if constants.RESULT_KEY_TRACK_ID in result:
+                    if runner_unique_key not in self._track_history:
+                        self._track_history[runner_unique_key] = {}
+                    history = self._track_history[runner_unique_key]
+                    track_id = result[constants.RESULT_KEY_TRACK_ID]
+                    if track_id not in history:
+                        history[track_id] = {"result": result, "age": 0}
                     else:
-                        history[track_id]["result"] = result
+                        result0 = history[track_id]["result"]
+                        history[track_id]["age"] = 0
+                        score = result.get(constants.RESULT_KEY_SCORE, 0.9)
+                        score0 = result0.get(constants.RESULT_KEY_SCORE, 0.9)
+                        if score < score0:
+                            for key in [constants.RESULT_KEY_DATA, constants.RESULT_KEY_CLASS_NAME, constants.RESULT_KEY_DEBUG]:
+                                if key in result0:
+                                    result[key] = result0[key]
+                            result[constants.RESULT_KEY_SCORE] = score0
+                        else:
+                            history[track_id]["result"] = result
+                    if constants.RESULT_KEY_DATA in result:
+                        result = result.copy()
+                        del result[constants.RESULT_KEY_DATA]
+                    res.append(result)
+                else:
+                    res.append(result)
 
-    def _age_track_history(self):
         for i, (runner_unique_key, history) in enumerate(self._track_history.items()):
             del_lst = []
             for track_id, h in history.items():
                 if h["age"] > 50:
+                    result = history[track_id]["result"]
+                    res.append(result)
                     del_lst.append(track_id)
-                else:
-                    h["age"] += 1
             for track_id in del_lst:
                 del history[track_id]
+
+        return res
+
+    def _age_track_history(self):
+        for i, (runner_unique_key, history) in enumerate(self._track_history.items()):
+            for track_id, h in history.items():
+                h["age"] += 1
 
     def _write_frame(self, frame):
         def get_free_file_name(fn):
@@ -471,7 +507,7 @@ class NDUCameraService(Thread):
 
         try:
             self.__out.write(frame)
-        except:  # daha iyi bir yolunu bulursanız, bana da gösterin -> korhun :)
+        except:
             shape = frame.shape[1], frame.shape[0]
             fourcc = cv2.VideoWriter_fourcc(*'MP4V')
             # fourcc = cv2.VideoWriter_fourcc(*'AVC1')
@@ -504,13 +540,15 @@ class NDUCameraService(Thread):
 
             cv2.rectangle(img, (c1_[0], c1_[1]), (c2_[0], c2_[1]), color=[0, 0, 0], thickness=3)
             cv2.rectangle(img, (c1_[0], c1_[1]), (c2_[0], c2_[1]), color=color, thickness=2)
+            return color
 
         show_debug_texts = self.__preview_show_debug_texts
         show_runner_info = self.__preview_show_runner_info
         show_score = self.__preview_show_score
         rect_filter = self.__preview_show_rect_filter
         show_rect_name = self.__preview_show_rect_name
-        show_rect_track_id = self.__preview_show_rect_track_id
+        show_track_id = self.__preview_show_track_id
+        show_track_pnt = self.__preview_show_track_pnt
 
         h, w, *_ = image.shape
         line_height = 20
@@ -558,16 +596,35 @@ class NDUCameraService(Thread):
                     if rect is not None and (rect_filter is None or string_helper.wildcard(class_name, rect_filter)):
                         c = np.array(rect[:4], dtype=np.int32)
                         c1, c2 = [c[1], c[0]], (c[3], c[2])
-                        draw_rect(self, image, c1, c2, class_preview_key, item.get(constants.RESULT_KEY_RECT_COLOR, None))
+                        color = draw_rect(self, image, c1, c2, class_preview_key, item.get(constants.RESULT_KEY_RECT_COLOR, None))
                         if show_rect_name and len(text) > 0:
                             c1[1] = c1[1] + line_height
                             image_helper.put_text(image, text, c1)
                             text = ""
-                        if show_rect_track_id:
-                            track_id = item.get(constants.RESULT_KEY_RECT_TRACK_ID, None)
+                        if show_track_id:
+                            track_id = item.get(constants.RESULT_KEY_TRACK_ID, None)
                             if track_id is not None:
                                 c1[1] = c1[1] - line_height * 1.5
                                 image_helper.put_text(image, "{}".format(track_id), c1)
+                        if show_track_pnt:
+                            track_id = item.get(constants.RESULT_KEY_TRACK_ID, None)
+                            if track_id is not None:
+                                if self._track_pnt_layer is None:
+                                    h, w = image_helper.image_h_w(image)
+                                    self._track_pnt_layer = np.zeros((h, w, 3), np.uint8)
+                                self._track_pnt_layer = image_helper.change_brightness(self._track_pnt_layer, -1)
+                                y1, x1, y2, x2 = tuple(rect)
+                                pnt = (int(x1 + (x2 - x1) * 0.5), int(y2))
+                                # color = [255,255,255]
+                                cv2.circle(self._track_pnt_layer, pnt, 1, color, 8)
+                                # image = cv2.addWeighted(image, 1, self._track_pnt_layer, 1,)
+                                # ret, mask = cv2.threshold(self._track_pnt_layer, 1, 255, cv2.THRESH_BINARY)
+                                # mask = cv2.bitwise_not(mask)
+                                # mask = cv2.cvtColor(mask, cv2.COLOR_BGR2GRAY)
+                                # image = cv2.bitwise_and(image, image, mask=mask)
+                                image = cv2.addWeighted(image, 1, self._track_pnt_layer, 1, 1)
+                                # image += self._track_pnt_layer
+
                     if elapsed_time is not None:
                         text_type = elapsed_time + " " + text_type
                     if len(text) > 0:
