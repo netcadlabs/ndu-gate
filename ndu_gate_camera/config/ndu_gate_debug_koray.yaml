@@ -17,7 +17,7 @@ instances:
 #      max_frame_dim: 600
 
       preview_show: True
-#      preview_show_track_pnt: True
+      preview_show_track_pnt: True
 #      preview_show_debug_texts: False
 #      preview_show_runner_info: False
 #      preview_show_score: False
@@ -26,7 +26,7 @@ instances:
 #      preview_show_rect_filter: "PL*"
 
 #      preview_write: True
-#      preview_write_file_name: C:/_koray/temp/preview.mp4
+      preview_write_file_name: C:/_koray/temp/preview.mp4
 #      sleep: 0.1
 #      skip_frame: 5
 #      skip_frame: 15
@@ -52,7 +52,7 @@ instances:
 #      file_path: highway/highway_600.mp4
 #      file_path: highway/highway_1024.mp4
 #      file_path: highway/highway_1600.mp4
-#      file_path: highway/highway_1600_trim.mp4
+      file_path: highway/highway_1600_trim.mp4
 #      file_path: highway/highway_max.mp4
 
 #      file_path: çanakkale_stream/CANAKKALE-10.10.0.85.mp4
@@ -62,7 +62,7 @@ instances:
 
 #      file_path: çanakkale.mp4 #car - pedestrians
 #      file_path: çanakkale0.mp4 #pedestrians
-      file_path: çanakkale_yaya.mp4 #pedestrians
+#      file_path: çanakkale_yaya.mp4 #pedestrians
 #      file_path: çanakkale_araba.mp4 #
 #      file_path: çanakkale_hızlı.mp4 #
 #      file_path: çanakkale0/kavsak1.mp4
@@ -92,8 +92,53 @@ instances:
 #      url: https://youtu.be/TlInDQgg2G4  #mask
 #      url: https://www.youtube.com/watch?v=ho1QG2OEMFs&t=26s  #plaka tur
 #      url: https://www.youtube.com/watch?v=8Ts9M2f11HE  #plaka drag
-      url: https://www.youtube.com/watch?v=z4IMAiYVF4g  #plaka trafik
+#      url: https://www.youtube.com/watch?v=z4IMAiYVF4g  #plaka trafik
 #      url: https://youtu.be/MNn9qKG2UFI  #highway
+
+#      url: https://www.youtube.com/watch?v=A16ZQ2FHDDo #street sabit
+#      url: https://www.youtube.com/watch?v=ycKg81LQxlM #street sabit hindistan
+
+      url: https://www.youtube.com/watch?v=eJ7ZkQ5TC08 #LIVE new-york
+#      url: https://www.youtube.com/watch?v=RQA5RcIZlAM #LIVE Tokyo
+#      url: https://www.youtube.com/watch?v=lkIJYc4UH60 #LIVE Tokyo kavşak
+#      url: https://www.youtube.com/watch?v=Cp4RRAEgpeU #LIVE kar
+#      url: https://www.youtube.com/watch?v=jbqT0fTj088 #LIVE rusya
+#      url: https://www.youtube.com/watch?v=jbqT0fTj088 #LIVE st petersburg
+#      url: https://www.youtube.com/watch?v=KGEekP1102g #LIVE amsterdam
+
+
+
+
+#      url: https://www.youtube.com/watch?v=3FXUw98rrUY #sahil
+#      url: https://youtu.be/8pXFktAbx5Y #kalabalık
+#      url: https://youtu.be/NyLF8nHIquM #london street
+#      url: https://youtu.be/szZWplKlQNI #istiklal
+#      url: https://youtu.be/n5b_nIzdvfI #black or white
+#      url: https://youtu.be/Xygk7UjKM2g #faces around world
+#      url: https://youtu.be/AqFWYZsOgWY #kalabalık oturanlar
+#      url: https://youtu.be/N9JtUC8hl8o #benchmark
+#      url: https://www.youtube.com/watch?v=0wNgUXGTKdg #street
+#      url: https://youtu.be/embYkODkzcs  #emotion
+#      url: https://youtu.be/LdQw8PSV2P8  #emotion
+#      url: https://www.youtube.com/watch?v=TVkrmWkDIxA  #emotion long mask
+#      url: https://www.youtube.com/watch?v=R3JK2xqYK1o  #emotion
+#      url: https://www.youtube.com/watch?v=g-dyHadto2Y  #mask
+#      url: https://youtu.be/TlInDQgg2G4  #mask
+#      url: https://youtu.be/MNn9qKG2UFI  #highway
+#
+#
+#      url: https://www.youtube.com/watch?v=CjJynPk007w #helmet
+#      url: https://www.youtube.com/watch?v=oHEWcefPWws #helmet
+#      url: https://www.youtube.com/watch?v=8kpHK4YIwY4 #helmet
+#      url: https://www.youtube.com/watch?v=bkBAWvQMU0Y  #helmet
+#      url: https://www.youtube.com/watch?v=IIFBq9aSzPM  #helmet
+#      url: https://www.youtube.com/watch?v=sFieyNnJOHg  #helmet komik
+#      url: https://youtu.be/WJi4M2Ee474  #helmet kamera şakası
+#      url: https://www.youtube.com/watch?v=fQva-QqIEK4  #helmet crash
+#      url: https://www.youtube.com/watch?v=7BUCFyPpCNg&t=52s  #helmet
+#      url: https://www.youtube.com/watch?v=tNMgxQAkn2A  #helmet
+
+
 
 #      motion_kernel: 11
 #      preview_show_motion_kernel: True
@@ -104,8 +149,16 @@ instances:
         configuration: yolov5s.json
         class: Yolov5sRunner
         priority: 10
-#        step_frame: 10
-        step_sec: 1.5
+        step_frame: 30
+#        step_sec: 2
+
+#      - name: yolov5x - Object detection with 80 classes (Fast)
+#        type: yolov5x
+#        configuration: yolov5x.json
+#        class: Yolov5xRunner
+#        priority: 10
+##        step_frame: 30
+
 
       - name: Tracker
         type: tracker
@@ -113,11 +166,11 @@ instances:
         class: TrackerRunner
         priority: 50
 
-      - name: lpr - Licence Plate Recognition
-        type: lpr
-        configuration: lpr.json
-        class: LprRunner
-        priority: 75
+#      - name: lpr - Licence Plate Recognition
+#        type: lpr
+#        configuration: lpr.json
+#        class: LprRunner
+#        priority: 75
 
       - name: Object Counter
         type: object_counter

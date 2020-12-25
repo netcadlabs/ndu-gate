@@ -63,6 +63,7 @@ class NDUCameraService(Thread):
             self.__preview_show_track_pnt = self.SOURCE_CONFIG.get("preview_show_track_pnt", False)
             if self.__preview_show_track_pnt:
                 self._track_pnt_layer = None
+                self._track_pnts = {}
             self.__preview_show_rect_filter = self.SOURCE_CONFIG.get("preview_show_rect_filter", None)
 
             self.__preview_write = self.SOURCE_CONFIG.get("preview_write", False)
@@ -526,7 +527,7 @@ class NDUCameraService(Thread):
             return [max(50, 255 - c[0]), max(50, 255 - c[1]), max(50, 255 - c[2])]
 
     def _get_preview(self, image, results):
-        def draw_rect(obj, img, c1_, c2_, class_preview_key_, color=None):
+        def get_color(obj, class_preview_key_, color=None):
             if color is None:
                 color = [255, 255, 255]
                 if class_preview_key_ is not None:
@@ -537,10 +538,13 @@ class NDUCameraService(Thread):
                         color = dic[class_preview_key_]
                     else:
                         color = dic[class_preview_key_] = self._new_color()
+            return color
 
+        def draw_rect(obj, img, c1_, c2_, class_preview_key_, color=None):
+            if color is None:
+                color = get_color(obj, class_preview_key_, color)
             cv2.rectangle(img, (c1_[0], c1_[1]), (c2_[0], c2_[1]), color=[0, 0, 0], thickness=3)
             cv2.rectangle(img, (c1_[0], c1_[1]), (c2_[0], c2_[1]), color=color, thickness=2)
-            return color
 
         show_debug_texts = self.__preview_show_debug_texts
         show_runner_info = self.__preview_show_runner_info
@@ -593,15 +597,18 @@ class NDUCameraService(Thread):
                         data_added.append(add_txt)
                         text = text + add_txt
                         has_data = True
-                    if rect is not None and (rect_filter is None or string_helper.wildcard(class_name, rect_filter)):
+                    if rect is not None:
                         c = np.array(rect[:4], dtype=np.int32)
                         c1, c2 = [c[1], c[0]], (c[3], c[2])
-                        color = draw_rect(self, image, c1, c2, class_preview_key, item.get(constants.RESULT_KEY_RECT_COLOR, None))
-                        if show_rect_name and len(text) > 0:
+                        color_rect = get_color(self, class_preview_key, item.get(constants.RESULT_KEY_RECT_COLOR, None))
+                        show_rect =rect_filter is None or string_helper.wildcard(class_name, rect_filter)
+                        if show_rect:
+                            draw_rect(self, image, c1, c2, class_preview_key, color_rect)
+                        if show_rect and show_rect_name and len(text) > 0:
                             c1[1] = c1[1] + line_height
                             image_helper.put_text(image, text, c1)
                             text = ""
-                        if show_track_id:
+                        if show_rect and show_track_id:
                             track_id = item.get(constants.RESULT_KEY_TRACK_ID, None)
                             if track_id is not None:
                                 c1[1] = c1[1] - line_height * 1.5
@@ -615,13 +622,25 @@ class NDUCameraService(Thread):
                                 self._track_pnt_layer = image_helper.change_brightness(self._track_pnt_layer, -1)
                                 y1, x1, y2, x2 = tuple(rect)
                                 pnt = (int(x1 + (x2 - x1) * 0.5), int(y2))
-                                pnts = item.get("last_track_pnts", [])
+                                pnts_key = str(track_id)
+                                pnts = self._track_pnts.get(pnts_key, [])
                                 pnts.append(pnt)
-                                item["last_track_pnts"] = pnts
+                                self._track_pnts[pnts_key] = pnts
                                 if len(pnts)>1:
                                     pts = np.array(pnts, np.int32)
                                     # cv2.polylines(self._track_pnt_layer, [pts], False, color, 5)
-                                    cv2.polylines(image, [pts], False, color, 5)
+                                    # cv2.polylines(image, [pts], False, color_rect, 5)
+                                    thickness = 10
+                                    for i in range(len(pnts)-1,0,-1):
+                                        p0 = pnts[i]
+                                        p1 = pnts[i-1]
+                                        cv2.line(image,p0,p1,color_rect,thickness)
+                                        if i % 10 == 0:
+                                            thickness -= 1
+                                            if thickness < 1:
+                                                # pnts = pnts[i: len(pnts)]
+                                                break
+
                                 # color = [255,255,255]
                                 # cv2.circle(self._track_pnt_layer, pnt, 1, color, 8)
                                 # image = cv2.addWeighted(image, 1, self._track_pnt_layer, 1,)

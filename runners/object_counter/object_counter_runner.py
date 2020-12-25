@@ -33,6 +33,8 @@ class ObjectCounterRunner(Thread, NDUCameraRunner):
         self._track_pnts = {}
         self._last_data = {}
 
+        self._send_sub_classes = True
+
     def get_name(self):
         return "ObjectCounterRunner"
 
@@ -124,11 +126,15 @@ class ObjectCounterRunner(Thread, NDUCameraRunner):
                         "groups": {}}
                 for group_name, sub_classes in self.__classes.items():
                     gate["groups"][group_name] = {"enter": 0, "exit": 0}
+                    if self._send_sub_classes:
+                        for name in sub_classes:
+                            gate["groups"][name] = {"enter": 0, "exit": 0}
                 self.__gates.append(gate)
             for group_name, sub_classes in self.__classes.items():
                 self._last_data[group_name] = None
-                # for class_name in sub_classes:
-                #     self.__class_name_to_group_name[class_name] = group_name
+                if self._send_sub_classes:
+                    for class_name in sub_classes:
+                        self._last_data[class_name] = None
 
         for gate in self.__gates:
             line = gate["line"]
@@ -205,14 +211,17 @@ class ObjectCounterRunner(Thread, NDUCameraRunner):
                                                     g_handled_indexes.append(track_id)
                                                     del self._track_pnts[track_id]
 
-                                                    # group_name = self.__class_name_to_group_name[class_name]
-                                                    group = gate["groups"][group_name]
-                                                    if self.on_left(line, p0):
-                                                        group["enter"] += 1
-                                                    else:
-                                                        group["exit"] += 1
-                                                    group[constants.RESULT_KEY_TRACK_ID] = track_id
-                                                    changed = True
+                                                    names = [group_name]
+                                                    if self._send_sub_classes:
+                                                        names.append(class_name)
+                                                    for name in names:
+                                                        group = gate["groups"][name]
+                                                        if self.on_left(line, p0):
+                                                            group["enter"] += 1
+                                                        else:
+                                                            group["exit"] += 1
+                                                        group[constants.RESULT_KEY_TRACK_ID] = track_id
+                                                        changed = True
 
                                 # if self.__concat_data_classes is not None:
                                 #     for group_name, data_classes in self.__concat_data_classes.items():
