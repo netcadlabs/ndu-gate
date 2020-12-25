@@ -1,7 +1,7 @@
 {
-  "_tracker_algorithm": "KCF_600",
+  "tracker_algorithm": "KCF_600",
   "_tracker_algorithm": "KCF",
-  "tracker_algorithm": "CSRT",
+  "_tracker_algorithm": "CSRT",
   "_tracker_algorithm": "MOSSE",
   "_tracker_algorithm": "Boosting",
   "_tracker_algorithm": "MedianFlow",
@@ -15,9 +15,6 @@
     ],
     "kisi": [
       "person"
-    ],
-    "plaka": [
-      "PL:*"
     ]
   }
 }

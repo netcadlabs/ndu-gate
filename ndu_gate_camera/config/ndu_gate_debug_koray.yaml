@@ -44,7 +44,7 @@ instances:
 
       data_folder: C:/_koray/test_data/
 #      file_path: bakanlik.avi
-      file_path: lpr/canakkale_plaka (1).mp4
+#      file_path: lpr/canakkale_plaka (1).mp4
 #      file_path: lpr/canakkale_plaka (2).mp4
 #      file_path: vid_short.mp4 #pedestrians
 
@@ -62,7 +62,7 @@ instances:
 
 #      file_path: çanakkale.mp4 #car - pedestrians
 #      file_path: çanakkale0.mp4 #pedestrians
-#      file_path: çanakkale_yaya.mp4 #pedestrians
+      file_path: çanakkale_yaya.mp4 #pedestrians
 #      file_path: çanakkale_araba.mp4 #
 #      file_path: çanakkale_hızlı.mp4 #
 #      file_path: çanakkale0/kavsak1.mp4
@@ -105,7 +105,7 @@ instances:
         class: Yolov5sRunner
         priority: 10
 #        step_frame: 10
-#        step_sec: 0.5
+        step_sec: 1.5
 
       - name: Tracker
         type: tracker

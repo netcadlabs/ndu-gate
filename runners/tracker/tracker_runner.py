@@ -54,8 +54,8 @@ class TrackerRunner(Thread, NDUCameraRunner):
                         return group_name
                     else:
                         for sub_class in sub_classes:
-                            string_helper.wildcard_has_match(class_name_, sub_class)
-                            return group_name
+                            if string_helper.wildcard_has_match(class_name_, sub_class):
+                                return group_name
                 return None
             else:
                 return class_name_
