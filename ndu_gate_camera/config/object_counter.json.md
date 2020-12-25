@@ -15,12 +15,27 @@
       "motorbike",
       "truck",
       "bus"
+    ]
+  },
+  "concat_data_classes": {
+      "arac": ["PL:*"]
+  }
+}
+
+{
+  "gates":[[[0.63203125, 0.37777777777777777], [0.05078125, 0.5722222222222222]]],
+  "track": "center",
+  "result_style" : 1,
+  "classes": {
+    "arac": [
+      "car",
+      "bicycle",
+      "motorbike",
+      "truck",
+      "bus"
     ],
     "kisi": [
       "person"
-    ],
-    "plaka": [
-      "PL:*"
     ]
   }
 }

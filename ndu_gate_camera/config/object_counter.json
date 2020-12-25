@@ -10,8 +10,5 @@
       "truck",
       "bus"
     ]
-  },
-  "concat_data_classes": {
-      "arac": ["PL:*"]
   }
 }

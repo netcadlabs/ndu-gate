@@ -60,7 +60,7 @@ class NDUCameraService(Thread):
             self.__preview_show_score = self.SOURCE_CONFIG.get("preview_show_score", False)
             self.__preview_show_rect_name = self.SOURCE_CONFIG.get("preview_show_rect_name", True)
             self.__preview_show_track_id = self.SOURCE_CONFIG.get("preview_show_track_id", True)
-            self.__preview_show_track_pnt = self.SOURCE_CONFIG.get("preview_show_track_pnt", True)
+            self.__preview_show_track_pnt = self.SOURCE_CONFIG.get("preview_show_track_pnt", False)
             if self.__preview_show_track_pnt:
                 self._track_pnt_layer = None
             self.__preview_show_rect_filter = self.SOURCE_CONFIG.get("preview_show_rect_filter", None)
@@ -615,15 +615,23 @@ class NDUCameraService(Thread):
                                 self._track_pnt_layer = image_helper.change_brightness(self._track_pnt_layer, -1)
                                 y1, x1, y2, x2 = tuple(rect)
                                 pnt = (int(x1 + (x2 - x1) * 0.5), int(y2))
+                                pnts = item.get("last_track_pnts", [])
+                                pnts.append(pnt)
+                                item["last_track_pnts"] = pnts
+                                if len(pnts)>1:
+                                    pts = np.array(pnts, np.int32)
+                                    # cv2.polylines(self._track_pnt_layer, [pts], False, color, 5)
+                                    cv2.polylines(image, [pts], False, color, 5)
                                 # color = [255,255,255]
-                                cv2.circle(self._track_pnt_layer, pnt, 1, color, 8)
+                                # cv2.circle(self._track_pnt_layer, pnt, 1, color, 8)
                                 # image = cv2.addWeighted(image, 1, self._track_pnt_layer, 1,)
                                 # ret, mask = cv2.threshold(self._track_pnt_layer, 1, 255, cv2.THRESH_BINARY)
                                 # mask = cv2.bitwise_not(mask)
                                 # mask = cv2.cvtColor(mask, cv2.COLOR_BGR2GRAY)
                                 # image = cv2.bitwise_and(image, image, mask=mask)
-                                image = cv2.addWeighted(image, 1, self._track_pnt_layer, 1, 1)
+                                # image = cv2.addWeighted(image, 1, self._track_pnt_layer, 0.1, 1)
                                 # image += self._track_pnt_layer
+                                # image = self._track_pnt_layer.copy()
 
                     if elapsed_time is not None:
                         text_type = elapsed_time + " " + text_type

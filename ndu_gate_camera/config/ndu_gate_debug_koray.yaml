@@ -17,18 +17,18 @@ instances:
 #      max_frame_dim: 600
 
       preview_show: True
-#      preview_show_track_pnt: False
-#      preview_show_debug_texts: True
+#      preview_show_track_pnt: True
+#      preview_show_debug_texts: False
 #      preview_show_runner_info: False
 #      preview_show_score: False
 #      preview_show_rect_name: False
-#      preview_show_track_id: True
+#      preview_show_track_id: False
 #      preview_show_rect_filter: "PL*"
 
 #      preview_write: True
 #      preview_write_file_name: C:/_koray/temp/preview.mp4
 #      sleep: 0.1
-      skip_frame: 5
+#      skip_frame: 5
 #      skip_frame: 15
 
 
@@ -44,7 +44,7 @@ instances:
 
       data_folder: C:/_koray/test_data/
 #      file_path: bakanlik.avi
-#      file_path: lpr/canakkale_plaka (1).mp4
+      file_path: lpr/canakkale_plaka (1).mp4
 #      file_path: lpr/canakkale_plaka (2).mp4
 #      file_path: vid_short.mp4 #pedestrians
 
@@ -52,7 +52,7 @@ instances:
 #      file_path: highway/highway_600.mp4
 #      file_path: highway/highway_1024.mp4
 #      file_path: highway/highway_1600.mp4
-      file_path: highway/highway_1600_trim.mp4
+#      file_path: highway/highway_1600_trim.mp4
 #      file_path: highway/highway_max.mp4
 
 #      file_path: çanakkale_stream/CANAKKALE-10.10.0.85.mp4
@@ -60,9 +60,29 @@ instances:
 #      file_path: çanakkale_stream/trim.mp4
 #      file_path: çanakkale_stream/CANAKKALE-10.10.190.173.mp4
 
+#      file_path: çanakkale.mp4 #car - pedestrians
+#      file_path: çanakkale0.mp4 #pedestrians
+#      file_path: çanakkale_yaya.mp4 #pedestrians
+#      file_path: çanakkale_araba.mp4 #
+#      file_path: çanakkale_hızlı.mp4 #
+#      file_path: çanakkale0/kavsak1.mp4
+#      file_path: çanakkale0/kavsak2.mp4
+#      file_path: çanakkale0/kavsak7.mp4
+
+#      file_path: çanakkale0/meydan2.mp4
+#      file_path: çanakkale0/yaya4.mp4
+#      file_path: çanakkale0/yaya2.mp4
+#      file_path: çanakkale0/araba2.mp4
+#
+#      file_path: çanakkale1/araba_trim.mov
+#      file_path: çanakkale1/insan_trim.mov
+#      file_path: çanakkale1/otopark_trim.mov
+#      file_path: çanakkale1/otopark_trim_8x.mov
 
 
-#      image_path: lpr/plaka.jpg
+
+
+      #      image_path: lpr/plaka.jpg
 #      image_path: lpr/tr_61.jpg
 #      image_path: lpr/tr_06.jpg
       image_path: lpr/*.jpg
@@ -84,7 +104,7 @@ instances:
         configuration: yolov5s.json
         class: Yolov5sRunner
         priority: 10
-        step_frame: 10
+#        step_frame: 10
 #        step_sec: 0.5
 
       - name: Tracker
@@ -343,18 +363,18 @@ instances:
 ##  file_path: çanakkale_yaya.mp4 #pedestrians
 ##  file_path: çanakkale_araba.mp4 #
 ##  file_path: çanakkale_hızlı.mp4 #
-##  file_path: çanakkale0/kavsak1.mp4
-##  file_path: çanakkale0/kavsak2.mp4
-##  file_path: çanakkale0/kavsak7.mp4
-##  file_path: çanakkale0/meydan2.mp4
-##  file_path: çanakkale0/yaya4.mp4
-##  file_path: çanakkale0/yaya2.mp4
-##  file_path: çanakkale0/araba2.mp4
+##  file_path: çanakkale0/kavsak1.mp4
+##  file_path: çanakkale0/kavsak2.mp4
+##  file_path: çanakkale0/kavsak7.mp4
+##  file_path: çanakkale0/meydan2.mp4
+##  file_path: çanakkale0/yaya4.mp4
+##  file_path: çanakkale0/yaya2.mp4
+##  file_path: çanakkale0/araba2.mp4
 #
-##  file_path: çanakkale1/araba_trim.mov
-##  file_path: çanakkale1/insan_trim.mov
-##  file_path: çanakkale1/otopark_trim.mov
-##  file_path: çanakkale1/otopark_trim_8x.mov
+##  file_path: çanakkale1/araba_trim.mov
+##  file_path: çanakkale1/insan_trim.mov
+##  file_path: çanakkale1/otopark_trim.mov
+##  file_path: çanakkale1/otopark_trim_8x.mov
 #
 #
 ##  image_path: _emotion.jpg
