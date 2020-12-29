@@ -38,18 +38,23 @@ def enumerate_files(dir_path, recursive=False, wildcard_pattern=None, case_insen
     #                 yield os.path.join(dir_path, file_name_with_extension), file_name_with_extension
     if wildcard_pattern is None:
         for root, sub_dirs, files in os.walk(dir_path):
-            for fn in files:
-                yield path_join(root, fn)
+            for name in files:
+                yield path_join(root, name)
             if not recursive:
                 break
     else:
         for root, sub_dirs, files in os.walk(dir_path):
-            for fn in files:
-                name = os.path.basename(fn)
+            for name in files:
+                # name = os.path.basename(fn)
                 if string_helper.wildcard(name, wildcard_pattern, case_insensitive=case_insensitive):
-                    yield fn
+                    yield path_join(root, name)
             if not recursive:
                 break
+
+
+def append_line(filename, line, encoding="utf-8"):
+    with codecs.open(filename, "a", encoding) as f:
+        f.write("%s\n" % line)
 
 
 def get_parent_dir_path(file_name):

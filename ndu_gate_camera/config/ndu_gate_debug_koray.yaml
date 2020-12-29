@@ -17,7 +17,8 @@ instances:
 #      max_frame_dim: 600
 
       preview_show: True
-      preview_show_track_pnt: True
+      preview_show_win_pos: [-1800, 250]
+#      preview_show_track_pnt: True
 #      preview_show_debug_texts: False
 #      preview_show_runner_info: False
 #      preview_show_score: False
@@ -149,16 +150,8 @@ instances:
         configuration: yolov5s.json
         class: Yolov5sRunner
         priority: 10
-        step_frame: 30
-#        step_sec: 2
-
-#      - name: yolov5x - Object detection with 80 classes (Fast)
-#        type: yolov5x
-#        configuration: yolov5x.json
-#        class: Yolov5xRunner
-#        priority: 10
-##        step_frame: 30
-
+#        step_frame: 30
+##        step_sec: 2
 
       - name: Tracker
         type: tracker
@@ -179,12 +172,12 @@ instances:
         priority: 100
 
 
-
-#      - name: Face Mask Detection
-#        type: facemask
-#        configuration: facemask.json
-#        class: FaceMaskRunner
-#        priority: 100
+#
+##      - name: Face Mask Detection
+##        type: facemask
+##        configuration: facemask.json
+##        class: FaceMaskRunner
+##        priority: 100
 
 
 

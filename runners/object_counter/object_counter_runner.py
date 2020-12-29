@@ -253,7 +253,7 @@ class ObjectCounterRunner(Thread, NDUCameraRunner):
                         if concat_data is not None:
                             del group[key]
                             data["concat_data"] = concat_data
-                    if self._last_data[group_name] != data:
+                    if self._result_style != 1 or self._last_data[group_name] != data:
                         if track_id is not None:
                             res.append({constants.RESULT_KEY_DATA: data, constants.RESULT_KEY_TRACK_ID: track_id})
                         else:
@@ -261,7 +261,7 @@ class ObjectCounterRunner(Thread, NDUCameraRunner):
                         self._last_data[group_name] = data
 
                     # if self.__debug:
-                    if self.__debug and (all_enter > 0 or all_exit > 0):
+                    if self.__debug and (all_enter > 0 or all_exit > 0) and self._result_style == 1:
                         debug_text = "{} - Giren:{} Cikan:{}".format(tel_name.replace("Gate", "Kapi"), all_enter, all_exit)
                         # debug_text = "{} - Giren:{} Cikan:{}".format(gate_name.replace("Gate", "Kapi"), all_enter, all_exit)
                         self.__debug_last[tel_name] = debug_text

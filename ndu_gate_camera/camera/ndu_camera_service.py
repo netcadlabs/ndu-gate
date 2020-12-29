@@ -261,9 +261,10 @@ class NDUCameraService(Thread):
     def _show_preview(self):
         if not self.__preview_inited:
             self._winname = self.SOURCE_CONFIG.get("device", "ndu_gate_camera preview")
+            pos = self.SOURCE_CONFIG.get("preview_show_win_pos", [40, 30])
             self._pause = False
             cv2.namedWindow(self._winname)  # Create a named window
-            cv2.moveWindow(self._winname, 40, 30)
+            cv2.moveWindow(self._winname, pos[0], pos[1])
             self.__preview_inited = True
 
         preview = self.__last_preview_image
