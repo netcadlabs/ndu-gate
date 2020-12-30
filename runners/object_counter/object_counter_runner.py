@@ -255,7 +255,9 @@ class ObjectCounterRunner(Thread, NDUCameraRunner):
                             data["concat_data"] = concat_data
                     if self._result_style != 1 or self._last_data[group_name] != data:
                         if track_id is not None:
-                            res.append({constants.RESULT_KEY_DATA: data, constants.RESULT_KEY_TRACK_ID: track_id})
+                            # res.append({constants.RESULT_KEY_DATA: data, constants.RESULT_KEY_TRACK_ID: track_id})
+                            track_id1 = group_name + str(track_id)
+                            res.append({constants.RESULT_KEY_DATA: data, constants.RESULT_KEY_TRACK_ID: track_id1})
                         else:
                             res.append({constants.RESULT_KEY_DATA: data})
                         self._last_data[group_name] = data

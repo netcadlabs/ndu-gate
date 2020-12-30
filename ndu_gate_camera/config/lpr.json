@@ -1,13 +1,9 @@
 {
   "min_confidence_percentage": 80,
-  "resize_width": 1200,
+  "resize_width": 500,
   "send_data": true,
   "rects": [
-      "car",
-      "bicycle",
-      "motorbike",
-      "truck",
-      "bus"
+      "license plate"
     ]
 }
 

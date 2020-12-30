@@ -6,7 +6,6 @@ import cv2
 from ndu_gate_camera.api.ndu_camera_runner import NDUCameraRunner
 from openalpr import Alpr
 
-# import openalpr
 from ndu_gate_camera.utility import constants, image_helper
 from ndu_gate_camera.utility.ndu_utility import NDUUtility
 
@@ -79,7 +78,8 @@ class LprRunner(NDUCameraRunner):
                 for _class_name, _score, rect_, item_ in NDUUtility.enumerate_results(extra_data, class_name_filters=self._rects, use_wildcard=False, return_item=True):
                     y1, x1, y2, x2 = rect_
                     w = x2 - x1
-                    if w > 200:
+                    #############if w > 200:
+                    if w > 30:
                         # yield image_helper.crop(frame, rect_), rect_, item_
                         h = y2 - y1
                         # h_margin = min(w, h) * 0.5
@@ -99,8 +99,8 @@ class LprRunner(NDUCameraRunner):
             # # image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
             # # image = cv2.pyrUp(image)
             # # image = cv2.pyrUp(image)
-            # cv2.imshow("lpr", image)
-            # cv2.waitKey(200)
+            cv2.imshow("lpr", image)
+            cv2.waitKey(200)
 
             h1, w1 = image_helper.image_h_w(image)
             rh = h0 / h1
