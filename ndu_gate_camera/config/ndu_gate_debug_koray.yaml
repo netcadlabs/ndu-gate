@@ -164,7 +164,7 @@ instances:
     runners:
 #      - name: yolov4 - Object detection with 80 classes
 #        type: yolov4
-#        configuration: yolov4.jsonsssssssssss
+#        configuration: yolov4.json
 #        class: Yolov4Runner
 #        priority: 10
 
