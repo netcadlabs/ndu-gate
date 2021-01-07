@@ -17,6 +17,7 @@ RESULT_KEY_TRACK_ID = "track_id"
 # [x1, y1, x2, y2]
 RESULT_KEY_RECT = "rect"
 RESULT_KEY_RECT_COLOR = "rect_color"
+RESULT_KEY_RECT_DEBUG_TEXT = "rect_debug_text"
 # string
 RESULT_KEY_CLASS_NAME = "class_name"
 # string - used for debug previewing

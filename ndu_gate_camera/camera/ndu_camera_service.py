@@ -437,6 +437,11 @@ class NDUCameraService(Thread):
                     self.__last_preview_image = preview
                     if self.__is_main_thread:
                         self._show_preview()
+
+                    # # write frames
+                    # fn = "C:/_koray/temp/sc19_{}.jpg".format(str(i))
+                    # cv2.imwrite(fn, frame)
+
                 if self.__sleep > 0 and self._skip <= 0:
                     time.sleep(self.__sleep)
 
@@ -579,6 +584,7 @@ class NDUCameraService(Thread):
                     class_preview_key = values[constants.RESULT_KEY_PREVIEW_KEY] = item.get(constants.RESULT_KEY_PREVIEW_KEY, class_name)
                     score = values[constants.RESULT_KEY_SCORE] = item.get(constants.RESULT_KEY_SCORE, None)
                     rect = values[constants.RESULT_KEY_RECT] = item.get(constants.RESULT_KEY_RECT, None)
+                    rect_debug_text = values[constants.RESULT_KEY_RECT_DEBUG_TEXT] = item.get(constants.RESULT_KEY_RECT_DEBUG_TEXT, None)
                     data = values[constants.RESULT_KEY_DATA] = item.get(constants.RESULT_KEY_DATA, None)
                     debug_text = values[constants.RESULT_KEY_DEBUG] = item.get(constants.RESULT_KEY_DEBUG, None)
 
@@ -602,11 +608,15 @@ class NDUCameraService(Thread):
                         c = np.array(rect[:4], dtype=np.int32)
                         c1, c2 = [c[1], c[0]], (c[3], c[2])
                         color_rect = get_color(self, class_preview_key, item.get(constants.RESULT_KEY_RECT_COLOR, None))
-                        show_rect =rect_filter is None or string_helper.wildcard(class_name, rect_filter)
+                        show_rect = rect_filter is None or string_helper.wildcard(class_name, rect_filter)
                         if show_rect:
                             draw_rect(self, image, c1, c2, class_preview_key, color_rect)
+                        else:
+                            text = ""
                         if show_rect and show_rect_name and len(text) > 0:
                             c1[1] = c1[1] + line_height
+                            if rect_debug_text is not None:
+                                text += " - " + rect_debug_text
                             image_helper.put_text(image, text, c1)
                             text = ""
                         if show_rect and show_track_id:
@@ -627,15 +637,15 @@ class NDUCameraService(Thread):
                                 pnts = self._track_pnts.get(pnts_key, [])
                                 pnts.append(pnt)
                                 self._track_pnts[pnts_key] = pnts
-                                if len(pnts)>1:
+                                if len(pnts) > 1:
                                     pts = np.array(pnts, np.int32)
                                     # cv2.polylines(self._track_pnt_layer, [pts], False, color, 5)
                                     # cv2.polylines(image, [pts], False, color_rect, 5)
                                     thickness = 10
-                                    for i in range(len(pnts)-1,0,-1):
+                                    for i in range(len(pnts) - 1, 0, -1):
                                         p0 = pnts[i]
-                                        p1 = pnts[i-1]
-                                        cv2.line(image,p0,p1,color_rect,thickness)
+                                        p1 = pnts[i - 1]
+                                        cv2.line(image, p0, p1, color_rect, thickness)
                                         if i % 10 == 0:
                                             thickness -= 1
                                             if thickness < 1:

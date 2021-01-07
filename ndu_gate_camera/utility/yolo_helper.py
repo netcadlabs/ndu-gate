@@ -175,7 +175,8 @@ def predict_v5(sess_tuple, input_size, class_names, frame):
             class_name = class_names[int(labels[i])]
             score = confs[i]
             res.append({constants.RESULT_KEY_RECT: [y1, x1, y2, x2],
-                        constants.RESULT_KEY_SCORE: score, constants.RESULT_KEY_CLASS_NAME: class_name})
+                        constants.RESULT_KEY_SCORE: score,
+                        constants.RESULT_KEY_CLASS_NAME: class_name})
 
     # for i in range(len(out_boxes)):
     #    res.append({constants.RESULT_KEY_RECT: out_boxes[i], constants.RESULT_KEY_SCORE: out_scores[i], constants.RESULT_KEY_CLASS_NAME: out_classes[i]})

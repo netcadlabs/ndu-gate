@@ -1,30 +1,30 @@
-#result_handler:
-#  type: SOCKET
-#  socket:
-#    port: 60060
-#    host: 127.0.0.1
 result_handler:
-  type: FILE
-  file_path: C:/_koray/temp/
+  type: SOCKET
   socket:
     port: 60060
     host: 127.0.0.1
+#result_handler:
+#  type: FILE
+#  file_path: C:/_koray/temp/
+#  socket:
+#    port: 60060
+#    host: 127.0.0.1
 
 instances:
   - source:
-      device: "cam1"
+      device: "scooter_video"
       max_frame_dim: 1600
 #      max_frame_dim: 600
 
       preview_show: True
       preview_show_win_pos: [-1800, 250]
 #      preview_show_track_pnt: True
-#      preview_show_debug_texts: False
-#      preview_show_runner_info: False
-#      preview_show_score: False
-      preview_show_rect_name: False
-#      preview_show_track_id: False
-#      preview_show_rect_filter: "PL*"
+      preview_show_debug_texts: True
+      preview_show_runner_info: False
+      preview_show_score: False
+      preview_show_rect_name: True
+      preview_show_track_id: False
+      preview_show_rect_filter: "scooter*"
 
 #      preview_write: True
       preview_write_file_name: C:/_koray/temp/preview.mp4
@@ -45,7 +45,7 @@ instances:
 
       data_folder: C:/_koray/test_data/
 #      file_path: bakanlik.avi
-      file_path: lpr/canakkale_plaka (1).mp4
+#      file_path: lpr/canakkale_plaka (1).mp4
 #      file_path: lpr/canakkale_plaka (2).mp4
 #      file_path: vid_short.mp4 #pedestrians
 
@@ -81,13 +81,26 @@ instances:
 #      file_path: çanakkale1/otopark_trim_8x.mov
 
 
+      file_path: scooter/scooter_2_person.mp4 # https://www.youtube.com/watch?v=_NpaeifugFk&t=19s
 
 
-      #      image_path: lpr/plaka.jpg
+
+
+#      image_path: lpr/plaka.jpg
 #      image_path: lpr/tr_61.jpg
 #      image_path: lpr/tr_06.jpg
       image_path: lpr/*.jpg
 #      image_path: __canakkale_cam1.png
+
+
+
+      url: https://www.youtube.com/watch?v=p5Cvtfr2nAA&t=1s #scooter
+#      url: https://www.youtube.com/watch?v=RcY-vYzqGIY #scooter
+#      url: https://www.youtube.com/watch?v=zdzEcV1FYEU #scooter
+#      url: https://www.youtube.com/watch?v=Z2uFtUs01v0&list=RDQMH-kgPR0QlGY&index=7 #scooter
+
+#      url: https://www.youtube.com/watch?v=UCwyohbTYqk #scooter
+#      url: https://www.youtube.com/watch?v=F5Opl1llzWw&t=3s #scooter
 
 
 #      url: https://youtu.be/TlInDQgg2G4  #mask
@@ -96,7 +109,7 @@ instances:
 #      url: https://www.youtube.com/watch?v=z4IMAiYVF4g  #plaka trafik
 #      url: https://youtu.be/MNn9qKG2UFI  #highway
 
-      url: https://youtu.be/2QdV_TjKnMI  #aerial
+#      url: https://youtu.be/2QdV_TjKnMI  #aerial
 
 #      url: https://www.youtube.com/watch?v=A16ZQ2FHDDo #street sabit
 #      url: https://www.youtube.com/watch?v=ycKg81LQxlM #street sabit hindistan
@@ -146,7 +159,58 @@ instances:
 #      motion_kernel: 11
 #      preview_show_motion_kernel: True
 
+
+
     runners:
+#      - name: yolov4 - Object detection with 80 classes
+#        type: yolov4
+#        configuration: yolov4.jsonsssssssssss
+#        class: Yolov4Runner
+#        priority: 10
+
+      - name: yolov5x - Object detection with 80 classes (Fast)
+        type: yolov5x
+        configuration: yolov5x.json
+        class: Yolov5xRunner
+        priority: 10
+
+#      - name: yolov5s - Object detection with 80 classes (Fastest)
+#        type: yolov5s
+#        configuration: yolov5s.json
+#        class: Yolov5sRunner
+#        priority: 10
+
+      - name: Electric Scooter Detector
+        type: e_scooter_detector
+        configuration: e_scooter_detector.json
+        class: EScooterDetectorRunner
+        priority: 20
+
+#      - name: Tracker
+#        type: tracker
+#        configuration: tracker_scooter.json
+#        class: TrackerRunner
+#        priority: 50
+
+
+
+
+
+
+
+
+
+
+
+
+
+#      - name: Vehicle Detector
+#        type: vehicle_detector
+#        configuration: vehicle_detector.json
+#        class: VehicleDetectorRunner
+#        priority: 10
+
+
 #      - name: Aerial Vehicle Detector
 #        type: aerial_vehicle
 #        configuration: aerial_vehicle.json
@@ -161,40 +225,46 @@ instances:
 
 
 
-      - name: yolov5s - Object detection with 80 classes (Fastest)
-        type: yolov5s
-        configuration: yolov5s.json
-        class: Yolov5sRunner
-        priority: 10
-#        step_frame: 30
-##        step_sec: 2
-
-      - name: Tracker
-        type: tracker
-        configuration: tracker.json
-        class: TrackerRunner
-        priority: 50
+#      - name: yolov5s - Object detection with 80 classes (Fastest)
+#        type: yolov5s
+#        configuration: yolov5s.json
+#        class: Yolov5sRunner
+#        priority: 10
+##        step_frame: 30
+###        step_sec: 2
 #
-#      - name: lpr - Licence Plate Recognition
-#        type: lpr
-#        configuration: lpr.json
-#        class: LprRunner
-#        priority: 75
-
-      - name: Object Counter
-        type: object_counter
-        configuration: object_counter.json
-        class: ObjectCounterRunner
-        priority: 100
-
-
+#      - name: Tracker
+#        type: tracker
+#        configuration: tracker.json
+#        class: TrackerRunner
+#        priority: 50
 ##
-###      - name: Face Mask Detection
-###        type: facemask
-###        configuration: facemask.json
-###        class: FaceMaskRunner
-###        priority: 100
+##      - name: lpr - Licence Plate Recognition
+##        type: lpr
+##        configuration: lpr.json
+##        class: LprRunner
+##        priority: 75
+#
+#      - name: Object Counter
+#        type: object_counter
+#        configuration: object_counter.json
+#        class: ObjectCounterRunner
+#        priority: 100
+#
+#
+###
+####      - name: Face Mask Detection
+####        type: facemask
+####        configuration: facemask.json
+####        class: FaceMaskRunner
+####        priority: 100
 
+
+#      - name: yolov5x - Object detection with 80 classes (Fast)
+#        type: yolov5x
+#        configuration: yolov5x.json
+#        class: Yolov5xRunner
+#        priority: 10
 
 
 
@@ -657,3 +727,54 @@ instances:
 #    configuration: lpr.json
 #    class: LPRRunner
 #    priority: 10
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+##### scooter
+#    runners:
+##      - name: yolov4 - Object detection with 80 classes
+##        type: yolov4
+##        configuration: yolov4.jsonsssssssssss
+##        class: Yolov4Runner
+##        priority: 10
+#
+#      - name: yolov5x - Object detection with 80 classes (Fast)
+#        type: yolov5x
+#        configuration: yolov5x.json
+#        class: Yolov5xRunner
+#        priority: 10
+#
+##      - name: yolov5s - Object detection with 80 classes (Fastest)
+##        type: yolov5s
+##        configuration: yolov5s.json
+##        class: Yolov5sRunner
+##        priority: 10
+#
+#      - name: Electric Scooter Detector
+#        type: e_scooter_detector
+#        configuration: e_scooter_detector.json
+#        class: EScooterDetectorRunner
+#        priority: 20
+#
+##      - name: Tracker
+##        type: tracker
+##        configuration: tracker_scooter.json
+##        class: TrackerRunner
+##        priority: 50
+
