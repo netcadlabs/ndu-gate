@@ -1,8 +1,10 @@
+import uuid
+
 import numpy as np
 import cv2
 import time
 
-from ndu_gate_camera.utility import constants, onnx_helper, image_helper
+from ndu_gate_camera.utility import constants, onnx_helper, image_helper, file_helper
 
 
 def predict_v5(sess_tuple, input_size, class_names, frame):
@@ -318,3 +320,22 @@ def predict_v4(sess_tuple, input_size, class_names, frame):
         res.append({constants.RESULT_KEY_RECT: out_boxes[i], constants.RESULT_KEY_SCORE: out_scores[i],
                     constants.RESULT_KEY_CLASS_NAME: out_classes[i]})
     return res
+
+
+def yolo_label_maker(frame, rects, class_id, save_dir):
+    lines = []
+    for rect in rects:
+        y1, x1, y2, x2 = rect
+        h, w = image_helper.image_h_w(frame)
+        cx = ((x1 + x2) * 0.5) / w
+        cy = ((y1 + y2) * 0.5) / h
+        w = (x2 - x1) / w
+        h = (y2 - y1) / h
+        line = "{} {} {} {} {}".format(class_id, cx, cy, w, h)
+        lines.append(line)
+
+    name = str(uuid.uuid4().hex)
+    image_fn = file_helper.path_join(save_dir, name + ".jpg")
+    label_fn = file_helper.path_join(save_dir, name + ".txt")
+    cv2.imwrite(image_fn, frame)
+    file_helper.write_lines(label_fn, lines)

@@ -6,7 +6,7 @@ onnx
 onnxruntime
 # onnxruntime-gpu
 setuptools
-vidgear
+vidgear==0.1.9
 pyzmq
 PyYAML
 simplejson
