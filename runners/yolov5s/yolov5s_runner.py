@@ -6,21 +6,6 @@ import numpy as np
 from ndu_gate_camera.api.ndu_camera_runner import NDUCameraRunner
 from ndu_gate_camera.utility import onnx_helper, yolo_helper, image_helper, constants
 
-# os.environ['Path'] += \
-#     "C:\\Program Files (x86)\\Intel\\openvino_2021.2.185\\deployment_tools\\ngraph\lib;" \
-#     "C:\\Program Files (x86)\\Intel\\openvino_2021.2.185\\deployment_tools\\inference_engine\\external\\tbb\\bin;" \
-#     "C:\\Program Files (x86)\\Intel\\openvino_2021.2.185\\deployment_tools\\inference_engine\\external\\hddl\\bin;" \
-#     "C:\\Program Files (x86)\\Intel\\openvino_2021.2.185\\deployment_tools\\inference_engine\\bin\\intel64\\Release;" \
-#     "C:\\Program Files (x86)\\Intel\\openvino_2021.2.185\\deployment_tools\\inference_engine\\bin\\intel64\\Debug;" \
-#     "C:\\Program Files (x86)\\Intel\\openvino_2021.2.185\\deployment_tools\\model_optimizer;"
-
-
-# from openvino.inference_engine import IECore
-# import ngraph as ng
-import cv2
-from openvino.inference_engine import IECore
-from openvino.inference_engine import IENetwork
-
 
 class Yolov5sRunner(NDUCameraRunner):
     def __init__(self, config, connector_type):
@@ -257,430 +242,430 @@ class Yolov5sRunner(NDUCameraRunner):
 #             cv2.imwrite("out.bmp", tmp_image)
 #             cv2.imshow("aaaa", frame)
 #             cv2.waitKey(0)
-
-
-class Yolov5sRunner1(NDUCameraRunner):
-    def __init__(self, config, connector_type):
-        super().__init__()
-        bin_fn = "/data/yolov5s.bin"
-        xml_fn = "/data/yolov5s.xml"
-        onnx_fn = "/data/yolov5s.onnx"
-        classes_filename = "/data/coco.names"
-        self.input_size = 640
-
-        if not os.path.isfile(onnx_fn):
-            onnx_fn = os.path.dirname(os.path.abspath(__file__)) + onnx_fn.replace("/", os.path.sep)
-        if not os.path.isfile(bin_fn):
-            bin_fn = os.path.dirname(os.path.abspath(__file__)) + bin_fn.replace("/", os.path.sep)
-        if not os.path.isfile(xml_fn):
-            xml_fn = os.path.dirname(os.path.abspath(__file__)) + xml_fn.replace("/", os.path.sep)
-        if not os.path.isfile(classes_filename):
-            classes_filename = os.path.dirname(os.path.abspath(__file__)) + classes_filename.replace("/", os.path.sep)
-        self.class_names = onnx_helper.parse_class_names(classes_filename)
-
-        ie = IECore()
-        net = IENetwork(model=xml_fn, weights=bin_fn)
-        # net = ie.read_network(onnx_fn)
-
-        self.exec_net = ie.load_network(network=net, device_name="CPU")
-        self.input_blob = next(iter(net.inputs))
-        # self.outputs = net.outputs.keys()
-
-    def get_name(self):
-        return "yolov5s"
-
-    def get_settings(self):
-        settings = {}
-        return settings
-
-    def process_frame(self, frame, extra_data=None):
-
-        def image_preprocess(image1, target_size):
-            ih, iw = target_size
-            h1, w1, _ = image1.shape
-
-            scale = min(iw / w1, ih / h1)
-            nw, nh = int(scale * w1), int(scale * h1)
-            if nh != h1 or nw != w1:
-                image_resized = image_helper.resize_best_quality(image1, (nw, nh))
-            else:
-                image_resized = image1
-
-            image_padded = np.full(shape=[ih, iw, 3], fill_value=128.0)
-            dw, dh = (iw - nw) // 2, (ih - nh) // 2
-            image_padded[dh:nh + dh, dw:nw + dw, :] = image_resized
-            image_padded = image_padded / 255.
-
-            return image_padded, w1, h1
-
-        def non_max_suppression(prediction, conf_thres=0.1, iou_thres=0.6, agnostic=False):
-            """Performs Non-Maximum Suppression (NMS) on inference results
-
-            Returns:
-                 detections with shape: nx6 (x1, y1, x2, y2, conf, cls)
-            """
-
-            def xywh2xyxy(x_):
-                # Convert nx4 boxes from [x, y, w, h] to [x1, y1, x2, y2] where xy1=top-left, xy2=bottom-right
-                y = np.zeros_like(x_)
-                y[:, 0] = x_[:, 0] - x_[:, 2] / 2  # top left x
-                y[:, 1] = x_[:, 1] - x_[:, 3] / 2  # top left y
-                y[:, 2] = x_[:, 0] + x_[:, 2] / 2  # bottom right x
-                y[:, 3] = x_[:, 1] + x_[:, 3] / 2  # bottom right y
-                return y
-
-            def nms_cpu(boxes_, confs_, nms_thresh=0.5, min_mode=False):
-                # print(boxes.shape)
-                x1_ = boxes_[:, 0]
-                y1_ = boxes_[:, 1]
-                x2_ = boxes_[:, 2]
-                y2_ = boxes_[:, 3]
-
-                areas = (x2_ - x1_) * (y2_ - y1_)
-                order = confs_.argsort()[::-1]
-
-                keep = []
-                while order.size > 0:
-                    idx_self = order[0]
-                    idx_other = order[1:]
-
-                    keep.append(idx_self)
-
-                    xx1 = np.maximum(x1_[idx_self], x1_[idx_other])
-                    yy1 = np.maximum(y1_[idx_self], y1_[idx_other])
-                    xx2 = np.minimum(x2_[idx_self], x2_[idx_other])
-                    yy2 = np.minimum(y2_[idx_self], y2_[idx_other])
-
-                    w_ = np.maximum(0.0, xx2 - xx1)
-                    h_ = np.maximum(0.0, yy2 - yy1)
-                    inter = w_ * h_
-
-                    if min_mode:
-                        over = inter / np.minimum(areas[order[0]], areas[order[1:]])
-                    else:
-                        over = inter / (areas[order[0]] + areas[order[1:]] - inter)
-
-                    inds = np.where(over <= nms_thresh)[0]
-                    order = order[inds + 1]
-
-                return np.array(keep)
-
-            # nc = prediction[0].shape[1] - 5  # number of classes
-            xc = prediction[..., 4] > conf_thres  # candidates
-
-            # Settings
-            min_wh, max_wh = 2, 4096  # (pixels) minimum and maximum box width and height
-            max_det = 300  # maximum number of detections per image
-            time_limit = 10.0  # seconds to quit after
-
-            t = time.time()
-            output = [None] * prediction.shape[0]
-            for xi, x in enumerate(prediction):  # image index, image inference
-                # Apply constraints
-                # x[((x[..., 2:4] < min_wh) | (x[..., 2:4] > max_wh)).any(1), 4] = 0  # width-height
-                x = x[xc[xi]]  # confidence
-
-                # If none remain process next image
-                if not x.shape[0]:
-                    continue
-
-                # Compute conf
-                x[:, 5:] *= x[:, 4:5]  # conf = obj_conf * cls_conf
-
-                # Box (center x, center y, width, height) to (x1, y1, x2, y2)
-                box_ = xywh2xyxy(x[:, :4])
-
-                # i, j = (x[:, 5:] > conf_thres).nonzero(as_tuple=False).T
-                i_, j = (x[:, 5:] > conf_thres).nonzero()
-                # x = torch.cat((box[i], x[i, j + 5, None], j[:, None].float()), 1)
-                x = np.array(np.concatenate((box_[i_], x[i_, j + 5, None], j[:, None]), 1)).astype(np.float32)
-
-                # If none remain process next image
-                n = x.shape[0]  # number of boxes
-                if not n:
-                    continue
-
-                # Sort by confidence
-                # x = x[x[:, 4].argsort(descending=True)]
-
-                # Batched NMS
-                c = x[:, 5:6] * (0 if agnostic else max_wh)  # classes
-                boxes, scores = x[:, :4] + c, x[:, 4]  # boxes (offset by class), scores
-                i_ = nms_cpu(boxes, scores, iou_thres)
-                if i_.shape[0] > max_det:  # limit detections
-                    i_ = i_[:max_det]
-
-                output[xi] = x[i_]
-                if (time.time() - t) > time_limit:
-                    break  # time limit exceeded
-
-            return output
-
-        def scale_coords(img1_shape, coords, img0_shape, ratio_pad=None):
-
-            def clip_coords(boxes, img_shape):
-                boxes[:, 0].clip(0, img_shape[1])  # x1
-                boxes[:, 1].clip(0, img_shape[0])  # y1
-                boxes[:, 2].clip(0, img_shape[1])  # x2
-                boxes[:, 3].clip(0, img_shape[0])  # y2
-
-            # Rescale coords (xyxy) from img1_shape to img0_shape
-            if ratio_pad is None:  # calculate from img0_shape
-                gain = max(img1_shape) / max(img0_shape)  # gain  = old / new
-                pad = (img1_shape[1] - img0_shape[1] * gain) / 2, (
-                        img1_shape[0] - img0_shape[0] * gain) / 2  # wh padding
-            else:
-                gain = ratio_pad[0][0]
-                pad = ratio_pad[1]
-
-            coords[:, [0, 2]] -= pad[0]  # x padding
-            coords[:, [1, 3]] -= pad[1]  # y padding
-            coords[:, :4] /= gain
-            clip_coords(coords, img0_shape)
-            return coords
-
-        super().process_frame(frame)
-
-        res = []
-        image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        img_processed, w, h = image_preprocess(np.copy(image), [self.input_size, self.input_size])
-        image_data = img_processed[np.newaxis, ...].astype(np.float32)
-        image_data = np.transpose(image_data, [0, 3, 1, 2])
-
-        inputs = [image_data]
-
-        pred0 = self.exec_net.infer({self.input_blob: inputs})
-
-        # pred = pred0[self.outputs]
-        pred = pred0["output"]
-        # pred = onnx_helper.run(sess_tuple, inputs)[0]
-
-        batch_detections = np.array(pred)
-        batch_detections = non_max_suppression(batch_detections, conf_thres=0.4, iou_thres=0.5, agnostic=False)
-        detections = batch_detections[0]
-        if detections is not None:
-            labels = detections[..., -1]
-            boxs = detections[..., :4]
-            confs = detections[..., 4]
-            boxs[:, :] = scale_coords((self.input_size, self.input_size), boxs[:, :], (h, w)).round()
-            for i, box in enumerate(boxs):
-                x1, y1, x2, y2 = box
-                class_name = self.class_names[int(labels[i])]
-                score = confs[i]
-                res.append({constants.RESULT_KEY_RECT: [y1, x1, y2, x2],
-                            constants.RESULT_KEY_SCORE: score,
-                            constants.RESULT_KEY_CLASS_NAME: class_name})
-
-        # for i in range(len(out_boxes)):
-        #    res.append({constants.RESULT_KEY_RECT: out_boxes[i], constants.RESULT_KEY_SCORE: out_scores[i], constants.RESULT_KEY_CLASS_NAME: out_classes[i]})
-        return res
-
-
-class Yolov5sRunner2(NDUCameraRunner):
-    def __init__(self, config, connector_type):
-        super().__init__()
-        onnx_fn = "/data/yolov5s.onnx"
-        classes_filename = "/data/coco.names"
-        self.input_size = 640
-
-        if not os.path.isfile(onnx_fn):
-            onnx_fn = os.path.dirname(os.path.abspath(__file__)) + onnx_fn.replace("/", os.path.sep)
-        if not os.path.isfile(classes_filename):
-            classes_filename = os.path.dirname(os.path.abspath(__file__)) + classes_filename.replace("/", os.path.sep)
-        self.class_names = onnx_helper.parse_class_names(classes_filename)
-        # self.sess_tuple = onnx_helper.get_sess_tuple(onnx_fn)
-        self.sess, self.input_names, self.output_names, onnx_fn= onnx_helper.get_sess_tuple(onnx_fn)
-        self.input_name = self.input_names[0]
-        self.input_item = {self.input_name: None}
-
-    def get_name(self):
-        return "yolov5s"
-
-    def get_settings(self):
-        settings = {}
-        return settings
-
-    def process_frame(self, frame, extra_data=None):
-
-        def image_preprocess(image1, target_size):
-            ih, iw = target_size
-            h1, w1, _ = image1.shape
-
-            scale = min(iw / w1, ih / h1)
-            nw, nh = int(scale * w1), int(scale * h1)
-            if nh != h1 or nw != w1:
-                image_resized = image_helper.resize_best_quality(image1, (nw, nh))
-            else:
-                image_resized = image1
-
-            image_padded = np.full(shape=[ih, iw, 3], fill_value=128.0)
-            dw, dh = (iw - nw) // 2, (ih - nh) // 2
-            image_padded[dh:nh + dh, dw:nw + dw, :] = image_resized
-            image_padded = image_padded / 255.
-
-            return image_padded, w1, h1
-
-        def non_max_suppression(prediction, conf_thres=0.1, iou_thres=0.6, agnostic=False):
-            """Performs Non-Maximum Suppression (NMS) on inference results
-
-            Returns:
-                 detections with shape: nx6 (x1, y1, x2, y2, conf, cls)
-            """
-
-            def xywh2xyxy(x_):
-                # Convert nx4 boxes from [x, y, w, h] to [x1, y1, x2, y2] where xy1=top-left, xy2=bottom-right
-                y = np.zeros_like(x_)
-                y[:, 0] = x_[:, 0] - x_[:, 2] / 2  # top left x
-                y[:, 1] = x_[:, 1] - x_[:, 3] / 2  # top left y
-                y[:, 2] = x_[:, 0] + x_[:, 2] / 2  # bottom right x
-                y[:, 3] = x_[:, 1] + x_[:, 3] / 2  # bottom right y
-                return y
-
-            def nms_cpu(boxes_, confs_, nms_thresh=0.5, min_mode=False):
-                # print(boxes.shape)
-                x1_ = boxes_[:, 0]
-                y1_ = boxes_[:, 1]
-                x2_ = boxes_[:, 2]
-                y2_ = boxes_[:, 3]
-
-                areas = (x2_ - x1_) * (y2_ - y1_)
-                order = confs_.argsort()[::-1]
-
-                keep = []
-                while order.size > 0:
-                    idx_self = order[0]
-                    idx_other = order[1:]
-
-                    keep.append(idx_self)
-
-                    xx1 = np.maximum(x1_[idx_self], x1_[idx_other])
-                    yy1 = np.maximum(y1_[idx_self], y1_[idx_other])
-                    xx2 = np.minimum(x2_[idx_self], x2_[idx_other])
-                    yy2 = np.minimum(y2_[idx_self], y2_[idx_other])
-
-                    w_ = np.maximum(0.0, xx2 - xx1)
-                    h_ = np.maximum(0.0, yy2 - yy1)
-                    inter = w_ * h_
-
-                    if min_mode:
-                        over = inter / np.minimum(areas[order[0]], areas[order[1:]])
-                    else:
-                        over = inter / (areas[order[0]] + areas[order[1:]] - inter)
-
-                    inds = np.where(over <= nms_thresh)[0]
-                    order = order[inds + 1]
-
-                return np.array(keep)
-
-            # nc = prediction[0].shape[1] - 5  # number of classes
-            xc = prediction[..., 4] > conf_thres  # candidates
-
-            # Settings
-            min_wh, max_wh = 2, 4096  # (pixels) minimum and maximum box width and height
-            max_det = 300  # maximum number of detections per image
-            time_limit = 10.0  # seconds to quit after
-
-            t = time.time()
-            output = [None] * prediction.shape[0]
-            for xi, x in enumerate(prediction):  # image index, image inference
-                # Apply constraints
-                # x[((x[..., 2:4] < min_wh) | (x[..., 2:4] > max_wh)).any(1), 4] = 0  # width-height
-                x = x[xc[xi]]  # confidence
-
-                # If none remain process next image
-                if not x.shape[0]:
-                    continue
-
-                # Compute conf
-                x[:, 5:] *= x[:, 4:5]  # conf = obj_conf * cls_conf
-
-                # Box (center x, center y, width, height) to (x1, y1, x2, y2)
-                box_ = xywh2xyxy(x[:, :4])
-
-                # i, j = (x[:, 5:] > conf_thres).nonzero(as_tuple=False).T
-                i_, j = (x[:, 5:] > conf_thres).nonzero()
-                # x = torch.cat((box[i], x[i, j + 5, None], j[:, None].float()), 1)
-                x = np.array(np.concatenate((box_[i_], x[i_, j + 5, None], j[:, None]), 1)).astype(np.float32)
-
-                # If none remain process next image
-                n = x.shape[0]  # number of boxes
-                if not n:
-                    continue
-
-                # Sort by confidence
-                # x = x[x[:, 4].argsort(descending=True)]
-
-                # Batched NMS
-                c = x[:, 5:6] * (0 if agnostic else max_wh)  # classes
-                boxes, scores = x[:, :4] + c, x[:, 4]  # boxes (offset by class), scores
-                i_ = nms_cpu(boxes, scores, iou_thres)
-                if i_.shape[0] > max_det:  # limit detections
-                    i_ = i_[:max_det]
-
-                output[xi] = x[i_]
-                if (time.time() - t) > time_limit:
-                    break  # time limit exceeded
-
-            return output
-
-        def scale_coords(img1_shape, coords, img0_shape, ratio_pad=None):
-
-            def clip_coords(boxes, img_shape):
-                boxes[:, 0].clip(0, img_shape[1])  # x1
-                boxes[:, 1].clip(0, img_shape[0])  # y1
-                boxes[:, 2].clip(0, img_shape[1])  # x2
-                boxes[:, 3].clip(0, img_shape[0])  # y2
-
-            # Rescale coords (xyxy) from img1_shape to img0_shape
-            if ratio_pad is None:  # calculate from img0_shape
-                gain = max(img1_shape) / max(img0_shape)  # gain  = old / new
-                pad = (img1_shape[1] - img0_shape[1] * gain) / 2, (
-                        img1_shape[0] - img0_shape[0] * gain) / 2  # wh padding
-            else:
-                gain = ratio_pad[0][0]
-                pad = ratio_pad[1]
-
-            coords[:, [0, 2]] -= pad[0]  # x padding
-            coords[:, [1, 3]] -= pad[1]  # y padding
-            coords[:, :4] /= gain
-            clip_coords(coords, img0_shape)
-            return coords
-
-        super().process_frame(frame)
-
-        res = []
-        image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        img_processed, w, h = image_preprocess(np.copy(image), [self.input_size, self.input_size])
-        image_data = img_processed[np.newaxis, ...].astype(np.float32)
-        image_data = np.transpose(image_data, [0, 3, 1, 2])
-
-        # inputs = [image_data]
-
-        # pred = onnx_helper.run(self.sess_tuple, inputs)[0]
-        # input_item = {self.input_names[0]: inputs[0]}
-        # input_item = {self.input_name: inputs[0]}
-        # input_item = {self.input_name: image_data}
-        # pred = self.sess.run(self.output_names, input_item)
-        # pred = self.sess.run(self.output_names, {self.input_name: image_data})[0]
-        self.input_item[self.input_name] = image_data
-        pred = self.sess.run(self.output_names, self.input_item)[0]
-
-        batch_detections = np.array(pred)
-        batch_detections = non_max_suppression(batch_detections, conf_thres=0.4, iou_thres=0.5, agnostic=False)
-        detections = batch_detections[0]
-        if detections is not None:
-            labels = detections[..., -1]
-            boxs = detections[..., :4]
-            confs = detections[..., 4]
-            boxs[:, :] = scale_coords((self.input_size, self.input_size), boxs[:, :], (h, w)).round()
-            for i, box in enumerate(boxs):
-                x1, y1, x2, y2 = box
-                class_name = self.class_names[int(labels[i])]
-                score = confs[i]
-                res.append({constants.RESULT_KEY_RECT: [y1, x1, y2, x2],
-                            constants.RESULT_KEY_SCORE: score,
-                            constants.RESULT_KEY_CLASS_NAME: class_name})
-
-        # for i in range(len(out_boxes)):
-        #    res.append({constants.RESULT_KEY_RECT: out_boxes[i], constants.RESULT_KEY_SCORE: out_scores[i], constants.RESULT_KEY_CLASS_NAME: out_classes[i]})
-        return res
+#
+#
+# class Yolov5sRunner1(NDUCameraRunner):
+#     def __init__(self, config, connector_type):
+#         super().__init__()
+#         bin_fn = "/data/yolov5s.bin"
+#         xml_fn = "/data/yolov5s.xml"
+#         onnx_fn = "/data/yolov5s.onnx"
+#         classes_filename = "/data/coco.names"
+#         self.input_size = 640
+#
+#         if not os.path.isfile(onnx_fn):
+#             onnx_fn = os.path.dirname(os.path.abspath(__file__)) + onnx_fn.replace("/", os.path.sep)
+#         if not os.path.isfile(bin_fn):
+#             bin_fn = os.path.dirname(os.path.abspath(__file__)) + bin_fn.replace("/", os.path.sep)
+#         if not os.path.isfile(xml_fn):
+#             xml_fn = os.path.dirname(os.path.abspath(__file__)) + xml_fn.replace("/", os.path.sep)
+#         if not os.path.isfile(classes_filename):
+#             classes_filename = os.path.dirname(os.path.abspath(__file__)) + classes_filename.replace("/", os.path.sep)
+#         self.class_names = onnx_helper.parse_class_names(classes_filename)
+#
+#         ie = IECore()
+#         net = IENetwork(model=xml_fn, weights=bin_fn)
+#         # net = ie.read_network(onnx_fn)
+#
+#         self.exec_net = ie.load_network(network=net, device_name="CPU")
+#         self.input_blob = next(iter(net.inputs))
+#         # self.outputs = net.outputs.keys()
+#
+#     def get_name(self):
+#         return "yolov5s"
+#
+#     def get_settings(self):
+#         settings = {}
+#         return settings
+#
+#     def process_frame(self, frame, extra_data=None):
+#
+#         def image_preprocess(image1, target_size):
+#             ih, iw = target_size
+#             h1, w1, _ = image1.shape
+#
+#             scale = min(iw / w1, ih / h1)
+#             nw, nh = int(scale * w1), int(scale * h1)
+#             if nh != h1 or nw != w1:
+#                 image_resized = image_helper.resize_best_quality(image1, (nw, nh))
+#             else:
+#                 image_resized = image1
+#
+#             image_padded = np.full(shape=[ih, iw, 3], fill_value=128.0)
+#             dw, dh = (iw - nw) // 2, (ih - nh) // 2
+#             image_padded[dh:nh + dh, dw:nw + dw, :] = image_resized
+#             image_padded = image_padded / 255.
+#
+#             return image_padded, w1, h1
+#
+#         def non_max_suppression(prediction, conf_thres=0.1, iou_thres=0.6, agnostic=False):
+#             """Performs Non-Maximum Suppression (NMS) on inference results
+#
+#             Returns:
+#                  detections with shape: nx6 (x1, y1, x2, y2, conf, cls)
+#             """
+#
+#             def xywh2xyxy(x_):
+#                 # Convert nx4 boxes from [x, y, w, h] to [x1, y1, x2, y2] where xy1=top-left, xy2=bottom-right
+#                 y = np.zeros_like(x_)
+#                 y[:, 0] = x_[:, 0] - x_[:, 2] / 2  # top left x
+#                 y[:, 1] = x_[:, 1] - x_[:, 3] / 2  # top left y
+#                 y[:, 2] = x_[:, 0] + x_[:, 2] / 2  # bottom right x
+#                 y[:, 3] = x_[:, 1] + x_[:, 3] / 2  # bottom right y
+#                 return y
+#
+#             def nms_cpu(boxes_, confs_, nms_thresh=0.5, min_mode=False):
+#                 # print(boxes.shape)
+#                 x1_ = boxes_[:, 0]
+#                 y1_ = boxes_[:, 1]
+#                 x2_ = boxes_[:, 2]
+#                 y2_ = boxes_[:, 3]
+#
+#                 areas = (x2_ - x1_) * (y2_ - y1_)
+#                 order = confs_.argsort()[::-1]
+#
+#                 keep = []
+#                 while order.size > 0:
+#                     idx_self = order[0]
+#                     idx_other = order[1:]
+#
+#                     keep.append(idx_self)
+#
+#                     xx1 = np.maximum(x1_[idx_self], x1_[idx_other])
+#                     yy1 = np.maximum(y1_[idx_self], y1_[idx_other])
+#                     xx2 = np.minimum(x2_[idx_self], x2_[idx_other])
+#                     yy2 = np.minimum(y2_[idx_self], y2_[idx_other])
+#
+#                     w_ = np.maximum(0.0, xx2 - xx1)
+#                     h_ = np.maximum(0.0, yy2 - yy1)
+#                     inter = w_ * h_
+#
+#                     if min_mode:
+#                         over = inter / np.minimum(areas[order[0]], areas[order[1:]])
+#                     else:
+#                         over = inter / (areas[order[0]] + areas[order[1:]] - inter)
+#
+#                     inds = np.where(over <= nms_thresh)[0]
+#                     order = order[inds + 1]
+#
+#                 return np.array(keep)
+#
+#             # nc = prediction[0].shape[1] - 5  # number of classes
+#             xc = prediction[..., 4] > conf_thres  # candidates
+#
+#             # Settings
+#             min_wh, max_wh = 2, 4096  # (pixels) minimum and maximum box width and height
+#             max_det = 300  # maximum number of detections per image
+#             time_limit = 10.0  # seconds to quit after
+#
+#             t = time.time()
+#             output = [None] * prediction.shape[0]
+#             for xi, x in enumerate(prediction):  # image index, image inference
+#                 # Apply constraints
+#                 # x[((x[..., 2:4] < min_wh) | (x[..., 2:4] > max_wh)).any(1), 4] = 0  # width-height
+#                 x = x[xc[xi]]  # confidence
+#
+#                 # If none remain process next image
+#                 if not x.shape[0]:
+#                     continue
+#
+#                 # Compute conf
+#                 x[:, 5:] *= x[:, 4:5]  # conf = obj_conf * cls_conf
+#
+#                 # Box (center x, center y, width, height) to (x1, y1, x2, y2)
+#                 box_ = xywh2xyxy(x[:, :4])
+#
+#                 # i, j = (x[:, 5:] > conf_thres).nonzero(as_tuple=False).T
+#                 i_, j = (x[:, 5:] > conf_thres).nonzero()
+#                 # x = torch.cat((box[i], x[i, j + 5, None], j[:, None].float()), 1)
+#                 x = np.array(np.concatenate((box_[i_], x[i_, j + 5, None], j[:, None]), 1)).astype(np.float32)
+#
+#                 # If none remain process next image
+#                 n = x.shape[0]  # number of boxes
+#                 if not n:
+#                     continue
+#
+#                 # Sort by confidence
+#                 # x = x[x[:, 4].argsort(descending=True)]
+#
+#                 # Batched NMS
+#                 c = x[:, 5:6] * (0 if agnostic else max_wh)  # classes
+#                 boxes, scores = x[:, :4] + c, x[:, 4]  # boxes (offset by class), scores
+#                 i_ = nms_cpu(boxes, scores, iou_thres)
+#                 if i_.shape[0] > max_det:  # limit detections
+#                     i_ = i_[:max_det]
+#
+#                 output[xi] = x[i_]
+#                 if (time.time() - t) > time_limit:
+#                     break  # time limit exceeded
+#
+#             return output
+#
+#         def scale_coords(img1_shape, coords, img0_shape, ratio_pad=None):
+#
+#             def clip_coords(boxes, img_shape):
+#                 boxes[:, 0].clip(0, img_shape[1])  # x1
+#                 boxes[:, 1].clip(0, img_shape[0])  # y1
+#                 boxes[:, 2].clip(0, img_shape[1])  # x2
+#                 boxes[:, 3].clip(0, img_shape[0])  # y2
+#
+#             # Rescale coords (xyxy) from img1_shape to img0_shape
+#             if ratio_pad is None:  # calculate from img0_shape
+#                 gain = max(img1_shape) / max(img0_shape)  # gain  = old / new
+#                 pad = (img1_shape[1] - img0_shape[1] * gain) / 2, (
+#                         img1_shape[0] - img0_shape[0] * gain) / 2  # wh padding
+#             else:
+#                 gain = ratio_pad[0][0]
+#                 pad = ratio_pad[1]
+#
+#             coords[:, [0, 2]] -= pad[0]  # x padding
+#             coords[:, [1, 3]] -= pad[1]  # y padding
+#             coords[:, :4] /= gain
+#             clip_coords(coords, img0_shape)
+#             return coords
+#
+#         super().process_frame(frame)
+#
+#         res = []
+#         image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+#         img_processed, w, h = image_preprocess(np.copy(image), [self.input_size, self.input_size])
+#         image_data = img_processed[np.newaxis, ...].astype(np.float32)
+#         image_data = np.transpose(image_data, [0, 3, 1, 2])
+#
+#         inputs = [image_data]
+#
+#         pred0 = self.exec_net.infer({self.input_blob: inputs})
+#
+#         # pred = pred0[self.outputs]
+#         pred = pred0["output"]
+#         # pred = onnx_helper.run(sess_tuple, inputs)[0]
+#
+#         batch_detections = np.array(pred)
+#         batch_detections = non_max_suppression(batch_detections, conf_thres=0.4, iou_thres=0.5, agnostic=False)
+#         detections = batch_detections[0]
+#         if detections is not None:
+#             labels = detections[..., -1]
+#             boxs = detections[..., :4]
+#             confs = detections[..., 4]
+#             boxs[:, :] = scale_coords((self.input_size, self.input_size), boxs[:, :], (h, w)).round()
+#             for i, box in enumerate(boxs):
+#                 x1, y1, x2, y2 = box
+#                 class_name = self.class_names[int(labels[i])]
+#                 score = confs[i]
+#                 res.append({constants.RESULT_KEY_RECT: [y1, x1, y2, x2],
+#                             constants.RESULT_KEY_SCORE: score,
+#                             constants.RESULT_KEY_CLASS_NAME: class_name})
+#
+#         # for i in range(len(out_boxes)):
+#         #    res.append({constants.RESULT_KEY_RECT: out_boxes[i], constants.RESULT_KEY_SCORE: out_scores[i], constants.RESULT_KEY_CLASS_NAME: out_classes[i]})
+#         return res
+#
+#
+# class Yolov5sRunner2(NDUCameraRunner):
+#     def __init__(self, config, connector_type):
+#         super().__init__()
+#         onnx_fn = "/data/yolov5s.onnx"
+#         classes_filename = "/data/coco.names"
+#         self.input_size = 640
+#
+#         if not os.path.isfile(onnx_fn):
+#             onnx_fn = os.path.dirname(os.path.abspath(__file__)) + onnx_fn.replace("/", os.path.sep)
+#         if not os.path.isfile(classes_filename):
+#             classes_filename = os.path.dirname(os.path.abspath(__file__)) + classes_filename.replace("/", os.path.sep)
+#         self.class_names = onnx_helper.parse_class_names(classes_filename)
+#         # self.sess_tuple = onnx_helper.get_sess_tuple(onnx_fn)
+#         self.sess, self.input_names, self.output_names, onnx_fn= onnx_helper.get_sess_tuple(onnx_fn)
+#         self.input_name = self.input_names[0]
+#         self.input_item = {self.input_name: None}
+#
+#     def get_name(self):
+#         return "yolov5s"
+#
+#     def get_settings(self):
+#         settings = {}
+#         return settings
+#
+#     def process_frame(self, frame, extra_data=None):
+#
+#         def image_preprocess(image1, target_size):
+#             ih, iw = target_size
+#             h1, w1, _ = image1.shape
+#
+#             scale = min(iw / w1, ih / h1)
+#             nw, nh = int(scale * w1), int(scale * h1)
+#             if nh != h1 or nw != w1:
+#                 image_resized = image_helper.resize_best_quality(image1, (nw, nh))
+#             else:
+#                 image_resized = image1
+#
+#             image_padded = np.full(shape=[ih, iw, 3], fill_value=128.0)
+#             dw, dh = (iw - nw) // 2, (ih - nh) // 2
+#             image_padded[dh:nh + dh, dw:nw + dw, :] = image_resized
+#             image_padded = image_padded / 255.
+#
+#             return image_padded, w1, h1
+#
+#         def non_max_suppression(prediction, conf_thres=0.1, iou_thres=0.6, agnostic=False):
+#             """Performs Non-Maximum Suppression (NMS) on inference results
+#
+#             Returns:
+#                  detections with shape: nx6 (x1, y1, x2, y2, conf, cls)
+#             """
+#
+#             def xywh2xyxy(x_):
+#                 # Convert nx4 boxes from [x, y, w, h] to [x1, y1, x2, y2] where xy1=top-left, xy2=bottom-right
+#                 y = np.zeros_like(x_)
+#                 y[:, 0] = x_[:, 0] - x_[:, 2] / 2  # top left x
+#                 y[:, 1] = x_[:, 1] - x_[:, 3] / 2  # top left y
+#                 y[:, 2] = x_[:, 0] + x_[:, 2] / 2  # bottom right x
+#                 y[:, 3] = x_[:, 1] + x_[:, 3] / 2  # bottom right y
+#                 return y
+#
+#             def nms_cpu(boxes_, confs_, nms_thresh=0.5, min_mode=False):
+#                 # print(boxes.shape)
+#                 x1_ = boxes_[:, 0]
+#                 y1_ = boxes_[:, 1]
+#                 x2_ = boxes_[:, 2]
+#                 y2_ = boxes_[:, 3]
+#
+#                 areas = (x2_ - x1_) * (y2_ - y1_)
+#                 order = confs_.argsort()[::-1]
+#
+#                 keep = []
+#                 while order.size > 0:
+#                     idx_self = order[0]
+#                     idx_other = order[1:]
+#
+#                     keep.append(idx_self)
+#
+#                     xx1 = np.maximum(x1_[idx_self], x1_[idx_other])
+#                     yy1 = np.maximum(y1_[idx_self], y1_[idx_other])
+#                     xx2 = np.minimum(x2_[idx_self], x2_[idx_other])
+#                     yy2 = np.minimum(y2_[idx_self], y2_[idx_other])
+#
+#                     w_ = np.maximum(0.0, xx2 - xx1)
+#                     h_ = np.maximum(0.0, yy2 - yy1)
+#                     inter = w_ * h_
+#
+#                     if min_mode:
+#                         over = inter / np.minimum(areas[order[0]], areas[order[1:]])
+#                     else:
+#                         over = inter / (areas[order[0]] + areas[order[1:]] - inter)
+#
+#                     inds = np.where(over <= nms_thresh)[0]
+#                     order = order[inds + 1]
+#
+#                 return np.array(keep)
+#
+#             # nc = prediction[0].shape[1] - 5  # number of classes
+#             xc = prediction[..., 4] > conf_thres  # candidates
+#
+#             # Settings
+#             min_wh, max_wh = 2, 4096  # (pixels) minimum and maximum box width and height
+#             max_det = 300  # maximum number of detections per image
+#             time_limit = 10.0  # seconds to quit after
+#
+#             t = time.time()
+#             output = [None] * prediction.shape[0]
+#             for xi, x in enumerate(prediction):  # image index, image inference
+#                 # Apply constraints
+#                 # x[((x[..., 2:4] < min_wh) | (x[..., 2:4] > max_wh)).any(1), 4] = 0  # width-height
+#                 x = x[xc[xi]]  # confidence
+#
+#                 # If none remain process next image
+#                 if not x.shape[0]:
+#                     continue
+#
+#                 # Compute conf
+#                 x[:, 5:] *= x[:, 4:5]  # conf = obj_conf * cls_conf
+#
+#                 # Box (center x, center y, width, height) to (x1, y1, x2, y2)
+#                 box_ = xywh2xyxy(x[:, :4])
+#
+#                 # i, j = (x[:, 5:] > conf_thres).nonzero(as_tuple=False).T
+#                 i_, j = (x[:, 5:] > conf_thres).nonzero()
+#                 # x = torch.cat((box[i], x[i, j + 5, None], j[:, None].float()), 1)
+#                 x = np.array(np.concatenate((box_[i_], x[i_, j + 5, None], j[:, None]), 1)).astype(np.float32)
+#
+#                 # If none remain process next image
+#                 n = x.shape[0]  # number of boxes
+#                 if not n:
+#                     continue
+#
+#                 # Sort by confidence
+#                 # x = x[x[:, 4].argsort(descending=True)]
+#
+#                 # Batched NMS
+#                 c = x[:, 5:6] * (0 if agnostic else max_wh)  # classes
+#                 boxes, scores = x[:, :4] + c, x[:, 4]  # boxes (offset by class), scores
+#                 i_ = nms_cpu(boxes, scores, iou_thres)
+#                 if i_.shape[0] > max_det:  # limit detections
+#                     i_ = i_[:max_det]
+#
+#                 output[xi] = x[i_]
+#                 if (time.time() - t) > time_limit:
+#                     break  # time limit exceeded
+#
+#             return output
+#
+#         def scale_coords(img1_shape, coords, img0_shape, ratio_pad=None):
+#
+#             def clip_coords(boxes, img_shape):
+#                 boxes[:, 0].clip(0, img_shape[1])  # x1
+#                 boxes[:, 1].clip(0, img_shape[0])  # y1
+#                 boxes[:, 2].clip(0, img_shape[1])  # x2
+#                 boxes[:, 3].clip(0, img_shape[0])  # y2
+#
+#             # Rescale coords (xyxy) from img1_shape to img0_shape
+#             if ratio_pad is None:  # calculate from img0_shape
+#                 gain = max(img1_shape) / max(img0_shape)  # gain  = old / new
+#                 pad = (img1_shape[1] - img0_shape[1] * gain) / 2, (
+#                         img1_shape[0] - img0_shape[0] * gain) / 2  # wh padding
+#             else:
+#                 gain = ratio_pad[0][0]
+#                 pad = ratio_pad[1]
+#
+#             coords[:, [0, 2]] -= pad[0]  # x padding
+#             coords[:, [1, 3]] -= pad[1]  # y padding
+#             coords[:, :4] /= gain
+#             clip_coords(coords, img0_shape)
+#             return coords
+#
+#         super().process_frame(frame)
+#
+#         res = []
+#         image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+#         img_processed, w, h = image_preprocess(np.copy(image), [self.input_size, self.input_size])
+#         image_data = img_processed[np.newaxis, ...].astype(np.float32)
+#         image_data = np.transpose(image_data, [0, 3, 1, 2])
+#
+#         # inputs = [image_data]
+#
+#         # pred = onnx_helper.run(self.sess_tuple, inputs)[0]
+#         # input_item = {self.input_names[0]: inputs[0]}
+#         # input_item = {self.input_name: inputs[0]}
+#         # input_item = {self.input_name: image_data}
+#         # pred = self.sess.run(self.output_names, input_item)
+#         # pred = self.sess.run(self.output_names, {self.input_name: image_data})[0]
+#         self.input_item[self.input_name] = image_data
+#         pred = self.sess.run(self.output_names, self.input_item)[0]
+#
+#         batch_detections = np.array(pred)
+#         batch_detections = non_max_suppression(batch_detections, conf_thres=0.4, iou_thres=0.5, agnostic=False)
+#         detections = batch_detections[0]
+#         if detections is not None:
+#             labels = detections[..., -1]
+#             boxs = detections[..., :4]
+#             confs = detections[..., 4]
+#             boxs[:, :] = scale_coords((self.input_size, self.input_size), boxs[:, :], (h, w)).round()
+#             for i, box in enumerate(boxs):
+#                 x1, y1, x2, y2 = box
+#                 class_name = self.class_names[int(labels[i])]
+#                 score = confs[i]
+#                 res.append({constants.RESULT_KEY_RECT: [y1, x1, y2, x2],
+#                             constants.RESULT_KEY_SCORE: score,
+#                             constants.RESULT_KEY_CLASS_NAME: class_name})
+#
+#         # for i in range(len(out_boxes)):
+#         #    res.append({constants.RESULT_KEY_RECT: out_boxes[i], constants.RESULT_KEY_SCORE: out_scores[i], constants.RESULT_KEY_CLASS_NAME: out_classes[i]})
+#         return res
