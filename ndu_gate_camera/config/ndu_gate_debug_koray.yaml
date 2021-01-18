@@ -114,7 +114,7 @@ instances:
       max_frame_dim: 1600
 #      max_frame_dim: 600
 
-      preview_show: True
+      preview_show: False
       preview_show_win_pos: [-1800, 250]
 #      preview_show_track_pnt: False
       preview_show_debug_texts: True

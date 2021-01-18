@@ -421,7 +421,8 @@ class NDUCameraService(Thread):
 
                     def check_results(runner_unique_key_, results_, device_, results_for_preview_):
                         self.__result_handler.save_result(results_, device=device_, runner_name=self.runners_configs_by_key[runner_unique_key_]["name"])
-                        results_for_preview_.extend(results_)
+                        if self.__preview_show:
+                            results_for_preview_.extend(results_)
 
                     delete_required_keys = []
                     for runner_unique_key, results in extra_data_results.items():
