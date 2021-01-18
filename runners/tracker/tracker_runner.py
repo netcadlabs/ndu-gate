@@ -28,9 +28,8 @@ class TrackerRunner(Thread, NDUCameraRunner):
 
         self._tracker_algorithm = config.get("tracker_algorithm", "KCF_600")
         self._g = {}
-        self._cv_tracker = CvTracker(self._tracker_algorithm)
-        # self._history = {}
-        self._last_items = []
+        self._cv_tracker = {}
+        self._last_items = {}
         self._groups = {}
 
     def get_name(self):
@@ -54,7 +53,8 @@ class TrackerRunner(Thread, NDUCameraRunner):
                         return group_name
                     else:
                         for sub_class in sub_classes:
-                            if string_helper.wildcard_has_match(class_name_, sub_class):
+                            # if string_helper.wildcard_has_match(class_name_, sub_class):
+                            if string_helper.wildcard(class_name_, sub_class):
                                 return group_name
                 return None
             else:
@@ -105,7 +105,7 @@ class TrackerRunner(Thread, NDUCameraRunner):
     def process_frame(self, frame, extra_data=None):
         super().process_frame(frame)
 
-        items = []
+        items_of_groups = {}
         results = extra_data.get(constants.EXTRA_DATA_KEY_RESULTS, None)
         if results is not None:
             h0, w0 = image_helper.image_h_w(frame)
@@ -119,6 +119,9 @@ class TrackerRunner(Thread, NDUCameraRunner):
                         class_name = item.get(constants.RESULT_KEY_CLASS_NAME, None)
                         group_name = self._get_group_name(class_name)
                         if group_name is not None:
+                            if group_name not in items_of_groups:
+                                items_of_groups[group_name] = []
+                            items = items_of_groups[group_name]
                             bbox = self._rect_to_bbox(rect, max_x, max_y)
                             if bbox is not None:
                                 item["tr_bbox"] = bbox
@@ -138,117 +141,113 @@ class TrackerRunner(Thread, NDUCameraRunner):
                 for i in remove_indexes:
                     del result[i]
 
-        if len(items) > 0:
-            self._cv_tracker = CvTracker(self._tracker_algorithm)
-            self._last_items = items
-            for item in items:
-                bbox = item["tr_bbox"]
-                self._cv_tracker.add(frame, bbox)
-        else:
-            items = self._last_items
-            items_ok = []
-            for i, (ok, bbox) in enumerate(self._cv_tracker.update(frame)):
-                if ok:
-                    item = items[i]
-                    item["tr_bbox"] = bbox
-                    item[constants.RESULT_KEY_RECT] = self._bbox_to_rect(bbox)
-                    items_ok.append(item)
-            items = items_ok
+        res = []
+        for group_name, items in items_of_groups.items():
+            if len(items) > 0:
+                self._cv_tracker[group_name] = CvTracker(self._tracker_algorithm)
+                self._last_items[group_name] = items
+                for item in items:
+                    bbox = item["tr_bbox"]
+                    self._cv_tracker[group_name].add(frame, bbox)
+            else:
+                if group_name not in self._last_items[group_name]:
+                    self._last_items[group_name] = []
+                items = self._last_items[group_name]
+                items_ok = []
+                for i, (ok, bbox) in enumerate(self._cv_tracker[group_name].update(frame)):
+                    if ok:
+                        item = items[i]
+                        item["tr_bbox"] = bbox
+                        item[constants.RESULT_KEY_RECT] = self._bbox_to_rect(bbox)
+                        items_ok.append(item)
+                items = items_ok
 
-        center_item_index = []
-        active_counts = {}
-        class_dets = {}
-        for i, item in enumerate(items):
-            if "tr_bbox" in item:
-                rect = item.get(constants.RESULT_KEY_RECT, None)
-                group_name = item["tr_group_name"]
-                if group_name not in class_dets:
-                    class_dets[group_name] = []
-                score = item.get(constants.RESULT_KEY_SCORE, 0.9)
-                det = [rect[1], rect[0], rect[3], rect[2], score]
-                if not self._det_exists(class_dets[group_name], det):
-                    class_dets[group_name].append(det)
-                    center_item_index.append((self._get_box_center(det), item, i))
+            center_item_index = []
+            active_counts = {}
+            class_dets = {}
+            for i, item in enumerate(items):
+                if "tr_bbox" in item:
+                    rect = item.get(constants.RESULT_KEY_RECT, None)
+                    group_name1 = item["tr_group_name"]
+                    if group_name1 not in class_dets:
+                        class_dets[group_name1] = []
+                    score = item.get(constants.RESULT_KEY_SCORE, 0.9)
+                    det = [rect[1], rect[0], rect[3], rect[2], score]
+                    if not self._det_exists(class_dets[group_name1], det):
+                        class_dets[group_name1].append(det)
+                        center_item_index.append((self._get_box_center(det), item, i))
 
-        g = self._g
-        g_sorts = g.get("sorts", {})
-        g_memory = g.get("memory", {})
+            if group_name not in self._g:
+                self._g[group_name] = {}
+            g = self._g[group_name]
+            g_sorts = g.get("sorts", {})
+            g_memory = g.get("memory", {})
 
-        previous = g_memory.copy()
-        g_memory = {}
+            previous = g_memory.copy()
+            g_memory = {}
 
-        for name, dets in class_dets.items():
-            if name not in g_sorts:
-                g_sorts[name] = Sort(max_age=10, min_hits=1, iou_threshold=0.001)
-                # g_sorts[name] = Sort(max_age=1, min_hits=3, iou_threshold=0.3)
-                # g_sorts[name] = Sort()
-                # g_sorts[name] = Sort(max_age=1, min_hits=1, iou_threshold=0.03)
-                # g_sorts[name] = Sort(max_age=10, min_hits=0, iou_threshold=0.000001)
-                # g_sorts[name] = Sort(max_age=30, min_hits=1, iou_threshold=0.001)
+            for name, dets in class_dets.items():
+                if name not in g_sorts:
+                    g_sorts[name] = Sort(max_age=10, min_hits=1, iou_threshold=0.001)
+                    # g_sorts[name] = Sort(max_age=1, min_hits=3, iou_threshold=0.3)
+                    # g_sorts[name] = Sort()
+                    # g_sorts[name] = Sort(max_age=1, min_hits=1, iou_threshold=0.03)
+                    # g_sorts[name] = Sort(max_age=10, min_hits=0, iou_threshold=0.000001)
+                    # g_sorts[name] = Sort(max_age=30, min_hits=1, iou_threshold=0.001)
 
-            sort = g_sorts[name]  # ref: https://github.com/abewley/sort   https://github.com/HodenX/python-traffic-counter-with-yolo-and-sort
-            dets1 = np.array(dets)
-            tracks = sort.update(dets1)
+                sort = g_sorts[name]  # ref: https://github.com/abewley/sort   https://github.com/HodenX/python-traffic-counter-with-yolo-and-sort
+                dets1 = np.array(dets)
+                tracks = sort.update(dets1)
 
-            active_counts[name] = len(tracks)
+                active_counts[name] = len(tracks)
 
-            boxes = []
-            track_ids = []
+                boxes = []
+                track_ids = []
 
-            for track in tracks:
-                boxes.append([track[0], track[1], track[2], track[3], track[4]])
-                track_id = int(track[4])
-                track_ids.append(track_id)
-                if track_id in previous:
-                    track0 = previous[track_id]
-                    dist = (math.fabs(track[0] - track0[0]) + math.fabs(track[1] - track0[1]) + math.fabs(track[2] - track0[2]) + math.fabs(track[3] - track0[3])) / 4.0
-                    if dist > 30:
-                        g_memory[track_id] = boxes[-1]
-                    else:
-                        g_memory[track_id] = track0
-                else:
-                    g_memory[track_id] = boxes[-1]
-
-            if len(boxes) > 0:
-                for i, box in enumerate(boxes):
-                    track_id = track_ids[i]
+                for track in tracks:
+                    boxes.append([track[0], track[1], track[2], track[3], track[4]])
+                    track_id = int(track[4])
+                    track_ids.append(track_id)
                     if track_id in previous:
-                        previous_box = previous.get(track_id, None)
-                        if previous_box is not None:
-                            c = self._get_box_center(box)
-                            min_dist = sys.maxsize
-                            result_item = None
-                            for center, item, i0 in center_item_index:
-                                dist = geometry_helper.distance(c, center)
-                                if dist < min_dist:
-                                    min_dist = dist
-                                    result_item = item
-                            if result_item is not None:
-                                result_item[constants.RESULT_KEY_TRACK_ID] = track_id
-                                result_item[constants.RESULT_KEY_PREVIEW_KEY] = track_id
-                                # if track_id not in self._history:
-                                #     self._history[track_id] = {"item": result_item, "age": 0}
-                                # else:
-                                #     item0 = self._history[track_id]["item"]
-                                #     self._history[track_id]["age"] = 0
-                                #     if result_item.get(constants.RESULT_KEY_SCORE, 0.9) < item0.get(constants.RESULT_KEY_SCORE, 0.9):
-                                #         result_item[constants.RESULT_KEY_CLASS_NAME] = item0[constants.RESULT_KEY_CLASS_NAME]
-                                #         result_item[constants.RESULT_KEY_SCORE] = item0[constants.RESULT_KEY_SCORE]
-                                #     else:
-                                #         self._history[track_id]["item"] = result_item
+                        track0 = previous[track_id]
+                        dist = (math.fabs(track[0] - track0[0]) + math.fabs(track[1] - track0[1]) + math.fabs(track[2] - track0[2]) + math.fabs(track[3] - track0[3])) / 4.0
+                        if dist > 30:
+                            g_memory[track_id] = boxes[-1]
+                        else:
+                            g_memory[track_id] = track0
+                    else:
+                        g_memory[track_id] = boxes[-1]
+                if len(boxes) > 0:
+                    for i, box in enumerate(boxes):
+                        track_id = track_ids[i]
+                        if track_id in previous:
+                            previous_box = previous.get(track_id, None)
+                            if previous_box is not None:
+                                c = self._get_box_center(box)
+                                min_dist = sys.maxsize
+                                result_item = None
+                                for center, item, i0 in center_item_index:
+                                    dist = geometry_helper.distance(c, center)
+                                    if dist < min_dist:
+                                        min_dist = dist
+                                        result_item = item
+                                if result_item is not None:
+                                    result_item[constants.RESULT_KEY_TRACK_ID] = track_id
+                                    result_item[constants.RESULT_KEY_PREVIEW_KEY] = track_id
+                        else:
+                            result_item = items[i]
+                            result_item[constants.RESULT_KEY_TRACK_ID] = track_id
+                            result_item[constants.RESULT_KEY_PREVIEW_KEY] = track_id
+                else:
+                    for i in range(len(items)):
+                        result_item = items[i]
+                        result_item[constants.RESULT_KEY_TRACK_ID] = -1
+                        result_item[constants.RESULT_KEY_PREVIEW_KEY] = -1
 
-        # del_lst = []
-        # for track_id, hist in self._history.items():
-        #     if hist["age"] > 50:
-        #         del_lst.append(track_id)
-        #     else:
-        #         hist["age"] += 1
-        # for track_id in del_lst:
-        #     del self._history[track_id]
-
-        g["sorts"] = g_sorts
-        g["memory"] = g_memory
-        return items
+            g["sorts"] = g_sorts
+            g["memory"] = g_memory
+            res.extend(items)
+        return res
 
 
 class CvTracker(object):
@@ -300,7 +299,7 @@ class CvTracker(object):
         self._ratio_w = w0 / w1
         tracker = self._create_tracker(self._tracker_algorithm)
         x1, y1, w, h = bbox
-        bbox = (x1 / self._ratio_w, y1 / self._ratio_h, w / self._ratio_w, h / self._ratio_h)
+        bbox = (int(x1 / self._ratio_w), int(y1 / self._ratio_h), int(w / self._ratio_w), int(h / self._ratio_h))
         tracker.init(image, bbox)
         self._cv_trackers.append(tracker)
 

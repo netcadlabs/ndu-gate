@@ -1,3 +1,6 @@
+onnx_runner: "openvino" #"onnxruntime" , "openvino"
+extension_folder: "C:/_koray/netcadlabs/ndu-gate/runners"
+
 result_handler:
   type: SOCKET
   socket:
@@ -11,17 +14,112 @@ result_handler:
 #    host: 127.0.0.1
 
 instances:
+#  - source:
+#      device: "koray_office_pc1"
+#      preview_show: True
+#      preview_show_win_pos: [ -1800, 250 ]
+#      type: VIDEO_FILE
+#      data_folder: C:/_koray/test_data/
+#      file_path: lpr/canakkale_plaka (1).mp4
+#    runners:
+#      - name: yolov5s - Object detection with 80 classes (Fastest)
+#        type: yolov5s
+#        configuration: yolov5s.json
+#        class: Yolov5sRunner
+#        priority: 10
+#  - source:
+#      device: "koray_office_pc2"
+#      preview_show: True
+#      preview_show_win_pos: [ -1800, 250 ]
+#      type: VIDEO_FILE
+#      data_folder: C:/_koray/test_data/
+#      file_path: lpr/canakkale_plaka (1).mp4
+#    runners:
+#      - name: yolov5s - Object detection with 80 classes (Fastest)
+#        type: yolov5s
+#        configuration: yolov5s.json
+#        class: Yolov5sRunner
+#        priority: 10
+#  - source:
+#      device: "koray_office_pc3"
+#      preview_show: True
+#      preview_show_win_pos: [ -1800, 250 ]
+#      type: VIDEO_FILE
+#      data_folder: C:/_koray/test_data/
+#      file_path: lpr/canakkale_plaka (1).mp4
+#    runners:
+#      - name: yolov5s - Object detection with 80 classes (Fastest)
+#        type: yolov5s
+#        configuration: yolov5s.json
+#        class: Yolov5sRunner
+#        priority: 10
+#  - source:
+#      device: "koray_office_pc4"
+#      preview_show: True
+#      preview_show_win_pos: [ -1800, 250 ]
+#      type: VIDEO_FILE
+#      data_folder: C:/_koray/test_data/
+#      file_path: lpr/canakkale_plaka (1).mp4
+#    runners:
+#      - name: yolov5s - Object detection with 80 classes (Fastest)
+#        type: yolov5s
+#        configuration: yolov5s.json
+#        class: Yolov5sRunner
+#        priority: 10
+#  - source:
+#      device: "koray_office_pc5"
+#      preview_show: True
+#      preview_show_win_pos: [ -1800, 250 ]
+#      type: VIDEO_FILE
+#      data_folder: C:/_koray/test_data/
+#      file_path: lpr/canakkale_plaka (1).mp4
+#    runners:
+#      - name: yolov5s - Object detection with 80 classes (Fastest)
+#        type: yolov5s
+#        configuration: yolov5s.json
+#        class: Yolov5sRunner
+#        priority: 10
+#  - source:
+#      device: "koray_office_pc6"
+#      preview_show: True
+#      preview_show_win_pos: [ -1800, 250 ]
+#      type: VIDEO_FILE
+#      data_folder: C:/_koray/test_data/
+#      file_path: lpr/canakkale_plaka (1).mp4
+#    runners:
+#      - name: yolov5s - Object detection with 80 classes (Fastest)
+#        type: yolov5s
+#        configuration: yolov5s.json
+#        class: Yolov5sRunner
+#        priority: 10
+#  - source:
+#      device: "koray_office_pc7"
+#      preview_show: True
+#      preview_show_win_pos: [ -1800, 250 ]
+#      type: VIDEO_FILE
+#      data_folder: C:/_koray/test_data/
+#      file_path: lpr/canakkale_plaka (1).mp4
+#    runners:
+#      - name: yolov5s - Object detection with 80 classes (Fastest)
+#        type: yolov5s
+#        configuration: yolov5s.json
+#        class: Yolov5sRunner
+#        priority: 10
+
+
+
+
   - source:
       device: "koray_office_pc"
-#      max_frame_dim: 1600
+      max_frame_dim: 1600
 #      max_frame_dim: 600
 
       preview_show: True
-#      preview_show_win_pos: [-1800, 250]
+      preview_show_win_pos: [-1800, 250]
 #      preview_show_track_pnt: False
-#      preview_show_debug_texts: False
+      preview_show_debug_texts: True
 #      preview_show_runner_info: False
-      preview_show_score: True
+#      preview_show_score: True
 #      preview_show_rect_name: False
 #      preview_show_track_id: False
 #      preview_show_rect_filter: "scooter*"
@@ -46,8 +144,8 @@ instances:
       data_folder: C:/_koray/test_data/
 #      file_path: bakanlik.avi
 #      file_path: lpr/plaka_trafik.mp4
-      file_path: lpr/plaka_tur.mp4
-#      file_path: lpr/canakkale_plaka (1).mp4
+#      file_path: lpr/plaka_tur.mp4
+      file_path: lpr/canakkale_plaka (1).mp4
 #      file_path: lpr/canakkale_plaka (2).mp4
 #      file_path: lpr/canakkale_plaka (3).mp4
 #      file_path: lpr/canakkale_plaka (4).mp4
@@ -173,11 +271,51 @@ instances:
     runners:
 
 
+
+      - name: lpr - Licence Plate Recognition
+        type: lpr
+        configuration: lpr.json
+        class: LprRunner
+        priority: 40
+      - name: Tracker
+        type: tracker
+        configuration: tracker_lp.json
+        class: TrackerRunner
+        priority: 50
+
 #      - name: Vehicle Detector
 #        type: vehicle_detector
 #        configuration: vehicle_detector.json
 #        class: VehicleDetectorRunner
 #        priority: 10
+#
+#
+      - name: yolov4-tiny - Object detection with 80 classes
+        type: yolov4-tiny
+        configuration: yolov4-tiny.json
+        class: Yolov4TinyRunner
+        priority: 10
+#
+#
+#
+#      - name: Object Counter
+#        type: object_counter
+#        configuration: object_counter.json
+#        class: ObjectCounterRunner
+#        priority: 100
+#
+#
+####
+#####      - name: Face Mask Detection
+#####        type: facemask
+#####        configuration: facemask.json
+#####        class: FaceMaskRunner
+#####        priority: 100
+
+
+
+
+
 
 #      - name: License Plate Detector
 #        type: lp_detector
@@ -199,34 +337,35 @@ instances:
 #        configuration: yolov5s.json
 #        class: Yolov5sRunner
 #        priority: 10
-##        step_frame: 30
-###        step_sec: 2
-#
-#      - name: Tracker
-#        type: tracker
-#        configuration: tracker.json
-#        class: TrackerRunner
-#        priority: 50
-##
-##      - name: lpr - Licence Plate Recognition
-##        type: lpr
-##        configuration: lpr.json
-##        class: LprRunner
-##        priority: 75
-#
-#      - name: Object Counter
-#        type: object_counter
-#        configuration: object_counter.json
-#        class: ObjectCounterRunner
-#        priority: 100
-#
-#
-###
-####      - name: Face Mask Detection
-####        type: facemask
-####        configuration: facemask.json
-####        class: FaceMaskRunner
-####        priority: 100
+###        step_frame: 30
+####        step_sec: 2
+
+#      - name: yolov4 - Object detection with 80 classes
+#        type: yolov4
+#        configuration: yolov4.json
+#        class: Yolov4Runner
+#        priority: 10
+
+#      - name: yolov4-tiny - Object detection with 80 classes
+#        type: yolov4-tiny
+#        configuration: yolov4-tiny.json
+#        class: Yolov4TinyRunner
+#        priority: 10
+
+#      - name: yolov3 - Object detection with 80 classes
+#        type: yolov3
+#        configuration: yolov3.json
+#        class: Yolov3Runner
+#        priority: 10
+
+#      - name: yolov3-tiny - Fast object detection with 80 classes
+#        type: yolov3-tiny
+#        configuration: yolov3-tiny.json
+#        class: Yolov3TinyRunner
+#        priority: 10
+
+
+
 
 
 #      - name: yolov5x - Object detection with 80 classes (Fast)
@@ -235,180 +374,6 @@ instances:
 #        class: Yolov5xRunner
 #        priority: 10
 
-
-
-
-#
-#
-##
-##small 525
-##large 2700 - gpu 180 pool 220
-#
-##large max_engine_count=0       :   cpu:2500 - gpu:230
-##large max_engine_count=0 + lock:   cpu:2680 - gpu:180
-##large max_engine_count=1       :   cpu:2500 - gpu:230
-##large max_engine_count=1 + lock:   cpu:2680 - gpu:180
-##large max_engine_count=4       :   cpu:2500 - gpu:230
-##large max_engine_count=4 + lock:   cpu:2680 - gpu:180
-#
-##small 6 video:   cpu:570 - gpu:160
-##small 3 video:   cpu:275 - gpu:70
-#  - source:
-#      type: VIDEO_FILE # CAMERA
-#      data_folder: C:/_koray/test_data/
-#      file_path: bakanlik.avi
-#      device: "cam1"
-##      max_frame_dim: 640
-#      preview_show: True
-#    runners:
-#      - name: yolov5s - Object detection with 80 classes (Fastest)
-#        type: yolov5s
-#        configuration: yolov5s.json
-#        class: Yolov5sRunner
-#        priority: 10
-#      - name: Object Counter
-#        type: object_counter
-#        configuration: object_counter.json
-#        class: ObjectCounterRunner
-#        priority: 100
-#
-#  - source:
-#      type: VIDEO_FILE # CAMERA
-#      data_folder: C:/_koray/test_data/
-#      file_path: bakanlik.avi
-#      device: "cam2"
-##      max_frame_dim: 640
-#      preview_show: True
-#    runners:
-#      - name: yolov5s - Object detection with 80 classes (Fastest)
-#        type: yolov5s
-#        configuration: yolov5s.json
-#        class: Yolov5sRunner
-#        priority: 10
-#      - name: Object Counter
-#        type: object_counter
-#        configuration: object_counter.json
-#        class: ObjectCounterRunner
-#        priority: 100
-#
-#  - source:
-#      type: VIDEO_FILE # CAMERA
-#      data_folder: C:/_koray/test_data/
-#      file_path: bakanlik.avi
-#      device: "cam3"
-##      max_frame_dim: 640
-#      preview_show: True
-#    runners:
-#      - name: yolov5s - Object detection with 80 classes (Fastest)
-#        type: yolov5s
-#        configuration: yolov5s.json
-#        class: Yolov5sRunner
-#        priority: 10
-#      - name: Object Counter
-#        type: object_counter
-#        configuration: object_counter.json
-#        class: ObjectCounterRunner
-#        priority: 100
-#
-#  - source:
-#      type: VIDEO_FILE # CAMERA
-#      data_folder: C:/_koray/test_data/
-#      file_path: bakanlik.avi
-#      device: "cam4"
-##      max_frame_dim: 640
-#      preview_show: True
-#    runners:
-#      - name: yolov5s - Object detection with 80 classes (Fastest)
-#        type: yolov5s
-#        configuration: yolov5s.json
-#        class: Yolov5sRunner
-#        priority: 10
-#      - name: Object Counter
-#        type: object_counter
-#        configuration: object_counter.json
-#        class: ObjectCounterRunner
-#        priority: 100
-#
-#  - source:
-#      type: VIDEO_FILE # CAMERA
-#      data_folder: C:/_koray/test_data/
-#      file_path: bakanlik.avi
-#      device: "cam5"
-##      max_frame_dim: 640
-#      preview_show: True
-#    runners:
-#      - name: yolov5s - Object detection with 80 classes (Fastest)
-#        type: yolov5s
-#        configuration: yolov5s.json
-#        class: Yolov5sRunner
-#        priority: 10
-#      - name: Object Counter
-#        type: object_counter
-#        configuration: object_counter.json
-#        class: ObjectCounterRunner
-#        priority: 100
-#
-#  - source:
-#      type: VIDEO_FILE # CAMERA
-#      data_folder: C:/_koray/test_data/
-#      file_path: bakanlik.avi
-#      device: "cam6"
-##      max_frame_dim: 640
-#      preview_show: True
-#    runners:
-#      - name: yolov5s - Object detection with 80 classes (Fastest)
-#        type: yolov5s
-#        configuration: yolov5s.json
-#        class: Yolov5sRunner
-#        priority: 10
-#      - name: Object Counter
-#        type: object_counter
-#        configuration: object_counter.json
-#        class: ObjectCounterRunner
-#        priority: 100
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#  - source:
-#      type: VIDEO_FILE # CAMERA
-#      data_folder: C:/_koray/test_data/
-#      file_path: iett_2.avi
-#      preview_show: True
-#      preview_show_debug_texts: True
-#
-##      preview_write: True
-#      preview_write_file_name: C:/_koray/temp/preview.mp4
-#    runners:
-##      - name: yolov5x - Object detection with 80 classes (Fast)
-##        type: yolov5x
-##        configuration: yolov5x.json
-##        class: Yolov5xRunner
-##        priority: 10
-#      - name: yolov5s - Object detection with 80 classes (Fastest)
-#        type: yolov5s
-#        configuration: yolov5s.json
-#        class: Yolov5sRunner
-#        priority: 10
-#
-#      - name: Person Counter
-#        type: personcounter
-#        configuration: person_counter.json
-#        class: person_counter_runner
-#        priority: 100
 
 
 
@@ -553,7 +518,7 @@ instances:
 #    port: 60060
 #    host: 127.0.0.1
 #
-####koray
+####
 ##result_handler:
 ##  type: FILE
 ##  file_path: C:/_koray/temp/

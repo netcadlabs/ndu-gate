@@ -29,7 +29,7 @@ class HardHatDetectorRunner(NDUCameraRunner):
         if not os.path.isfile(classes_filename):
             classes_filename = os.path.dirname(os.path.abspath(__file__)) + classes_filename.replace("/", os.path.sep)
         self.class_names = onnx_helper.parse_class_names(classes_filename)
-        self.sess_tuple = onnx_helper.get_sess_tuple(onnx_fn, config.get("max_engine_count", 0))
+        self.sess_tuple = onnx_helper.get_sess_tuple(onnx_fn)
 
         self.debug_mode = NDUUtility.is_debug_mode()
         self.last_data = None

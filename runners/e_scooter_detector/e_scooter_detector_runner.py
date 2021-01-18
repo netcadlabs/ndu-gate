@@ -26,7 +26,7 @@ class EScooterDetectorRunner(NDUCameraRunner):
         classes_fn = os.path.dirname(os.path.abspath(__file__)) + classes_fn.replace("/", os.path.sep)
 
         self.class_names = onnx_helper.parse_class_names(classes_fn)
-        self.sess_tuple = onnx_helper.get_sess_tuple(onnx_fn, config.get("max_engine_count", 0))
+        self.sess_tuple = onnx_helper.get_sess_tuple(onnx_fn)
 
         # region Demo
         self._last_sent = None

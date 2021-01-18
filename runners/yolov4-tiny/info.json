@@ -1,0 +1,6 @@
+{
+    "connector_config": {
+      "class": "Yolov4TinyRunner"
+    },
+    "copy": []
+}

@@ -16,7 +16,7 @@ class GenderAgeRunner(Thread, NDUCameraRunner):
         onnx_fn = path.dirname(path.abspath(__file__)) + "/data/weights.29-3.76_utk.hdf5.onnx"
         if not path.isfile(onnx_fn):
             raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), onnx_fn)
-        self.sess_tuple = onnx_helper.get_sess_tuple(onnx_fn, config.get("max_engine_count", 0))
+        self.sess_tuple = onnx_helper.get_sess_tuple(onnx_fn)
 
     def get_name(self):
         return "GenderAgeRunner"

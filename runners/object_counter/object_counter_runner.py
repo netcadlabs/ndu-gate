@@ -10,6 +10,8 @@ from ndu_gate_camera.api.ndu_camera_runner import NDUCameraRunner
 from ndu_gate_camera.utility import constants, geometry_helper, image_helper, string_helper
 from filterpy.kalman import KalmanFilter
 
+from ndu_gate_camera.utility.ndu_utility import NDUUtility
+
 np.random.seed(0)
 
 
@@ -21,13 +23,12 @@ class ObjectCounterRunner(Thread, NDUCameraRunner):
         self.__classes = config.get("classes", None)
         self.__concat_data_classes = config.get("concat_data_classes", None)
 
-        # self.__class_name_to_group_name = {}
         self.__frame_num = 0
         self.config = config
         self.track = config.get("track", "center")
         self.__gates = []
-        self.__debug = True  ####koray
-        # self.__debug = False
+        self.__debug = NDUUtility.is_debug_mode()
+
         self.__debug_last = {}
         self._result_style = config.get("result_style", 0)  # 0:cumulative - 1:aggregate
         self._track_pnts = {}

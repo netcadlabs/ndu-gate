@@ -20,7 +20,7 @@ class AerialVehicleRunner(NDUCameraRunner):
         if not os.path.isfile(classes_filename):
             classes_filename = os.path.dirname(os.path.abspath(__file__)) + classes_filename.replace("/", os.path.sep)
         self.class_names = onnx_helper.parse_class_names(classes_filename)
-        self.sess_tuple = onnx_helper.get_sess_tuple(onnx_fn, config.get("max_engine_count", 0))
+        self.sess_tuple = onnx_helper.get_sess_tuple(onnx_fn)
 
     def get_name(self):
         return "aerial_vehicle"

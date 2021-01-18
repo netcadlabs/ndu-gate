@@ -1,3 +1,4 @@
+import os
 import sys
 import re
 from os import path, listdir
@@ -19,17 +20,19 @@ class NDUUtility:
     loaded_runners = {}
 
     @staticmethod
-    def check_and_import(extension_type, module_name, package_uuids=None):
+    def check_and_import(extension_type, module_name, package_uuids=None, extension_folder=None):
         if NDUUtility.loaded_runners.get(extension_type + module_name) is None:
             file_dir = path.dirname(path.dirname(__file__))
             extensions_paths = []
+            if extension_folder is not None:
+                extensions_paths.append((os.path.join(extension_folder, extension_type.lower())).replace('/', path.sep))
 
             if system() == "Windows":
                 extensions_paths.append(path.abspath(file_dir + '/runners/'.replace('/', path.sep) + extension_type.lower()))
             else:
                 extensions_paths.append('/var/lib/ndu_gate/runners/'.replace('/', path.sep) + extension_type.lower())
                 extensions_paths.append(path.abspath(file_dir + '/runners/'.replace('/', path.sep) + extension_type.lower()))
-            
+
             if NDUUtility.is_debug_mode():
                 extensions_paths.append(path.abspath(file_dir + '/../runners/'.replace('/', path.sep) + extension_type.lower()))
             # extensions_paths.append(path.abspath(file_dir + '/../runners/'.replace('/', path.sep) + extension_type.lower()))
@@ -40,7 +43,11 @@ class NDUUtility:
                         extensions_paths.append('/var/lib/ndu_gate/runners/'.replace('/', path.sep) + 'Pack_' + uuid)
 
             try:
+                handled = []
                 for extension_path in extensions_paths:
+                    if extension_path in handled:
+                        continue
+                    handled.append(extension_path)
                     if path.exists(extension_path):
                         for file in listdir(extension_path):
                             if file.startswith('__') or not file.endswith('.py'):
@@ -171,26 +178,30 @@ class NDUUtility:
     def enumerate_results(extra_data, class_name_filters=None, use_wildcard=False, return_item=False) -> Iterator[tuple]:
         results = extra_data.get(constants.EXTRA_DATA_KEY_RESULTS, None)
         if results is not None:
-            for runner_name, result in results.items():
-                for item in result:
-                    class_name = item.get(constants.RESULT_KEY_CLASS_NAME, None)
-                    if class_name is not None:
-                        ok = False
-                        if class_name_filters is None:
-                            ok = True
-                        else:
-                            if use_wildcard:
-                                for filter1 in class_name_filters:
-                                    if string_helper.wildcard(class_name, filter1):
-                                        ok = True
-                                        break
-                            else:
-                                ok = class_name in class_name_filters
-                        if ok:
-                            score = item.get(constants.RESULT_KEY_SCORE, None)
-                            rect = item.get(constants.RESULT_KEY_RECT, None)
-                            if not return_item:
-                                yield class_name, score, rect
-                            else:
-                                yield class_name, score, rect, item
+            for _runner_name, result in results.items():
+                return NDUUtility.enumerate_result_items(result, class_name_filters=class_name_filters, use_wildcard=use_wildcard, return_item=return_item)
 
+    # returns (class_name, score, rect) from extra_data. Score and rect can be None!
+    @staticmethod
+    def enumerate_result_items(result, class_name_filters=None, use_wildcard=False, return_item=False) -> Iterator[tuple]:
+        for item in result:
+            class_name = item.get(constants.RESULT_KEY_CLASS_NAME, None)
+            if class_name is not None:
+                ok = False
+                if class_name_filters is None:
+                    ok = True
+                else:
+                    if use_wildcard:
+                        for filter1 in class_name_filters:
+                            if string_helper.wildcard(class_name, filter1):
+                                ok = True
+                                break
+                    else:
+                        ok = class_name in class_name_filters
+                if ok:
+                    score = item.get(constants.RESULT_KEY_SCORE, None)
+                    rect = item.get(constants.RESULT_KEY_RECT, None)
+                    if not return_item:
+                        yield class_name, score, rect
+                    else:
+                        yield class_name, score, rect, item

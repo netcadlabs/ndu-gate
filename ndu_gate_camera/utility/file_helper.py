@@ -2,7 +2,8 @@ import codecs
 import io
 import os
 import pathlib
-from typing import AnyStr
+from typing import AnyStr, Tuple
+from shutil import copyfile
 
 from ndu_gate_camera.utility import string_helper
 from ndu_gate_camera.utility.ndu_utility import NDUUtility
@@ -67,3 +68,22 @@ def get_parent_dir_name(file_name):
 
 def path_join(a: AnyStr, *paths: AnyStr) -> AnyStr:
     return os.path.join(a, *paths).replace("/", os.path.sep)
+
+
+def create_dir(dir_name, parents=True, exist_ok=True):
+    from pathlib import Path
+    Path(dir_name).mkdir(parents=parents, exist_ok=exist_ok)
+
+
+def copy_file(source, target):
+    copyfile(source, target)
+
+
+def get_file_name_extension(file_full_name) -> Tuple[AnyStr, AnyStr, AnyStr]:
+    dir_name, file_name = os.path.split(file_full_name)
+    name, extension = os.path.splitext(file_name)
+    return dir_name, name, extension
+
+
+def delete_file(file_name):
+    os.remove(file_name)

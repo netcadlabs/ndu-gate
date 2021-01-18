@@ -27,7 +27,7 @@ class SsdMobilenetRunner(Thread, NDUCameraRunner):
             classes_filename = os.path.dirname(os.path.abspath(__file__)) + classes_filename.replace("/", os.path.sep)
 
         self.class_names = self._parse_pbtxt(classes_filename)
-        self.sess_tuple = onnx_helper.get_sess_tuple(onnx_fn, config.get("max_engine_count", 0))
+        self.sess_tuple = onnx_helper.get_sess_tuple(onnx_fn)
 
     def _parse_pbtxt(self, file_name):
         import json

@@ -22,7 +22,7 @@ class IntersectorRunner(Thread, NDUCameraRunner):
         if not path.isfile(class_names_fn):
             raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), class_names_fn)
         self.__onnx_classify_names = onnx_helper.parse_class_names(class_names_fn)
-        self.sess_tuple = onnx_helper.get_sess_tuple(onnx_fn, self._onnx_max_engine_count)
+        self.sess_tuple = onnx_helper.get_sess_tuple(onnx_fn)
 
     _ST_OR = "or"
     _ST_AND = "and"
@@ -139,7 +139,6 @@ class IntersectorRunner(Thread, NDUCameraRunner):
     def __init__(self, config, _):
         super().__init__()
         self._check_config(config.get("groups", None))
-        self._onnx_max_engine_count = config.get("max_engine_count", 0)
 
     def get_name(self):
         return "IntersectorRunner"

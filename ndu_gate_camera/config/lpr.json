@@ -1,9 +1,4 @@
 {
-  "min_confidence_percentage": 80,
-  "resize_width": 500,
-  "send_data": true,
-  "rects": [
-      "license plate"
-    ]
+  "send_data": true
 }
 

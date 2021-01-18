@@ -25,7 +25,7 @@ class EmotionRunner(Thread, NDUCameraRunner):
             raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), class_names_fn)
 
         self.class_names = onnx_helper.parse_class_names(class_names_fn)
-        self.sess_tuple = onnx_helper.get_sess_tuple(onnx_fn, config.get("max_engine_count", 0))
+        self.sess_tuple = onnx_helper.get_sess_tuple(onnx_fn)
 
     def get_name(self):
         return "EmotionRunner"

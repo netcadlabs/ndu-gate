@@ -12,6 +12,7 @@ from ndu_gate_camera.camera.ndu_camera_service import NDUCameraService
 from ndu_gate_camera.camera.ndu_logger import NDULoggerHandler
 from ndu_gate_camera.camera.result_handlers.result_handler_file import ResultHandlerFile
 from ndu_gate_camera.camera.result_handlers.result_handler_socket import ResultHandlerSocket
+from ndu_gate_camera.utility import onnx_helper
 from ndu_gate_camera.utility.constants import DEFAULT_NDU_GATE_CONF, DEFAULT_NDU_GATE_CONF_WIN, DEFAULT_HANDLER_SETTINGS
 from ndu_gate_camera.utility.ndu_utility import NDUUtility
 
@@ -88,6 +89,9 @@ def main(ndu_gate_config_file):
         log.info("NDU-Gate logging config file: %s", logging_config_file)
         log.info("NDU-Gate logging service level: %s", log.level)
 
+        onnx_helper.init(ndu_gate_config.get("onnx_runner", None), log)
+        extension_folder = ndu_gate_config.get("extension_folder", None)
+
         result_hand_conf = ndu_gate_config.get("result_handler", None)
         if result_hand_conf is None:
             result_hand_conf = DEFAULT_HANDLER_SETTINGS
@@ -104,7 +108,7 @@ def main(ndu_gate_config_file):
             for instance in instances:
                 if instance["source"].get("preview_show", False):
                     preview_exists = True
-                camera_service = NDUCameraService(instance=instance, config_dir=ndu_gate_config_dir, handler=result_handler, is_main_thread=False)
+                camera_service = NDUCameraService(instance=instance, config_dir=ndu_gate_config_dir, handler=result_handler, is_main_thread=False, extension_folder=extension_folder)
                 camera_service.start()
                 services.append(camera_service)
                 log.info("NDU-Gate an instance started")
@@ -125,7 +129,7 @@ def main(ndu_gate_config_file):
                 for service in services:
                     service.join()
         elif len(instances) == 1:
-            camera_service = NDUCameraService(instance=instances[0], config_dir=ndu_gate_config_dir, handler=result_handler, is_main_thread=True)
+            camera_service = NDUCameraService(instance=instances[0], config_dir=ndu_gate_config_dir, handler=result_handler, is_main_thread=True, extension_folder=extension_folder)
             camera_service.run()
         else:
             log.error("NDUCameraService no source found!")

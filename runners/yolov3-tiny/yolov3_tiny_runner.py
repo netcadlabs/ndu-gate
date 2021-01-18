@@ -1,6 +1,5 @@
 import numpy as np
 import cv2
-import onnxruntime as rt
 import os
 
 from ndu_gate_camera.api.ndu_camera_runner import NDUCameraRunner, log
@@ -21,7 +20,7 @@ class Yolov3TinyRunner(NDUCameraRunner):
         if not os.path.isfile(classes_filename):
             classes_filename = os.path.dirname(os.path.abspath(__file__)) + classes_filename.replace("/", os.path.sep)
         self.class_names = onnx_helper.parse_class_names(classes_filename)
-        self.sess_tuple = onnx_helper.get_sess_tuple(onnx_fn, config.get("max_engine_count", 0))
+        self.sess_tuple = onnx_helper.get_sess_tuple(onnx_fn)
 
     def get_name(self):
         return "yolov3-tiny"
