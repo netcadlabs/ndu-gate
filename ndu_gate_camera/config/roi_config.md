@@ -1,4 +1,4 @@
-ndu_gate yaml dosyasına tanımlanan 'runner'lara "roi_config" eklenebilir. Örnek:
+ndu_gate yaml dosyasına tanımlanan 'runner'lara *roi_config* eklenebilir. Örnek:
 
       - name: yolov4 - Object detection with 80 classes
         type: yolov4
@@ -24,3 +24,9 @@ Bu json diğer runner config json dosyalarının da olduğu config dizininde olm
 * **apply_crop**: Poligonlara göre imaj kesilsin mi? Poligonların hepsinin min-max koordinatlarına göre oluşturulan bbox kullanılarak imaj kesilir ve küçültülmüş bu imaj üzerinden işlem yapılır. *Varsayılan değer: true* 
 * **preview**: Debug amaçlıdır. Önizleme yapmak için kullanılır. Varsayılan değer: false
 * **pyrUp**: Piramit büyütme kaç kere yapılsın? Varsayılan değer: 1 (büyütme yapılmasın)
+
+Poligon koordinatlarını kolay doldurmak için:
+* *polygons* içerisi boş olsun []
+* program çalışınca ilk frame üzerinden poligon seçtirme ekranı açılacak. 
+  Birden fazla poligon için "n" tuşuna basın. Çizimi bitirmek için "s" tuşuna basın.
+  Consola polygons içeriği print edilecek. Bunu koplayatıp roi_config dosyasının içine yapıştırabilirsiniz.
