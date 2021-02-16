@@ -20,6 +20,7 @@ class social_distance_runner(Thread, NDUCameraRunner):
 
         # self.__mouse_pts = None
         self.__mouse_pts = config.get("mouse_points", None)
+        self.__debug_mode = config.get("debug_mode", False)
         self.__M = None
 
     def get_name(self):
@@ -39,6 +40,7 @@ class social_distance_runner(Thread, NDUCameraRunner):
 
         if self.__mouse_pts is None and self.__frame_num == 1:
             global mouse_pts
+
             def get_mouse_points(event, x, y, flags, param):
                 # Used to mark 4 points on the frame zero of the video that will be warped
                 # Used to mark 2 points on the frame zero of the video that are 6 feet away
@@ -65,12 +67,14 @@ class social_distance_runner(Thread, NDUCameraRunner):
                     break
                 self.__mouse_pts = mouse_pts
             # self.__mouse_pts = select_points(frame, 6, self.get_name())
+            config_arr = np.array(mouse_pts)
 
         # draw polygon of ROI
         pts = np.array(
             [self.__mouse_pts[0], self.__mouse_pts[1], self.__mouse_pts[3], self.__mouse_pts[2]], np.int32
         )
-        cv2.polylines(frame, [pts], True, (0, 255, 255), thickness=4)
+        if self.__debug_mode:
+            cv2.polylines(frame, [pts], True, (0, 255, 255), thickness=4)
 
         # Detect person and bounding boxes using DNN
         # pedestrian_boxes, num_pedestrians = DNN.detect_pedestrians(frame)
@@ -152,6 +156,9 @@ class social_distance_runner(Thread, NDUCameraRunner):
         # )
         #
         # bird_image[:] = SOLID_BACK_COLOR
+
+        # d_thresh *= 1.5######################
+
         return M, d_thresh
 
     # @staticmethod

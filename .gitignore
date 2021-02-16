@@ -27,3 +27,5 @@ ndu_gate_camera.egg-info/
 dist/
 build/
 .vscode/*
+/runners/OpenVINO/vc_redist.x64.exe
+/runners/OpenVINO/w_openvino_toolkit_p_2021.2.185.exe

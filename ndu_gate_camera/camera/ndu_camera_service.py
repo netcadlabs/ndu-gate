@@ -10,6 +10,7 @@ import cv2
 import numpy as np
 
 from ndu_gate_camera.api.video_source import VideoSourceType
+from ndu_gate_camera.camera.roi_manager import ROIManager
 from ndu_gate_camera.camera.video_sources.camera_video_source import CameraVideoSource
 from ndu_gate_camera.camera.video_sources.file_video_source import FileVideoSource
 from ndu_gate_camera.camera.video_sources.ip_camera_video_source import IPCameraVideoSource
@@ -58,6 +59,7 @@ class NDUCameraService(Thread):
             self.__last_preview_image = None
             self.__preview_show_debug_texts = self.SOURCE_CONFIG.get("preview_show_debug_texts", True)
             self.__preview_show_runner_info = self.SOURCE_CONFIG.get("preview_show_runner_info", True)
+            self.__preview_show_ROI = self.SOURCE_CONFIG.get("preview_show_ROI", False)
             self.__preview_show_score = self.SOURCE_CONFIG.get("preview_show_score", False)
             self.__preview_show_rect_name = self.SOURCE_CONFIG.get("preview_show_rect_name", True)
             self.__preview_show_track_id = self.SOURCE_CONFIG.get("preview_show_track_id", True)
@@ -146,6 +148,22 @@ class NDUCameraService(Thread):
                         log.error("config file is not found %s", config_file)
                         runner_conf = {"name": runner["name"]}
 
+                    roi_manager = None
+                    roi_configuration_name = runner.get('roi_configuration', None)
+                    if roi_configuration_name is not None:
+                        roi_config_file = self._ndu_gate_config_dir + roi_configuration_name
+                        try:
+                            if path.isfile(roi_config_file):
+                                with open(roi_config_file, 'r', encoding="UTF-8") as roi_conf_file:
+                                    runner_roi_conf = load(roi_conf_file)
+                                    roi_manager = ROIManager(runner_roi_conf, runner["name"])
+                                    runner_conf["roi_manager"] = roi_manager
+                            else:
+                                log.error("roi config file is not found %s", roi_config_file)
+                        except Exception as e1:
+                            log.error("Error on loading runner roi config %s", roi_config_file)
+                            log.exception(e1)
+
                     runner_custom_conf = {}
                     custom_config_file = self._ndu_gate_config_dir + runner_type + "_custom.json"
                     if path.isfile(custom_config_file):
@@ -163,7 +181,7 @@ class NDUCameraService(Thread):
                         runner_priority = last_priority
                         last_priority = last_priority + 100
 
-                    runners_configs_temp[runner_unique_key] = {
+                    rt = runners_configs_temp[runner_unique_key] = {
                         "name": runner["name"],
                         "type": runner_type,
                         "class": runner_class,
@@ -175,6 +193,8 @@ class NDUCameraService(Thread):
                         "step_frame": runner.get("step_frame", None),
                         "step_sec": runner.get("step_sec", None)
                     }
+                    if roi_manager is not None:
+                        rt["roi_manager"] = roi_manager
 
                 except Exception as e:
                     log.error("Error on loading runner config")
@@ -406,7 +426,14 @@ class NDUCameraService(Thread):
                                         step[1] = start_time
 
                             runner_conf = self.runners_configs_by_key[runner_unique_key]
-                            results = self.available_runners[runner_unique_key].process_frame(frame, extra_data=extra_data)
+                            if "roi_manager" in runner_conf:
+                                roi_manager = runner_conf.get("roi_manager", None)
+                                frame = roi_manager.forward(frame)
+                                results = self.available_runners[runner_unique_key].process_frame(frame, extra_data=extra_data)
+                                frame, results = roi_manager.reverse(frame, results, self.__preview_show_ROI)
+                            else:
+                                results = self.available_runners[runner_unique_key].process_frame(frame, extra_data=extra_data)
+
                             if results is not None and len(results) > 0:
                                 extra_data_results[runner_unique_key] = results
                                 log.debug("result : %s", results)
@@ -576,7 +603,7 @@ class NDUCameraService(Thread):
         def draw_rect(obj, img, c1_, c2_, class_preview_key_, color=None):
             if color is None:
                 color = get_color(obj, class_preview_key_, color)
-            cv2.rectangle(img, (c1_[0], c1_[1]), (c2_[0], c2_[1]), color=[0, 0, 0], thickness=3)
+            cv2.rectangle(img, (c1_[0], c1_[1]), (c2_[0], c2_[1]), color=[1, 1, 1], thickness=3)
             cv2.rectangle(img, (c1_[0], c1_[1]), (c2_[0], c2_[1]), color=color, thickness=2)
 
         show_debug_texts = self.__preview_show_debug_texts
@@ -706,7 +733,7 @@ class NDUCameraService(Thread):
                 if show_debug_texts and len(debug_texts) > 0:
                     for debug_text in debug_texts:
                         current_line_bottom[1] -= line_height * 2
-                        image_helper.put_text(image, debug_text, current_line_bottom, color=[255, 250, 99], font_scale=font_scale * 2.75, thickness=2, back_color=[0, 0, 0])
+                        image_helper.put_text(image, debug_text, current_line_bottom, color=[255, 250, 99], font_scale=font_scale * 2.75, thickness=2, back_color=[1, 1, 1])
 
         if show_runner_info:
             if len(data_added) > 0:

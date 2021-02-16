@@ -1,0 +1,14 @@
+* vc_redist.x64.exe kurulacak
+* w_openvino_toolkit_p_2021.2.185.exe kurulumu yapılacak.
+* C:\Program Files (x86)\Intel\openvino_2021.2.185\python\python3.7  -> python lib/site-packages'e kopyalanacak.
+* C:\Program Files (x86)\Intel\openvino_2021.2.185\bin\setupvars.bat çalıştırılacak.
+* Sistem path'e şunlar eklenecek:
+C:\Program Files (x86)\Intel\openvino_2021.2.185\deployment_tools\inference_engine\bin\intel64\Release
+C:\Program Files (x86)\Intel\openvino_2021.2.185\deployment_tools\inference_engine\bin\intel64\Debug
+C:\Program Files (x86)\Intel\openvino_2021.2.185\deployment_tools\ngraph\lib
+C:\Program Files (x86)\Intel\openvino_2021.2.185\deployment_tools\inference_engine\external\tbb\bin
+C:\Program Files (x86)\Intel\openvino_2021.2.185\deployment_tools\inference_engine\external\hddl\bin
+C:\Program Files (x86)\Intel\openvino_2021.2.185\deployment_tools\model_optimizer
+C:\Program Files (x86)\Intel\openvino_2021.2.185\bin
+
+* Windows yeniden başlatılacak!

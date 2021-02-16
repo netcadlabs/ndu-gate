@@ -16,7 +16,10 @@ class FaceMaskRunner(Thread, NDUCameraRunner):
         self.__connector_type = connector_type
 
         self.__dont_use_face_rects = config.get("dont_use_face_rects", False)
-        self._max_rect = config.get("max_rect", 0) #örneğin 0.5 verilirse, max dim değeri frame'in yarısından büyük olan bbox'lar kabul edilmez.
+        self.__upscale_person = config.get("upscale_person", False)
+        self.__upscale_person = True  ####################
+        self._debug=True#####
+        self._max_rect = config.get("max_rect", 0)  # örneğin 0.5 verilirse, max dim değeri frame'in yarısından büyük olan bbox'lar kabul edilmez.
         self._last_data = None
 
         onnx_fn = path.dirname(path.abspath(__file__)) + "/data/model360.onnx".replace("/", os.path.sep)
@@ -102,7 +105,51 @@ class FaceMaskRunner(Thread, NDUCameraRunner):
 
         res = []
         handled = False
-        if not self.__dont_use_face_rects and extra_data is not None:
+        if self.__upscale_person:
+            results = extra_data.get(constants.EXTRA_DATA_KEY_RESULTS, None)
+            if results is not None:
+                for runner_name, result in results.items():
+                    for item in result:
+                        class_name = item.get(constants.RESULT_KEY_CLASS_NAME, None)
+                        if class_name == "person":
+                            rect_person = item.get(constants.RESULT_KEY_RECT, None)
+                            if rect_person is not None:
+                                bbox = rect_person
+                                y1 = max(int(bbox[0]), 0)
+                                x1 = max(int(bbox[1]), 0)
+                                y2 = max(int(bbox[2]), 0)
+                                x2 = max(int(bbox[3]), 0)
+                                w = x2 - x1
+                                h = y2 - y1
+                                dw = -int(w * 0.1)
+                                # dh = int(h * 0.25)
+                                x1 -= dw
+                                x2 += dw
+                                # y1 -= dh
+                                # y2 += dh
+                                y1 = max(y1, 0)
+                                x1 = max(x1, 0)
+                                y2 = max(int(y2 - h * 0.75), 0)
+                                x2 = max(x2, 0)
+
+                                image = frame[y1:y2, x1:x2]
+                                image = cv2.pyrUp(image)
+                                image = cv2.pyrUp(image)
+                                image = cv2.pyrUp(image)
+                                image = cv2.pyrUp(image)
+                                # cv2.imshow("aaaaaaa", image)
+                                # cv2.waitKey(300)
+                                res1 = []
+                                self._process(image, res1, 0, 0)
+                                if len(res1) > 0:
+                                    for item in res1:
+                                        rect_face = item.get(constants.RESULT_KEY_RECT, None)
+                                        if rect_face is not None:
+                                            item[constants.RESULT_KEY_RECT] = [y1, x1, y2, x2]
+                                        res.append(item)
+                                handled = True
+
+        elif not self.__dont_use_face_rects and extra_data is not None:
             results = extra_data.get(constants.EXTRA_DATA_KEY_RESULTS, None)
             if results is not None:
                 for runner_name, result in results.items():
@@ -287,3 +334,5 @@ class FaceMaskRunner(Thread, NDUCameraRunner):
         if self._last_data != data:
             self._last_data = data
             res.append(data)
+            if self._debug:
+                res.append({constants.RESULT_KEY_DEBUG: "Maske takan: {} - takmayan: {}".format(count_mask, count_no_mask)})

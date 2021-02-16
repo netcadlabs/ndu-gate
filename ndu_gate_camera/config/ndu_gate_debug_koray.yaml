@@ -1,4 +1,4 @@
-onnx_runner: "openvino" #"onnxruntime" , "openvino"
+#onnx_runner: "openvino" #"onnxruntime" , "openvino"
 extension_folder: "C:/_koray/netcadlabs/ndu-gate/runners"
 
 result_handler:
@@ -111,21 +111,25 @@ instances:
 
   - source:
       device: "koray_office_pc"
-      max_frame_dim: 1600
-#      max_frame_dim: 600
+#      max_frame_dim: 1600
+#      min_frame_dim: 3200
 
-      preview_show: False
-      preview_show_win_pos: [-1800, 250]
+      preview_show: True
+#      preview_show_win_pos: [-1800, 250]
+#      preview_show_win_pos: [-2000, 0]
 #      preview_show_track_pnt: False
       preview_show_debug_texts: True
-#      preview_show_runner_info: False
+      preview_show_runner_info: False
+#      preview_show_ROI: True
 #      preview_show_score: True
 #      preview_show_rect_name: False
 #      preview_show_track_id: False
 #      preview_show_rect_filter: "scooter*"
+#      preview_show_rect_filter: "*mask*"
 
 #      preview_write: True
-      preview_write_file_name: C:/_koray/temp/preview.mp4
+#      preview_write_file_name: C:/_koray/temp/preview.mp4
+      preview_write_file_name: C:/_koray/temp/3_yuk_asansoru_kullanma.mp4
 #      sleep: 0.1
 #      skip_frame: 5
 #      skip_frame: 60
@@ -142,10 +146,18 @@ instances:
 
 
       data_folder: C:/_koray/test_data/
+
+#      file_path: fabrika/_ref.mp4
+#      file_path: fabrika/1_sosyal_mesafe_ihlali.mp4
+#      file_path: fabrika/1_uygun_sosyal_mesafe.mp4
+#      file_path: fabrika/2_maskesiz_calisan.mp4
+      file_path: fabrika/3_yuk_asansoru_kullanma.mp4
+#      file_path: fabrika/4_sabit_duran_calisan.mp4
+
 #      file_path: bakanlik.avi
 #      file_path: lpr/plaka_trafik.mp4
 #      file_path: lpr/plaka_tur.mp4
-      file_path: lpr/canakkale_plaka (1).mp4
+#      file_path: lpr/canakkale_plaka (1).mp4
 #      file_path: lpr/canakkale_plaka (2).mp4
 #      file_path: lpr/canakkale_plaka (3).mp4
 #      file_path: lpr/canakkale_plaka (4).mp4
@@ -271,46 +283,82 @@ instances:
     runners:
 
 
-
-      - name: lpr - Licence Plate Recognition
-        type: lpr
-        configuration: lpr.json
-        class: LprRunner
-        priority: 40
-      - name: Tracker
-        type: tracker
-        configuration: tracker_lp.json
-        class: TrackerRunner
-        priority: 50
-
-#      - name: Vehicle Detector
-#        type: vehicle_detector
-#        configuration: vehicle_detector.json
-#        class: VehicleDetectorRunner
+#      - name: yolov4-tiny - Object detection with 80 classes
+#        type: yolov4-tiny
+#        configuration: yolov4-tiny.json
+#        roi_configuration: roi_config_example.json
+#        class: Yolov4TinyRunner
 #        priority: 10
-#
-#
-      - name: yolov4-tiny - Object detection with 80 classes
-        type: yolov4-tiny
-        configuration: yolov4-tiny.json
-        class: Yolov4TinyRunner
+
+
+
+
+      - name: yolov4 - Object detection with 80 classes
+        type: yolov4
+        configuration: yolov4.json
+        class: Yolov4Runner
+        roi_configuration: roi_config_example.json
         priority: 10
+
+
+
+
+#      - name: yolov5x - Object detection with 80 classes
+#        type: yolov5x
+#        configuration: yolov5x.json
+#        class: Yolov5xRunner
+#        priority: 10
+
+
+      - name: Objects In Area
+        type: objects_in_area
+        configuration: objects_in_area.json
+        class: ObjectsInAreaRunner
+        priority: 100
+
+
+
+
+
+#      - name: lpr - Licence Plate Recognition
+#        type: lpr
+#        configuration: lpr.json
+#        class: LprRunner
+#        priority: 40
+#      - name: Tracker
+#        type: tracker
+#        configuration: tracker_lp.json
+#        class: TrackerRunner
+#        priority: 50
 #
-#
-#
-#      - name: Object Counter
-#        type: object_counter
-#        configuration: object_counter.json
-#        class: ObjectCounterRunner
-#        priority: 100
-#
-#
-####
-#####      - name: Face Mask Detection
-#####        type: facemask
-#####        configuration: facemask.json
-#####        class: FaceMaskRunner
-#####        priority: 100
+##      - name: Vehicle Detector
+##        type: vehicle_detector
+##        configuration: vehicle_detector.json
+##        class: VehicleDetectorRunner
+##        priority: 10
+##
+##
+#      - name: yolov4-tiny - Object detection with 80 classes
+#        type: yolov4-tiny
+#        configuration: yolov4-tiny.json
+#        class: Yolov4TinyRunner
+#        priority: 10
+##
+##
+##
+##      - name: Object Counter
+##        type: object_counter
+##        configuration: object_counter.json
+##        class: ObjectCounterRunner
+##        priority: 100
+##
+##
+#####
+######      - name: Face Mask Detection
+######        type: facemask
+######        configuration: facemask.json
+######        class: FaceMaskRunner
+######        priority: 100
 
 
 

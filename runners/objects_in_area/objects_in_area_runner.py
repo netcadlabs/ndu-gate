@@ -12,11 +12,13 @@ class ObjectsInAreaRunner(Thread, NDUCameraRunner):
         super().__init__()
         self.connector_type = connector_type
         self.__classes = config.get("classes", None)
+        self.__area_prefix = config.get("area_prefix", "Area")
         self.__areas = []
         self.__frame_num = 0
         self.__last_data = {}
 
-        self.__debug = False
+        # self.__debug = False
+        self.__debug = True
         self.__debug_color_normal = (255, 255, 255)
         self.__debug_color_alert = (0, 0, 255)
         self.__debug_thickness_normal = 1
@@ -54,11 +56,6 @@ class ObjectsInAreaRunner(Thread, NDUCameraRunner):
         # return y2, int(x1 + (x2 - x1) * 0.5)  # bottom center
         return int(y1 + (y2 - y1) * 0.5), x2  # bottom center
 
-    area_prefix = "Area"
-
-    def debug_area_name(self, area_name):
-        return area_name.replace(self.area_prefix, "ALAN")
-
     def process_frame(self, frame, extra_data=None):
         super().process_frame(frame)
         res = []
@@ -67,22 +64,27 @@ class ObjectsInAreaRunner(Thread, NDUCameraRunner):
 
         self.__frame_num += 1
         if len(self.__areas) == 0 and self.__frame_num == 1:
-            # areas = image_helper.select_areas(frame, self.get_name(), color=self.__debug_color_false, opacity=0.3, thickness=self.__debug_thickness_false, max_count=None, next_area_key="n", finish_key="s")
-            areas = [[(503, 167), (403, 225), (565, 270), (639, 203)],
-                     [(334, 484), (307, 483), (277, 481), (229, 491), (210, 518), (196, 546), (213, 580), (230, 605),
-                      (280, 626), (309, 627), (350, 615), (374, 598), (405, 567), (411, 532),
-                      (384, 501)]]  # vid_short.mp4
+            # areas = image_helper.select_areas(frame, self.get_name(), color=self.__debug_color_alert, opacity=0.3, thickness=self.__debug_thickness_alert, max_count=None, next_area_key="n", finish_key="s")
+            # areas = [[(503, 167), (403, 225), (565, 270), (639, 203)],
+            #          [(334, 484), (307, 483), (277, 481), (229, 491), (210, 518), (196, 546), (213, 580), (230, 605),
+            #           (280, 626), (309, 627), (350, 615), (374, 598), (405, 567), (411, 532),
+            #           (384, 501)]]  # vid_short.mp4
             # areas = [[(144, 361), (645, 368), (983, 824), (897, 892), (5, 894), (19, 427)]] # yaya4.mp4
             # areas = [[(164, 191), (310, 185), (355, 213), (451, 244), (512, 263), (354, 299), (244, 247), (205, 222), (190, 216)]] # araba2.mp4
             # areas = [[(654, 565), (665, 576), (666, 583), (660, 589), (653, 592), (642, 599), (630, 603), (621, 607), (939, 558), (864, 539), (767, 550)]] # meydan2.mp4
-            area_counter = 0
-            for area in areas:
-                area_counter += 1
-                self.__areas.append({"name": "{}{}".format(self.area_prefix, area_counter), "area": area})
+            areas = [[(692, 217), (729, 218), (725, 271), (692, 271)]] # Fabrika - yük asansörü
+            # areas = [[(1537, 481), (1535, 607), (1613, 608), (1621, 481)]]  # Fabrika - yük asansörü min_frame_dim: 3200
+            if len(areas) == 1:
+                self.__areas.append({"name": "{}".format(self.__area_prefix), "area": areas[0]})
+            else:
+                area_counter = 0
+                for area in areas:
+                    area_counter += 1
+                    self.__areas.append({"name": "{}{}".format(self.__area_prefix, area_counter), "area": area})
 
         if self.__debug:
             for item in self.__areas:
-                area_name = self.debug_area_name(item.get("name"))
+                area_name = item.get("name")
                 area = item.get("area")
                 pnts = np.array(area, np.int32)
                 image_helper.fill_polyline_transparent(frame, [pnts], color=self.__debug_color_normal, opacity=0.3,
@@ -121,7 +123,7 @@ class ObjectsInAreaRunner(Thread, NDUCameraRunner):
                                                                                opacity=0.5,
                                                                                thickness=self.__debug_thickness_alert)
                                         center = self.get_center_int(area)
-                                        image_helper.put_text(frame, self.debug_area_name(area_name), center,
+                                        image_helper.put_text(frame, area_name, center,
                                                               color=self.__debug_color_alert, font_scale=0.75)
 
             debug_texts = debug_text = None
@@ -130,7 +132,7 @@ class ObjectsInAreaRunner(Thread, NDUCameraRunner):
             for area_name, item in counts.items():
                 active_areas[area_name] = True
                 if self.__debug:
-                    debug_text = "{}: ".format(self.debug_area_name(area_name))
+                    debug_text = "{}: ".format(area_name)
                 for class_name, value in counts.get(area_name).items():
                     if self.__debug:
                         debug_text += "{}: {} ".format(NDUUtility.debug_conv_turkish(class_name), value)
@@ -159,7 +161,6 @@ class ObjectsInAreaRunner(Thread, NDUCameraRunner):
             else:
                 data_items.append({name: False})
                 data_txt += name + "_0"
-        ####if True:
         if self.__last_data != data_txt:
             self.__last_data = data_txt
             for data in data_items:

@@ -109,8 +109,7 @@ def fill_polyline_transparent(image, pnts, color, opacity, thickness=-1):
     cv2.copyTo(res, None, image)
 
 
-def select_areas(frame, window_name, color=(0, 0, 255), opacity=0.3, thickness=4, max_count=None, next_area_key="n",
-                 finish_key="s"):
+def select_areas(frame, window_name, color=(0, 0, 255), opacity=0.3, thickness=4, max_count=None, next_area_key="n", finish_key="s", return_tuples=True):
     try:
         areas = []
         area = []
@@ -155,6 +154,9 @@ def select_areas(frame, window_name, color=(0, 0, 255), opacity=0.3, thickness=4
 
         if len(area) > 2:
             areas.append(area)
+        if not return_tuples:
+            for i in range(len(areas)):
+                areas[i] = np.array(areas[i], np.int32)
         return areas
     finally:
         cv2.destroyWindow(window_name)
@@ -228,7 +230,7 @@ def put_text(img, text_, center, color=None, font_scale=0.5, thickness=1, back_c
     if replace_tur_chars:
         text_ = NDUUtility.debug_replace_tur_chars(text_)
     if back_color is None:
-        back_color = [0, 0, 0]
+        back_color = [1, 1, 1]
     if color is None:
         color = [255, 255, 255]
     y = center[1]
@@ -319,7 +321,7 @@ def change_brightness(img, value):
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
     h, s, v = cv2.split(hsv)
 
-    if value >0:
+    if value > 0:
         lim = 255 - value
         v[v > lim] = 255
         v[v <= lim] += value
@@ -331,3 +333,17 @@ def change_brightness(img, value):
     final_hsv = cv2.merge((h, s, v))
     img = cv2.cvtColor(final_hsv, cv2.COLOR_HSV2BGR)
     return img
+
+
+def get_mask(shape, areas):
+    h, w = shape[:2]
+    mask = np.zeros((h, w), np.uint8)
+    contours = []
+    for area in areas:
+        contours.append(np.array(area, np.int32))
+    cv2.drawContours(mask, contours, -1, 255, -1)
+    return mask
+
+
+def apply_mask(image, mask):
+    return cv2.bitwise_and(image, image, mask=mask)
