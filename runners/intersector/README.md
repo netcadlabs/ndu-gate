@@ -10,27 +10,28 @@
         //ground ve dist opsiyoneldir. ground veya dist yoksa hesaplamalar 2D bbox'a göre yapılır.
         "ground": [[x1,y1],[x2,y2],[x3,y3],[x4,y4]], //rect'ler arasındaki mesafenin kuş bakışı hesaplanması için kullanılan zemin üzerindeki bir karedir.
         "dist": [[x1,y1],[x2,y2]], //iki rect'in birbirine kuş bakışı bu mesafe kadar yakınlığı hesaplanır. Sadece rect'in "style" değeri "dist" olarak tanımlananlar için kullanılır.
+        "stationary_frame_count": 30 //Default=None  tracker runner'ı ile bulunan track_id'ler kullanılarak bir obje sabit mi
 
         "rects": [
-           {//n tane rect olabilir. Birden fazla olduğunda AND şeklinde çalışır; yani tüm rect elemanlarının koşullanının sağlanmış olması gerekir.
-             
+           {//n tane rect olabilir. Birden fazla olduğunda AND şeklinde çalışır; yani tüm rect elemanlarının koşullanının sağlanmış olması gerekir.             
              "padding": 0, //Default=0. rect'lere padding vermek istediğimizde kullanılır. Örneğin 0.1 -> %10 büyüt demektir.
              
-             "style": "<or, and, touch, dist>", //Default="or" 
+             "style": "<or, and, touch, dist, stationary>", //Default="or"
                     //or: class_names listesindeki isme sahip herhangi bir rectangle var mı?
                     //and: class_names listesindeki isimlerin hepsi var mı? 
                     //touch: class_names listesindeki rect elemanları birbirlerine 2D dokunuyorlar mı? Varsa padding dikkate alınır.
                     //dist: kuş bakışı görüntüde dist uzunluğundan birbirine daha yakın rect var mı?
+                    //stationary: kuş bakışı görüntüde "dist" uzunluğundan daha uzağa "stationary_frame_count" sayısı kadar frame'de gitmemişse bu obje sabit duruyor kararı alınır.
              
              //önceki çalışmış object detection runnerlarının bulduğu rect isimleri. 
              //'*' karakteri kullanılabilir.
              //aynı class_name birden fazla kullanılabilir. Örneğin sosyal mesafe ihlali için 2 tane "person" eklenebilir.
-             "class_names": ["<class_name1>", "<class_name2>", ...]   
+             "class_names": ["<class_name1>", "<class_name2>", ...]
            },
            ...
         ]
       },
-      "classification": { //0 veya 1 tane classification olarbilir.        
+      "classification": { //0 veya 1 tane classification olabilir.        
         "threshold": 0.1, //classification minimum score değeri. Default=0.5
         "padding": 0.03, //classification çalıştırılacak rect'lere padding uygulamak istendiğinde kullanılır. Default=0
         "rect_names": ["<class_name1>","<class_name1>", ...], //bu isimlerdeki tüm rect'ler için classification çalıştırılır. '*' karakteri kullanılabilir.
@@ -48,6 +49,29 @@
 
 
 ### Örnekler:
+
+#### Sosyal mesafe ihlali:
+```yaml
+{
+  "groups": {
+    "Sosyal mesafe ihlali": {
+      "ground": [[x1,y1],[x2,y2],[x3,y3],[x4,y4]],
+      "dist": [[x1,y1],[x2,y2]],
+      "obj_detection": {
+        "rects": [
+          {
+            "style": "dist",
+            "class_names": [
+                "person"
+            ]
+          }
+        ]
+      }
+    }
+  }
+}
+```
+
 
 
 #### Telefonla konuşuyor, emniyet kemeri takıyor, maske takmıyor, sigara içiyor:

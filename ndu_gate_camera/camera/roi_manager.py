@@ -66,7 +66,7 @@ class ROIManager():
             cv2.imshow("ROIManager", img)
         return img
 
-    def reverse(self, frame, results, preview):
+    def reverse(self, frame, results):
         if self._apply_crop and results is not None and len(results) > 0:
             for result in results:
                 if "rect" in result:

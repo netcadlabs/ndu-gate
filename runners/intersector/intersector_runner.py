@@ -14,7 +14,7 @@ from ndu_gate_camera.utility.ndu_utility import NDUUtility
 
 class IntersectorRunner(Thread, NDUCameraRunner):
 
-    def _init_classification(self, config):
+    def _init_classification(self):
         onnx_fn = path.dirname(path.abspath(__file__)) + "/data/googlenet-9.onnx"
         class_names_fn = path.dirname(path.abspath(__file__)) + "/data/synset.txt"
         if not path.isfile(onnx_fn):

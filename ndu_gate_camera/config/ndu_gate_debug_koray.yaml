@@ -116,11 +116,10 @@ instances:
 
       preview_show: True
 #      preview_show_win_pos: [-1800, 250]
-#      preview_show_win_pos: [-2000, 0]
+      preview_show_win_pos: [-2000, 0]
 #      preview_show_track_pnt: False
       preview_show_debug_texts: True
-      preview_show_runner_info: False
-#      preview_show_ROI: True
+      preview_show_runner_info: True
 #      preview_show_score: True
 #      preview_show_rect_name: False
 #      preview_show_track_id: False
@@ -151,8 +150,8 @@ instances:
 #      file_path: fabrika/1_sosyal_mesafe_ihlali.mp4
 #      file_path: fabrika/1_uygun_sosyal_mesafe.mp4
 #      file_path: fabrika/2_maskesiz_calisan.mp4
-      file_path: fabrika/3_yuk_asansoru_kullanma.mp4
-#      file_path: fabrika/4_sabit_duran_calisan.mp4
+#      file_path: fabrika/3_yuk_asansoru_kullanma.mp4
+      file_path: fabrika/4_sabit_duran_calisan.mp4
 
 #      file_path: bakanlik.avi
 #      file_path: lpr/plaka_trafik.mp4
@@ -293,21 +292,22 @@ instances:
 
 
 
-      - name: yolov4 - Object detection with 80 classes
-        type: yolov4
-        configuration: yolov4.json
-        class: Yolov4Runner
+#      - name: yolov4 - Object detection with 80 classes
+#        type: yolov4
+#        configuration: yolov4.json
+#        class: Yolov4Runner
+#        roi_configuration: roi_config_example.json
+#        priority: 10
+
+
+
+
+      - name: yolov5x - Object detection with 80 classes
+        type: yolov5x
+        configuration: yolov5x.json
+        class: Yolov5xRunner
         roi_configuration: roi_config_example.json
         priority: 10
-
-
-
-
-#      - name: yolov5x - Object detection with 80 classes
-#        type: yolov5x
-#        configuration: yolov5x.json
-#        class: Yolov5xRunner
-#        priority: 10
 
 
       - name: Objects In Area

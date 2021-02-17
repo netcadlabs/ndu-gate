@@ -59,7 +59,6 @@ class NDUCameraService(Thread):
             self.__last_preview_image = None
             self.__preview_show_debug_texts = self.SOURCE_CONFIG.get("preview_show_debug_texts", True)
             self.__preview_show_runner_info = self.SOURCE_CONFIG.get("preview_show_runner_info", True)
-            self.__preview_show_ROI = self.SOURCE_CONFIG.get("preview_show_ROI", False)
             self.__preview_show_score = self.SOURCE_CONFIG.get("preview_show_score", False)
             self.__preview_show_rect_name = self.SOURCE_CONFIG.get("preview_show_rect_name", True)
             self.__preview_show_track_id = self.SOURCE_CONFIG.get("preview_show_track_id", True)
@@ -430,7 +429,7 @@ class NDUCameraService(Thread):
                                 roi_manager = runner_conf.get("roi_manager", None)
                                 frame = roi_manager.forward(frame)
                                 results = self.available_runners[runner_unique_key].process_frame(frame, extra_data=extra_data)
-                                frame, results = roi_manager.reverse(frame, results, self.__preview_show_ROI)
+                                frame, results = roi_manager.reverse(frame, results)
                             else:
                                 results = self.available_runners[runner_unique_key].process_frame(frame, extra_data=extra_data)
 
