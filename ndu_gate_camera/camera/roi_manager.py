@@ -17,6 +17,7 @@ class ROIManager():
         self._apply_crop = config.get("apply_crop", True)
         self._preview = config.get("preview", False)
         self._pyrUp = config.get("pyrUp", 0)
+        self._select_polygons_mode = config.get("select_polygons_mode", False)
 
         self._inited = False
         self._mask = None
@@ -28,10 +29,16 @@ class ROIManager():
         self._last_frame = frame
         if not self._inited:
             self._inited = True
-            if len(self._polygons) == 0:
-                self._polygons = image_helper.select_areas(frame, "Select points for roi config {}".format(self.Name), max_count=None, next_area_key="n", finish_key="s", return_tuples=False)
-                print("Selected Polygons: " + str(self._polygons))
-                # self._polygons = [[[619, 330], [773, 339], [769, 213], [637, 214]]]  # Fabrika yük asansörü etrafı
+            if self._select_polygons_mode:
+                polygons = image_helper.select_areas(frame, "Select points for roi config {}".format(self.Name), max_count=None, next_area_key="n", finish_key="s", return_tuples=False)
+                arr1 = []
+                for polygon in polygons:
+                    arr = []
+                    for p in polygon:
+                        arr.append(list(p))
+                    arr1.append(arr)
+                print('"polygons": {},'.format(str(arr1)))
+                exit(1)
 
             min_max = []
             for i in range(len(self._polygons)):

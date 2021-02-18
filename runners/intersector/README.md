@@ -18,7 +18,8 @@
         //ground ve dist opsiyoneldir. ground veya dist yoksa hesaplamalar 2D bbox'a göre yapılır.
         "ground": [[x1,y1],[x2,y2],[x3,y3],[x4,y4]], //rect'ler arasındaki mesafenin kuş bakışı hesaplanması için kullanılan zemin üzerindeki bir karedir.
         "dist": [[x1,y1],[x2,y2]], //iki rect'in birbirine kuş bakışı bu mesafe kadar yakınlığı hesaplanır. Sadece rect'in "style" değeri "dist" olarak tanımlananlar için kullanılır.
-        "stationary_frame_count": 30 //Default=None  tracker runner'ı ile bulunan track_id'ler kullanılarak bir obje sabit mi
+        "stationary_frame_count": 30 //Default=None  tracker runner'ı ile bulunan track_id'ler kullanılarak bir obje sabit mi? Ardışıl 30 frame'de sabitse (dist içerisindeyse) sabit kabul et.
+        "stationary_seconds": 10 //Default=None  tracker runner'ı ile bulunan track_id'ler kullanılarak bir obje sabit mi? Ardışıl 10 saniye boyunca sabitse (dist içerisindeyse) sabit kabul et.
 
         "rects": [
            {//n tane rect olabilir. Birden fazla olduğunda AND şeklinde çalışır; yani tüm rect elemanlarının koşullanının sağlanmış olması gerekir.             

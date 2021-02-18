@@ -1,4 +1,5 @@
 {
+  "select_polygons_mode": false,
   "polygons": [[[619, 330], [773, 339], [769, 213], [637, 214]]],
   "apply_mask": true,
   "apply_crop": true,
