@@ -180,6 +180,7 @@ class NDUUtility:
         if results is not None:
             for _runner_name, result in results.items():
                 return NDUUtility.enumerate_result_items(result, class_name_filters=class_name_filters, use_wildcard=use_wildcard, return_item=return_item)
+        return []
 
     # returns (class_name, score, rect) from extra_data. Score and rect can be None!
     @staticmethod

@@ -5,9 +5,10 @@ from threading import Thread
 from typing import Optional
 
 import cv2
+import numpy as np
 
 from ndu_gate_camera.api.ndu_camera_runner import NDUCameraRunner
-from ndu_gate_camera.utility import constants, onnx_helper, geometry_helper, string_helper
+from ndu_gate_camera.utility import constants, onnx_helper, geometry_helper, string_helper, image_helper
 from ndu_gate_camera.utility.geometry_helper import add_padding_rect
 from ndu_gate_camera.utility.ndu_utility import NDUUtility
 
@@ -28,6 +29,7 @@ class IntersectorRunner(Thread, NDUCameraRunner):
     _ST_AND = "and"
     _ST_TOUCH = "touch"
     _ST_DIST = "dist"
+    _ST_STATIONARY = "stationary"
 
     def _check_config(self, config):
 
@@ -35,6 +37,7 @@ class IntersectorRunner(Thread, NDUCameraRunner):
             def __init__(self):
                 self.ground = None
                 self.dist = None
+                self.stationary_frame_count = None
                 self.rects = []
                 self.all_rect_names = []
 
@@ -55,6 +58,72 @@ class IntersectorRunner(Thread, NDUCameraRunner):
                 self.name = ""
                 self.obj_detection = ObjDet()
                 self.classification = CssDet()
+                self._M = None
+                self._M_size = None
+                self._dist_warped_sq = None
+                self.active_frame = None
+
+            def _warp_point(self, p):
+                matrix = self._M
+                px = (matrix[0][0] * p[0] + matrix[0][1] * p[1] + matrix[0][2]) / (matrix[2][0] * p[0] + matrix[2][1] * p[1] + matrix[2][2])
+                py = (matrix[1][0] * p[0] + matrix[1][1] * p[1] + matrix[1][2]) / (matrix[2][0] * p[0] + matrix[2][1] * p[1] + matrix[2][2])
+                return [int(px), int(py)]
+
+            def _warp_rect(self, rect):
+                y1, x1, y2, x2 = geometry_helper.get_rect_values(rect)
+                p1 = self._warp_point([x1, y1])
+                p2 = self._warp_point([x2, y2])
+                return geometry_helper.get_rect(p1, p2)
+
+            def rects_within_dist(self, r1, r2):
+                if self._M is None:
+                    ground = self.obj_detection.ground
+                    dist = self.obj_detection.dist
+
+                    # ground: [[112, 1043], [565, 1027], [533, 934], [148, 938]]
+                    ground1 = []
+                    for i in [3, 2, 0, 1]:
+                        ground1.append(ground[i])
+                    pts1 = np.float32(ground1)
+                    x1 = 450
+                    y1 = 450
+                    x2 = 550
+                    y2 = 550
+                    pts2 = np.float32([[y1, x1], [y2, x1], [y1, x2], [y2, x2]])
+
+                    self._M = cv2.getPerspectiveTransform(pts1, pts2)
+                    self._M_size = (1000, 1000)
+
+                    dist_w = [self._warp_point(dist[0]), self._warp_point(dist[1])]
+                    self._dist_warped_sq = geometry_helper.get_dist_sq(dist_w[0], dist_w[1])
+
+                rect1 = self._warp_rect(r1)
+                rect2 = self._warp_rect(r2)
+
+                p1 = geometry_helper.get_rect_bottom_center(rect1)
+                p2 = geometry_helper.get_rect_bottom_center(rect2)
+                d_sq = geometry_helper.get_dist_sq(p1, p2)
+                res = d_sq <= self._dist_warped_sq
+                if self.active_frame is not None:  # self._debug_mode
+                    frame = self.active_frame
+                    dst = cv2.warpPerspective(frame, self._M, self._M_size)
+
+                    # cv2.polylines(dst, [np.array(rect1, np.int32)], True, color=(255, 255, 255), thickness=1)
+                    # cv2.polylines(dst, [np.array(rect2, np.int32)], True, color=(255, 255, 255), thickness=1)
+                    color = [0, 0, 255] if res else [128, 128, 128]
+                    image_helper.draw_rect(dst, rect1, color=color)
+                    image_helper.draw_rect(dst, rect2, color=color)
+
+                    cv2.imshow("intersector_runner", dst)
+                    cv2.waitKey(1)
+
+                    ground = self.obj_detection.ground
+                    g = np.array(ground, np.int32)
+                    cv2.polylines(frame, [g], True, color=(0, 255, 255), thickness=2)
+                    dist = self.obj_detection.dist
+                    d = np.array(dist, np.int32)
+                    cv2.polylines(frame, [d], False, color=(255, 255, 0), thickness=2)
+                return res
 
         class RectDet(object):
             def __init__(self):
@@ -79,6 +148,7 @@ class IntersectorRunner(Thread, NDUCameraRunner):
                 od = ObjDet()
                 od.ground = od0["ground"] if "ground" in od0 else None
                 od.dist = od0["dist"] if "dist" in od0 else None
+                od.stationary_frame_count = od0["stationary_frame_count"] if "stationary_frame_count" in od0 else None
                 if "rects" not in od0:
                     raise Exception("Bad config! no rects in obj_detection node.")
                 for r0 in od0["rects"]:
@@ -138,7 +208,11 @@ class IntersectorRunner(Thread, NDUCameraRunner):
 
     def __init__(self, config, _):
         super().__init__()
-        self._check_config(config.get("groups", None))
+        self._selection_mode = config.get("ground_dist_selection_mode", False)
+        self._debug_mode = config.get("debug_mode", False)
+        if not self._selection_mode:
+            self._check_config(config.get("groups", None))
+        self._last_data = {}
 
     def get_name(self):
         return "IntersectorRunner"
@@ -167,6 +241,19 @@ class IntersectorRunner(Thread, NDUCameraRunner):
         return False
 
     def process_frame(self, frame, extra_data=None):
+        if self._selection_mode:
+            areas = image_helper.select_areas(frame, "select intersector ground", max_count=1, max_point_count=4, next_area_key="n", finish_key="s")
+            gr = []
+            for p in areas[0]:
+                gr.append(list(p))
+            print('"ground": {},'.format(str(gr)))
+            lines = image_helper.select_lines(frame, "select intersector dist", max_count=1)
+            dist = []
+            for p in lines[0]:
+                dist.append(list(p))
+            print('"dist": {},'.format(str(dist)))
+            exit(1)
+
         super().process_frame(frame)
         res = []
         if self._conf is None:
@@ -188,36 +275,43 @@ class IntersectorRunner(Thread, NDUCameraRunner):
                     _all_ok = True
             return _all_ok
 
-        def has_touch(r_, rect_names0_, rects0_):
+        def _has_interaction(r_, rect_names0_, rects0_, touch_check_func):
             if has_and(r_, rect_names0_):
                 class RDef:
                     def __init__(self):
                         self.name = ""
                         self.rect = None
 
-                rects = []
+                rects_ = []
                 for class_name1, score1, rect1 in rects0_:
-                    ok = False
+                    ok_ = False
                     for r_name in r_.class_names:
                         if string_helper.wildcard(class_name1, r_name):
-                            ok = True
+                            ok_ = True
                             break
-                    if ok:
-                        r1 = RDef()
-                        r1.name = class_name1
+                    if ok_:
+                        r1_ = RDef()
+                        r1_.name = class_name1
                         if r_.padding != 0:
                             rect1 = add_padding_rect(rect1, r_.padding)
-                        r1.rect = rect1
-                        rects.append(r1)
+                        r1_.rect = rect1
+                        rects_.append(r1_)
 
-                for r1 in rects:
-                    for r2 in rects:
-                        if r1 != r2:
-                            if geometry_helper.rects_intersect(r1.rect, r2.rect):
-                                # cv2.rectangle(frame, (int(r1.rect[1]), int(r1.rect[0])), (int(r1.rect[3]), int(r1.rect[2])), color=[0, 0, 0], thickness=3)
-                                # cv2.rectangle(frame, (int(r2.rect[1]), int(r2.rect[0])), (int(r2.rect[3]), int(r2.rect[2])), color=[255, 255, 255], thickness=3)
-                                return True
-            return False
+                for r1_ in rects_:
+                    for r2_ in rects_:
+                        if r1_ != r2_:
+                            if touch_check_func(r1_.rect, r2_.rect):
+                                if self._debug_mode:
+                                    cv2.rectangle(frame, (int(r1_.rect[1]), int(r1_.rect[0])), (int(r1_.rect[3]), int(r1_.rect[2])), color=[0, 0, 0], thickness=3)
+                                    cv2.rectangle(frame, (int(r2_.rect[1]), int(r2_.rect[0])), (int(r2_.rect[3]), int(r2_.rect[2])), color=[255, 255, 255], thickness=3)
+                                return True, r1_, r2_
+            return False, None, None
+
+        def has_touch(r_, rect_names0_, rects0_):
+            return _has_interaction(r_, rect_names0_, rects0_, geometry_helper.rects_intersect)
+
+        def has_dist(gr_, r_, rect_names0_, rects0_):
+            return _has_interaction(r_, rect_names0_, rects0_, gr_.rects_within_dist)
 
         def has_classification(gr_, rects0_):
             rects_css = []
@@ -232,8 +326,12 @@ class IntersectorRunner(Thread, NDUCameraRunner):
             return False
 
         counts = {}
+        rects = {}
         for gr in self._conf.groups:
+            rects[gr.name] = []
             count = 0
+            if self._debug_mode:
+                gr.active_frame = frame
             if gr.obj_detection is not None:
                 rects0 = []
                 rect_names0 = []
@@ -250,25 +348,37 @@ class IntersectorRunner(Thread, NDUCameraRunner):
                             if has_and(r, rect_names0):
                                 count += 1
                         elif r.style == self._ST_TOUCH:
-                            if has_touch(r, rect_names0, rects0):
+                            ok, r1, r2 = has_touch(r, rect_names0, rects0)
+                            if ok:
                                 count += 1
+                                rects[gr.name].extend([r1.rect, r2.rect])
                         elif r.style == self._ST_DIST:
-                            # if gr.obj_detection.ground is None or len(gr.)
-
-                            pass  ####
+                            ok, r1, r2 = has_dist(gr, r, rect_names0, rects0)
+                            if ok:
+                                count += 1
+                                rects[gr.name].extend([r1.rect, r2.rect])
 
             if count == 0 and gr.classification is not None:
                 rects0 = []
                 for class_name, score, rect in NDUUtility.enumerate_results(extra_data, gr.classification.rect_names, True):
                     if rect is not None:
                         rects0.append((class_name, score, rect))
+                        rects[gr.name].append(rect)
                 if len(rects0) > 0:
                     if has_classification(gr, rects0):
                         count += 1
 
+            counts[gr.name] = count
             if count > 0:
-                counts[gr.name] = count
+                for rect in rects[gr.name]:
+                    res.append({constants.RESULT_KEY_RECT: rect, constants.RESULT_KEY_CLASS_NAME: gr.name})
 
         for gr_name, count in counts.items():
-            res.append({constants.RESULT_KEY_DATA: {gr_name: count}})
+            if gr_name not in self._last_data:
+                self._last_data[gr_name] = None
+            val = {constants.RESULT_KEY_DEBUG: "{} - {}".format(gr_name, count)}
+            if self._last_data[gr_name] != count:
+                self._last_data[gr_name] = count
+                val[constants.RESULT_KEY_DATA] = {gr_name: count, "{} exists".format(gr_name).replace(" ", "_"): count > 0}
+            res.append(val)
         return res

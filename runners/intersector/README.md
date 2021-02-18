@@ -1,8 +1,16 @@
 # Intersector Runner
 
 ## intersector.json
+
+**"ground"** tanımı yapılırken seçilen alan kare olmalıdır. Nokta seçimi alttaki sıra ile yapılmalıdır: 
+1) sol alt, 
+2) sağ alt, 
+3) sol üst, 
+4) sol alt
+
 ```yaml
-{
+{  
+  "ground_dist_selection_mode": false //ekrandan zemin karesini ve dist koordinatlarını seçmek için bu kullanılabilir. Seçim yapıldıktan sonra değerler console'a print edilir ve uygulama kapatılır. Bu değerleri intersector'ın config json dosyasında kullanabilirsiniz.  
   "groups": {
     "<group_name1>": { //n tane grup olabilir
       "obj_detection": { //0 veya 1 tane obj_detection olabilir. Önceki çalıştırılmış object detectorlardan gelen sonuçlar yorumlanır.

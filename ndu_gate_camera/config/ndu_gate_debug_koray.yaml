@@ -14,103 +14,9 @@ result_handler:
 #    host: 127.0.0.1
 
 instances:
-#  - source:
-#      device: "koray_office_pc1"
-#      preview_show: True
-#      preview_show_win_pos: [ -1800, 250 ]
-#      type: VIDEO_FILE
-#      data_folder: C:/_koray/test_data/
-#      file_path: lpr/canakkale_plaka (1).mp4
-#    runners:
-#      - name: yolov5s - Object detection with 80 classes (Fastest)
-#        type: yolov5s
-#        configuration: yolov5s.json
-#        class: Yolov5sRunner
-#        priority: 10
-#  - source:
-#      device: "koray_office_pc2"
-#      preview_show: True
-#      preview_show_win_pos: [ -1800, 250 ]
-#      type: VIDEO_FILE
-#      data_folder: C:/_koray/test_data/
-#      file_path: lpr/canakkale_plaka (1).mp4
-#    runners:
-#      - name: yolov5s - Object detection with 80 classes (Fastest)
-#        type: yolov5s
-#        configuration: yolov5s.json
-#        class: Yolov5sRunner
-#        priority: 10
-#  - source:
-#      device: "koray_office_pc3"
-#      preview_show: True
-#      preview_show_win_pos: [ -1800, 250 ]
-#      type: VIDEO_FILE
-#      data_folder: C:/_koray/test_data/
-#      file_path: lpr/canakkale_plaka (1).mp4
-#    runners:
-#      - name: yolov5s - Object detection with 80 classes (Fastest)
-#        type: yolov5s
-#        configuration: yolov5s.json
-#        class: Yolov5sRunner
-#        priority: 10
-#  - source:
-#      device: "koray_office_pc4"
-#      preview_show: True
-#      preview_show_win_pos: [ -1800, 250 ]
-#      type: VIDEO_FILE
-#      data_folder: C:/_koray/test_data/
-#      file_path: lpr/canakkale_plaka (1).mp4
-#    runners:
-#      - name: yolov5s - Object detection with 80 classes (Fastest)
-#        type: yolov5s
-#        configuration: yolov5s.json
-#        class: Yolov5sRunner
-#        priority: 10
-#  - source:
-#      device: "koray_office_pc5"
-#      preview_show: True
-#      preview_show_win_pos: [ -1800, 250 ]
-#      type: VIDEO_FILE
-#      data_folder: C:/_koray/test_data/
-#      file_path: lpr/canakkale_plaka (1).mp4
-#    runners:
-#      - name: yolov5s - Object detection with 80 classes (Fastest)
-#        type: yolov5s
-#        configuration: yolov5s.json
-#        class: Yolov5sRunner
-#        priority: 10
-#  - source:
-#      device: "koray_office_pc6"
-#      preview_show: True
-#      preview_show_win_pos: [ -1800, 250 ]
-#      type: VIDEO_FILE
-#      data_folder: C:/_koray/test_data/
-#      file_path: lpr/canakkale_plaka (1).mp4
-#    runners:
-#      - name: yolov5s - Object detection with 80 classes (Fastest)
-#        type: yolov5s
-#        configuration: yolov5s.json
-#        class: Yolov5sRunner
-#        priority: 10
-#  - source:
-#      device: "koray_office_pc7"
-#      preview_show: True
-#      preview_show_win_pos: [ -1800, 250 ]
-#      type: VIDEO_FILE
-#      data_folder: C:/_koray/test_data/
-#      file_path: lpr/canakkale_plaka (1).mp4
-#    runners:
-#      - name: yolov5s - Object detection with 80 classes (Fastest)
-#        type: yolov5s
-#        configuration: yolov5s.json
-#        class: Yolov5sRunner
-#        priority: 10
-
-
-
-
   - source:
-      device: "koray_office_pc"
+#      device: "koray_office_pc"
+      device: "koray_pc_home"
 #      max_frame_dim: 1600
 #      min_frame_dim: 3200
 
@@ -119,16 +25,16 @@ instances:
       preview_show_win_pos: [-2000, 0]
 #      preview_show_track_pnt: False
       preview_show_debug_texts: True
-      preview_show_runner_info: True
+      preview_show_runner_info: False
 #      preview_show_score: True
 #      preview_show_rect_name: False
 #      preview_show_track_id: False
-#      preview_show_rect_filter: "scooter*"
+      preview_show_rect_filter: "*Sosyal*"
 #      preview_show_rect_filter: "*mask*"
 
 #      preview_write: True
-#      preview_write_file_name: C:/_koray/temp/preview.mp4
-      preview_write_file_name: C:/_koray/temp/3_yuk_asansoru_kullanma.mp4
+      preview_write_file_name: C:/_koray/temp/preview.mp4
+#      preview_write_file_name: C:/_koray/temp/3_yuk_asansoru_kullanma.mp4
 #      sleep: 0.1
 #      skip_frame: 5
 #      skip_frame: 60
@@ -149,9 +55,9 @@ instances:
 #      file_path: fabrika/_ref.mp4
 #      file_path: fabrika/1_sosyal_mesafe_ihlali.mp4
 #      file_path: fabrika/1_uygun_sosyal_mesafe.mp4
-#      file_path: fabrika/2_maskesiz_calisan.mp4
+      file_path: fabrika/2_maskesiz_calisan.mp4
 #      file_path: fabrika/3_yuk_asansoru_kullanma.mp4
-      file_path: fabrika/4_sabit_duran_calisan.mp4
+#      file_path: fabrika/4_sabit_duran_calisan.mp4
 
 #      file_path: bakanlik.avi
 #      file_path: lpr/plaka_trafik.mp4
@@ -202,7 +108,8 @@ instances:
 #      image_path: lpr/plaka.jpg
 #      image_path: lpr/tr_61.jpg
 #      image_path: lpr/tr_06.jpg
-      image_path: lpr/*.jpg
+#      image_path: lpr/*.jpg
+      image_path: intersector/*.jpg
 #      image_path: __canakkale_cam1.png
 
 
@@ -306,14 +213,20 @@ instances:
         type: yolov5x
         configuration: yolov5x.json
         class: Yolov5xRunner
-        roi_configuration: roi_config_example.json
+#        roi_configuration: roi_config_example.json
         priority: 10
 
 
-      - name: Objects In Area
-        type: objects_in_area
-        configuration: objects_in_area.json
-        class: ObjectsInAreaRunner
+#      - name: Objects In Area
+#        type: objects_in_area
+#        configuration: objects_in_area.json
+#        class: ObjectsInAreaRunner
+#        priority: 100
+
+      - name: Intersector
+        type: intersector
+        configuration: intersector_social_dist.json
+        class: IntersectorRunner
         priority: 100
 
 

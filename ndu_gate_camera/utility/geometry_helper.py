@@ -1,4 +1,6 @@
 import math
+import cv2
+import numpy as np
 
 
 def is_inside_polygon(polygon, point):
@@ -96,3 +98,30 @@ def add_padding_rect(rect, padding):
 
 def distance(p1, p2):
     return math.sqrt((p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2)
+
+
+def get_rect_values(rect):
+    # y1, x1, y2, x2
+    return rect[0], rect[1], rect[2], rect[3]
+
+
+def get_rect_pnts(rect):
+    # p1, p2
+    return (rect[1], rect[0]), (rect[3], rect[2])
+
+
+def get_rect(p1, p2):
+    return [p1[1], p1[0], p2[1], p2[0]]
+
+
+def get_rect_bottom_center(rect):
+    r1 = rect[1]
+    r2 = rect[2]
+    r3 = rect[3]
+    return int(r1 + (r3 - r1) * 0.5), r2  # bottom center
+
+
+def get_dist_sq(p1, p2):
+    d1 = p2[0] - p1[0]
+    d2 = p2[1] - p1[1]
+    return d1 * d1 + d2 * d2

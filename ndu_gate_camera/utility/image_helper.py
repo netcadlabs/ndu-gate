@@ -3,6 +3,7 @@ import cv2
 import base64
 import numpy as np
 
+from ndu_gate_camera.utility import geometry_helper
 from ndu_gate_camera.utility.ndu_utility import NDUUtility
 
 
@@ -109,7 +110,7 @@ def fill_polyline_transparent(image, pnts, color, opacity, thickness=-1):
     cv2.copyTo(res, None, image)
 
 
-def select_areas(frame, window_name, color=(0, 0, 255), opacity=0.3, thickness=4, max_count=None, next_area_key="n", finish_key="s", return_tuples=True):
+def select_areas(frame, window_name, color=(0, 0, 255), opacity=0.3, thickness=4, max_count=None, next_area_key="n", finish_key="s", return_tuples=True, max_point_count=None):
     try:
         areas = []
         area = []
@@ -150,6 +151,8 @@ def select_areas(frame, window_name, color=(0, 0, 255), opacity=0.3, thickness=4
             if k & 0xFF == ord(finish_key):
                 break
             elif k & 0xFF == ord(next_area_key):
+                new_area = True
+            elif max_point_count is not None and len(area) == max_point_count:
                 new_area = True
 
         if len(area) > 2:
@@ -347,3 +350,12 @@ def get_mask(shape, areas):
 
 def apply_mask(image, mask):
     return cv2.bitwise_and(image, image, mask=mask)
+
+
+def draw_rect(image, rect, color=None):
+    if color is None:
+        color = [255, 255, 255]
+    c = np.array(rect[:4], dtype=np.int32)
+    c1, c2 = geometry_helper.get_rect_pnts(c)
+    cv2.rectangle(image, c1, c2, color=[1, 1, 1], thickness=3)
+    cv2.rectangle(image, c1, c2, color=color, thickness=2)
