@@ -25,12 +25,12 @@ instances:
       preview_show_win_pos: [-2000, 0]
 #      preview_show_track_pnt: False
       preview_show_debug_texts: True
-#      preview_show_runner_info: False
+      preview_show_runner_info: False
 #      preview_show_score: True
 #      preview_show_rect_name: False
-      preview_show_track_id: True
+#      preview_show_track_id: True
 #      preview_show_rect_filter: "*Sosyal*"
-#      preview_show_rect_filter: "*mask*"
+      preview_show_rect_filter: "*person*"
 
 #      preview_write: True
       preview_write_file_name: C:/_koray/temp/preview.mp4
@@ -57,7 +57,10 @@ instances:
 #      file_path: fabrika/1_uygun_sosyal_mesafe.mp4
 #      file_path: fabrika/2_maskesiz_calisan.mp4
 #      file_path: fabrika/3_yuk_asansoru_kullanma.mp4
-      file_path: fabrika/4_sabit_duran_calisan.mp4
+#      file_path: fabrika/4_sabit_duran_calisan.mp4
+#      file_path: fabrika/8_baretsiz_calisan.mp4
+      file_path: fabrika/9_ref.mp4
+#      file_path: fabrika/9_tahliyede_iceride_kalan_calisan.mp4
 
 #      file_path: bakanlik.avi
 #      file_path: lpr/plaka_trafik.mp4
@@ -188,27 +191,30 @@ instances:
 
     runners:
 
-      - name: yolov5x - Object detection with 80 classes
-        type: yolov5x
-        configuration: yolov5x.json
-        roi_configuration: roi_config_fabrika_sabit_duran.json
-        class: Yolov5xRunner
+
+#      - name: yolov5x - Object detection with 80 classes
+#        type: yolov5x
+#        configuration: yolov5x.json
+#        roi_configuration: roi_config_fabrika_tahliye.json
+#        class: Yolov5xRunner
+#        priority: 10
+      - name: yolov4 - Object detection with 80 classes
+        type: yolov4
+        configuration: yolov4.json
+        roi_configuration: roi_config_fabrika_tahliye.json
+        class: Yolov4Runner
         priority: 10
-      - name: Tracker
-        type: tracker
-        configuration: tracker_person.json
-        class: TrackerRunner
-        priority: 50
+#      - name: Objects In Area
+#        type: objects_in_area
+#        configuration: objects_in_area_fabrika.json
+#        class: ObjectsInAreaRunner
+#        priority: 100
 
-      - name: Intersector
-        type: intersector
-        configuration: intersector_person_waiting.json
-        class: IntersectorRunner
+      - name: Class Counter
+        type: class_counter
+        configuration: class_counter_runner.json
+        class: ClassCounterRunner
         priority: 100
-
-
-
-
 
 
 #      - name: lpr - Licence Plate Recognition

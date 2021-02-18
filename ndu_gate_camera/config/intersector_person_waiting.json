@@ -1,17 +1,17 @@
 {
-  "debug_mode": true,
+  "debug_mode": false,
   "ground_dist_selection_mode": false,
   "groups": {
-    "Bekleyen instan": {
+    "Sabit Duran Çalışan": {
       "obj_detection": {
-        "_ground": [[108, 1054], [570, 1037], [530, 928], [155, 917]],
-        "_dist": [[248, 1037], [302, 1039]],
         "ground": [[640, 421], [763, 427], [755, 376], [650, 371]],
         "dist": [[686, 403], [734, 405]],
+        "_stationary_frame_count": 30,
+        "stationary_seconds": 10,
         "rects": [
           {
             "padding": 0,
-            "style": "dist",
+            "style": "stationary",
             "class_names": [
                 "person"
             ]

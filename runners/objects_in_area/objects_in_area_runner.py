@@ -13,12 +13,12 @@ class ObjectsInAreaRunner(Thread, NDUCameraRunner):
         self.connector_type = connector_type
         self.__classes = config.get("classes", None)
         self.__area_prefix = config.get("area_prefix", "Area")
-        self.__areas = []
+        self.__areas = config.get("areas", [])
         self.__frame_num = 0
         self.__last_data = {}
 
-        # self.__debug = False
         self.__debug = True
+        self.__preview = config.get("preview", False)
         self.__debug_color_normal = (255, 255, 255)
         self.__debug_color_alert = (0, 0, 255)
         self.__debug_thickness_normal = 1
@@ -64,7 +64,7 @@ class ObjectsInAreaRunner(Thread, NDUCameraRunner):
 
         self.__frame_num += 1
         if len(self.__areas) == 0 and self.__frame_num == 1:
-            # areas = image_helper.select_areas(frame, self.get_name(), color=self.__debug_color_alert, opacity=0.3, thickness=self.__debug_thickness_alert, max_count=None, next_area_key="n", finish_key="s")
+            areas = image_helper.select_areas(frame, self.get_name(), color=self.__debug_color_alert, opacity=0.3, thickness=self.__debug_thickness_alert, max_count=None, next_area_key="n", finish_key="s")
             # areas = [[(503, 167), (403, 225), (565, 270), (639, 203)],
             #          [(334, 484), (307, 483), (277, 481), (229, 491), (210, 518), (196, 546), (213, 580), (230, 605),
             #           (280, 626), (309, 627), (350, 615), (374, 598), (405, 567), (411, 532),
@@ -72,7 +72,7 @@ class ObjectsInAreaRunner(Thread, NDUCameraRunner):
             # areas = [[(144, 361), (645, 368), (983, 824), (897, 892), (5, 894), (19, 427)]] # yaya4.mp4
             # areas = [[(164, 191), (310, 185), (355, 213), (451, 244), (512, 263), (354, 299), (244, 247), (205, 222), (190, 216)]] # araba2.mp4
             # areas = [[(654, 565), (665, 576), (666, 583), (660, 589), (653, 592), (642, 599), (630, 603), (621, 607), (939, 558), (864, 539), (767, 550)]] # meydan2.mp4
-            areas = [[(692, 217), (729, 218), (725, 271), (692, 271)]] # Fabrika - yük asansörü
+            # areas = [[(692, 217), (729, 218), (725, 271), (692, 271)]] # Fabrika - yük asansörü
             # areas = [[(1537, 481), (1535, 607), (1613, 608), (1621, 481)]]  # Fabrika - yük asansörü min_frame_dim: 3200
             if len(areas) == 1:
                 self.__areas.append({"name": "{}".format(self.__area_prefix), "area": areas[0]})
@@ -82,7 +82,7 @@ class ObjectsInAreaRunner(Thread, NDUCameraRunner):
                     area_counter += 1
                     self.__areas.append({"name": "{}{}".format(self.__area_prefix, area_counter), "area": area})
 
-        if self.__debug:
+        if self.__preview:
             for item in self.__areas:
                 area_name = item.get("name")
                 area = item.get("area")
@@ -116,7 +116,7 @@ class ObjectsInAreaRunner(Thread, NDUCameraRunner):
                                     else:
                                         counts[area_name][class_name] += 1
 
-                                    if self.__debug:  # and self.__frame_num % 2 == 0:
+                                    if self.__preview:  # and self.__frame_num % 2 == 0:
                                         pnts = np.array(area, np.int32)
                                         image_helper.fill_polyline_transparent(frame, [pnts],
                                                                                color=self.__debug_color_alert,

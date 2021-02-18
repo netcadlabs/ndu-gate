@@ -1,5 +1,6 @@
 import errno
 import os
+import time
 from os import path
 from threading import Thread
 from typing import Optional
@@ -38,6 +39,7 @@ class IntersectorRunner(Thread, NDUCameraRunner):
                 self.ground = None
                 self.dist = None
                 self.stationary_frame_count = None
+                self.stationary_seconds = None
                 self.rects = []
                 self.all_rect_names = []
 
@@ -149,6 +151,7 @@ class IntersectorRunner(Thread, NDUCameraRunner):
                 od.ground = od0["ground"] if "ground" in od0 else None
                 od.dist = od0["dist"] if "dist" in od0 else None
                 od.stationary_frame_count = od0["stationary_frame_count"] if "stationary_frame_count" in od0 else None
+                od.stationary_seconds = od0["stationary_seconds"] if "stationary_seconds" in od0 else None
                 if "rects" not in od0:
                     raise Exception("Bad config! no rects in obj_detection node.")
                 for r0 in od0["rects"]:
@@ -213,6 +216,8 @@ class IntersectorRunner(Thread, NDUCameraRunner):
         if not self._selection_mode:
             self._check_config(config.get("groups", None))
         self._last_data = {}
+        self._tracks = {}
+        self._frame_index = 0
 
     def get_name(self):
         return "IntersectorRunner"
@@ -240,7 +245,56 @@ class IntersectorRunner(Thread, NDUCameraRunner):
                 return True
         return False
 
+    def _get_stationary_rects(self, gr, r, rect_names0, rects0):
+        def _stationary_check_required(gr_, track_):
+            if gr_.obj_detection.stationary_frame_count is not None:
+                diff = self._frame_index - track_["index0"]
+                if diff >= gr_.obj_detection.stationary_frame_count:
+                    return True
+            elif gr_.obj_detection.stationary_seconds is not None:
+                diff = time.time() - track_["time0"]
+                if diff >= gr_.obj_detection.stationary_seconds:
+                    return True
+            else:
+                raise Exception("intersector_runner config has problems! 'stationary' defined but neither stationary_frame_count nor stationary_seconds defined.")
+            return False
+
+        for class_name, score, rect, item in rects0:
+            if class_name in r.class_names:
+                track_id = item.get("track_id", None)
+                if track_id is not None:
+                    track_key = "{}-{}".format(class_name, track_id)
+                    if track_key not in self._tracks:
+                        self._tracks[track_key] = {
+                            "time0": time.time(),
+                            "index0": self._frame_index,
+                            "rect0": rect,
+                            "is_stationary": False
+                        }
+                    else:
+                        track = self._tracks[track_key]
+                        if _stationary_check_required(gr, track):
+                            rect0 = track["rect0"]
+                            if gr.rects_within_dist(rect0, rect):
+                                track["time0"] = time.time()
+                                track["index0"] = self._frame_index
+                                track["rect0"] = rect
+                                track["is_stationary"] = True
+                            else:
+                                track["is_stationary"] = False
+        rects = []
+        remove_keys = []
+        for track_key, track in self._tracks.items():
+            if _stationary_check_required(gr, track):
+                remove_keys.append(track_key)
+            if track["is_stationary"]:
+                rects.append(track["rect0"])
+        for track_key in remove_keys:
+            del self._tracks[track_key]
+        return rects
+
     def process_frame(self, frame, extra_data=None):
+        self._frame_index += 1
         if self._selection_mode:
             areas = image_helper.select_areas(frame, "select intersector ground", max_count=1, max_point_count=4, next_area_key="n", finish_key="s")
             gr = []
@@ -335,9 +389,9 @@ class IntersectorRunner(Thread, NDUCameraRunner):
             if gr.obj_detection is not None:
                 rects0 = []
                 rect_names0 = []
-                for class_name, score, rect in NDUUtility.enumerate_results(extra_data, gr.obj_detection.all_rect_names, True):
+                for class_name, score, rect, item in NDUUtility.enumerate_results(extra_data, gr.obj_detection.all_rect_names, use_wildcard=True, return_item=True):
                     if rect is not None:
-                        rects0.append((class_name, score, rect))
+                        rects0.append((class_name, score, rect, item))
                         rect_names0.append(class_name)
                 if len(rects0) > 0:
                     for r in gr.obj_detection.rects:
@@ -357,6 +411,11 @@ class IntersectorRunner(Thread, NDUCameraRunner):
                             if ok:
                                 count += 1
                                 rects[gr.name].extend([r1.rect, r2.rect])
+                        elif r.style == self._ST_STATIONARY:
+                            stationary_rects = self._get_stationary_rects(gr, r, rect_names0, rects0)
+                            if len(stationary_rects) > 0:
+                                count += len(stationary_rects)
+                                rects[gr.name].extend(stationary_rects)
 
             if count == 0 and gr.classification is not None:
                 rects0 = []
