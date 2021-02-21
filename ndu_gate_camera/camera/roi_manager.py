@@ -69,6 +69,9 @@ class ROIManager():
                 self._rev_div *= 2
                 img = cv2.pyrUp(img, img)
 
+        # img = image_helper.equalize_hist_bgr(img)
+        # img = image_helper.adaptive_equalize_hist_bgr(img)
+
         if self._preview:
             cv2.imshow("ROIManager", img)
         return img

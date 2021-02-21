@@ -359,3 +359,27 @@ def draw_rect(image, rect, color=None):
     c1, c2 = geometry_helper.get_rect_pnts(c)
     cv2.rectangle(image, c1, c2, color=[1, 1, 1], thickness=3)
     cv2.rectangle(image, c1, c2, color=color, thickness=2)
+
+
+def equalize_hist_bgr(img):
+    # img_yuv = cv2.cvtColor(img, cv2.COLOR_BGR2YUV)
+    # img_yuv[:, :, 0] = cv2.equalizeHist(img_yuv[:, :, 0])
+    # return cv2.cvtColor(img_yuv, cv2.COLOR_YUV2BGR)
+
+    img[:, :, 0] = cv2.equalizeHist(img[:, :, 0])
+    img[:, :, 1] = cv2.equalizeHist(img[:, :, 1])
+    img[:, :, 2] = cv2.equalizeHist(img[:, :, 2])
+    return img
+
+
+def adaptive_equalize_hist_bgr(img):
+    # clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+    # img_yuv = cv2.cvtColor(img, cv2.COLOR_BGR2YUV)
+    # img_yuv[:, :, 0] = clahe.apply(img_yuv[:, :, 0])
+    # return cv2.cvtColor(img_yuv, cv2.COLOR_YUV2BGR)
+
+    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+    img[:, :, 0] = clahe.apply(img[:, :, 0])
+    img[:, :, 1] = clahe.apply(img[:, :, 1])
+    img[:, :, 2] = clahe.apply(img[:, :, 2])
+    return img
