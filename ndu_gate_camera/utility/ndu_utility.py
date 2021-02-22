@@ -158,12 +158,16 @@ class NDUUtility:
             class_name = "kamyon"
         elif class_name == "bus":
             class_name = "otobus"
-
+        
         elif class_name == "helmet":
             class_name = "baret takiyor"
         elif class_name == "no helmet":
             class_name = "baret takmiyor"
+        elif class_name == "good_speed":
+            class_name = "Hız"
 
+        class_name = class_name.replace("sec.", "sn.")
+        
         return class_name
 
     # sadece preview/debug için kullanılmalıdır.

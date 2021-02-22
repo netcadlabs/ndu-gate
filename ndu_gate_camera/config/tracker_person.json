@@ -1,0 +1,13 @@
+{
+  "tracker_algorithm": "KCF_600",
+  "_tracker_algorithm": "KCF",
+  "_tracker_algorithm": "CSRT",
+  "_tracker_algorithm": "MOSSE",
+  "_tracker_algorithm": "Boosting",
+  "_tracker_algorithm": "MedianFlow",
+  "classes": {
+    "kisi": [
+      "person"
+    ]
+  }
+}

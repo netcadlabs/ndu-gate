@@ -2,12 +2,11 @@
   "debug_mode": false,
   "ground_dist_selection_mode": false,
   "groups": {
-    "Sabit Duran Çalışan": {
+    "Bekleme Yapan Çalışan": {
       "obj_detection": {
         "ground": [[640, 421], [763, 427], [755, 376], [650, 371]],
         "dist": [[686, 403], [734, 405]],
-        "_stationary_frame_count": 30,
-        "stationary_seconds": 10,
+        "stationary_seconds": 5,
         "rects": [
           {
             "padding": 0,

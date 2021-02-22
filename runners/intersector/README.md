@@ -10,6 +10,8 @@
 
 ```yaml
 {  
+  "fps": 30 //Default=None  - süre hesaplama işlerinde geçen zaman değil, frame sayısı kullanılmak istenen durumlarda kullanılabilir. "fps" tanımlanmamışsa geçen süre doğrudan kullanılır.
+  //fps tanımı video gibi, her frame'in tek tek okunduğu durumlarda tanımlanmalıdır. Kamera için tanımlanmamalıdır. 
   "ground_dist_selection_mode": false //ekrandan zemin karesini ve dist koordinatlarını seçmek için bu kullanılabilir. Seçim yapıldıktan sonra değerler console'a print edilir ve uygulama kapatılır. Bu değerleri intersector'ın config json dosyasında kullanabilirsiniz.  
   "groups": {
     "<group_name1>": { //n tane grup olabilir
@@ -18,9 +20,15 @@
         //ground ve dist opsiyoneldir. ground veya dist yoksa hesaplamalar 2D bbox'a göre yapılır.
         "ground": [[x1,y1],[x2,y2],[x3,y3],[x4,y4]], //rect'ler arasındaki mesafenin kuş bakışı hesaplanması için kullanılan zemin üzerindeki bir karedir.
         "dist": [[x1,y1],[x2,y2]], //iki rect'in birbirine kuş bakışı bu mesafe kadar yakınlığı hesaplanır. Sadece rect'in "style" değeri "dist" olarak tanımlananlar için kullanılır.
-        "stationary_frame_count": 30 //Default=None  tracker runner'ı ile bulunan track_id'ler kullanılarak bir obje sabit mi? Ardışıl 30 frame'de sabitse (dist içerisindeyse) sabit kabul et.
         "stationary_seconds": 10 //Default=None  tracker runner'ı ile bulunan track_id'ler kullanılarak bir obje sabit mi? Ardışıl 10 saniye boyunca sabitse (dist içerisindeyse) sabit kabul et.
-
+        "max_dist_per_seconds": 4.6 //Default=None  Örneğin dist için 1 metre seçilirse, 5 metre/saniye'den hızlı araçları tespit için buraya 5 değeri girilir. 
+                         //örnekler: 
+                         //  dist=1.8 metre, hız=30km/sa -> 4.6 
+                         //  dist=1 metre, hız=30km/sa -> 8.3
+                         //  dist=1 metre, hız=18km/sa -> 5 - tempolu yürüme hızı
+        "debug_speed_value": 30, //Default: None   debug metni oluşturulurken, max_dist_per_seconds değeri için yazılması istenen değerdir. Örneğin max_dist_per_seconds=4.6, dist=1.8 metre için hız=30km/sa 
+        "debug_speed_suffix": "km/sa.", //Default: None   debug metni oluşturulurken hız son eki olarak ne kullanılsın
+          
         "rects": [
            {//n tane rect olabilir. Birden fazla olduğunda AND şeklinde çalışır; yani tüm rect elemanlarının koşullanının sağlanmış olması gerekir.             
              "padding": 0, //Default=0. rect'lere padding vermek istediğimizde kullanılır. Örneğin 0.1 -> %10 büyüt demektir.
@@ -30,7 +38,8 @@
                     //and: class_names listesindeki isimlerin hepsi var mı? 
                     //touch: class_names listesindeki rect elemanları birbirlerine 2D dokunuyorlar mı? Varsa padding dikkate alınır.
                     //dist: kuş bakışı görüntüde dist uzunluğundan birbirine daha yakın rect var mı?
-                    //stationary: kuş bakışı görüntüde "dist" uzunluğundan daha uzağa "stationary_frame_count" sayısı kadar frame'de gitmemişse bu obje sabit duruyor kararı alınır.
+                    //stationary: kuş bakışı görüntüde "dist" uzunluğundan daha uzağa "stationary_seconds" süresi içerisinde gitmemişse bu obje sabit duruyor kararı alınır.
+                    //speed: kuş bakışı görüntüde "dist" uzunluğuna göre "max_dist_per_seconds" hesaplanır, büyük çıkan hızlar hız ihlali kabul edilir.
              
              //önceki çalışmış object detection runnerlarının bulduğu rect isimleri. 
              //'*' karakteri kullanılabilir.

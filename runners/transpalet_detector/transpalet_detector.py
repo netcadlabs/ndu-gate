@@ -6,17 +6,13 @@ from ndu_gate_camera.utility.geometry_helper import *
 from ndu_gate_camera.utility.ndu_utility import NDUUtility
 
 
-class ForkliftDetectorRunner(NDUCameraRunner):
+class TranspaletDetectorRunner(NDUCameraRunner):
     def __init__(self, config, connector_type):
         super().__init__()
 
-        # onnx_fn = "/data/forklift_yolov4_1_3_608_608_static.onnx"
-        # onnx_fn = "/data/forklift_last.onnx"
-        onnx_fn = "/data/forklift_best.onnx"
+        onnx_fn = "/data/transpalet_last.onnx"
+        # onnx_fn = "/data/transpalet_best.onnx"
         self.input_size = 608
-
-        # onnx_fn = "/data/forklift_yolov5_best.onnx"
-        # self.input_size = 640
 
         if not os.path.isfile(onnx_fn):
             onnx_fn = os.path.dirname(os.path.abspath(__file__)) + onnx_fn.replace("/", os.path.sep)
@@ -28,7 +24,7 @@ class ForkliftDetectorRunner(NDUCameraRunner):
         self.sess_tuple = onnx_helper.get_sess_tuple(onnx_fn, config.get("max_engine_count", 0))
 
     def get_name(self):
-        return "forklift_detector"
+        return "transpalet_detector"
 
     def get_settings(self):
         settings = {}

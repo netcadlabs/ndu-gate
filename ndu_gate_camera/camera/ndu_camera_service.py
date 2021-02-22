@@ -66,7 +66,16 @@ class NDUCameraService(Thread):
             if self.__preview_show_track_pnt:
                 self._track_pnt_layer = None
                 self._track_pnts = {}
-            self.__preview_show_rect_filter = self.SOURCE_CONFIG.get("preview_show_rect_filter", None)
+            f = self.SOURCE_CONFIG.get("preview_show_rect_filter", None)
+            if f is not None:
+                if isinstance(f, str):
+                    self.__preview_show_rect_filters = [f]
+                elif isinstance(f, list):
+                    self.__preview_show_rect_filters = f
+                else:
+                    raise Exception('Bad "preview_show_rect_filter" definition!')
+            else:
+                self.__preview_show_rect_filters = None
 
             self.__preview_write = self.SOURCE_CONFIG.get("preview_write", False)
             self.__preview_last_data = []
@@ -608,7 +617,7 @@ class NDUCameraService(Thread):
         show_debug_texts = self.__preview_show_debug_texts
         show_runner_info = self.__preview_show_runner_info
         show_score = self.__preview_show_score
-        rect_filter = self.__preview_show_rect_filter
+        rect_filters = self.__preview_show_rect_filters
         show_rect_name = self.__preview_show_rect_name
         show_track_id = self.__preview_show_track_id
         show_track_pnt = self.__preview_show_track_pnt
@@ -644,13 +653,20 @@ class NDUCameraService(Thread):
                 if debug_text is not None:
                     debug_texts.append(debug_text)
 
+                def _get_score_txt(text_, score_):
+                    res = "%{:.2f} ".format(score_ * 100) if isinstance(score_, float) else score_
+                    if text_ is not None and len(text_) > 0:
+                        return "{}- {} ".format(text_, res)
+                    else:
+                        return res
+
                 text = ""
                 if class_name is not None:
                     text = NDUUtility.debug_conv_turkish(class_name) + " "
                     if show_score and score is not None:
-                        text = "{} - %{:.2f} ".format(text, score * 100)
+                        text = _get_score_txt(text, score)
                 elif show_score and score is not None:
-                    text = "%{:.2f} ".format(score * 100)
+                    text = _get_score_txt(None, score)
 
                 if data is not None:
                     add_txt = " data: " + str(data)
@@ -661,7 +677,13 @@ class NDUCameraService(Thread):
                     c = np.array(rect[:4], dtype=np.int32)
                     c1, c2 = [c[1], c[0]], (c[3], c[2])
                     color_rect = get_color(self, class_preview_key, result.get(constants.RESULT_KEY_RECT_COLOR, None))
-                    show_rect = rect_filter is None or string_helper.wildcard(class_name, rect_filter)
+                    show_rect = True
+                    if rect_filters is not None:
+                        show_rect = False
+                        for rect_filter in rect_filters:
+                            if string_helper.wildcard(class_name, rect_filter):
+                                show_rect = True
+                                break
                     if show_rect:
                         draw_rect(self, image, c1, c2, class_preview_key, color_rect)
                     else:

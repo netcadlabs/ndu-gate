@@ -22,19 +22,22 @@ instances:
 
       preview_show: True
 #      preview_show_win_pos: [-1800, 250]
-      preview_show_win_pos: [-2000, 0]
+      preview_show_win_pos: [-2150, 0]
 #      preview_show_track_pnt: False
       preview_show_debug_texts: True
-#      preview_show_runner_info: False
+      preview_show_runner_info: False
       preview_show_score: True
 #      preview_show_rect_name: False
-#      preview_show_track_id: True
+      preview_show_track_id: True
 #      preview_show_rect_filter: "*Sosyal*"
 #      preview_show_rect_filter: "*person*"
+#      preview_show_rect_filter: "Hız*"
+      preview_show_rect_filter: ["Hız*", "*speed*"]
+#      preview_show_rect_filter: "*Bekleme*"
 
 #      preview_write: True
       preview_write_file_name: C:/_koray/temp/preview.mp4
-#      preview_write_file_name: C:/_koray/temp/2_maskesiz_calisan.mp4
+#      preview_write_file_name: C:/_koray/temp/araçlar_30km_hız_ihlali.mp4
 #      sleep: 0.1
 #      skip_frame: 5
 #      skip_frame: 60
@@ -43,7 +46,7 @@ instances:
 #      motion_kernel: 21
 #      preview_show_motion_kernel: True
 
-      mirror: True
+#      mirror: True
 #      type: CAMERA # VIDEO_FILE, PI_CAMERA, CAMERA, IP_CAMERA, VIDEO_URL, YOUTUBE, IMAGE_FILE
 #      type: IMAGE_FILE
       type: VIDEO_FILE
@@ -59,6 +62,7 @@ instances:
 #      file_path: fabrika/3_yuk_asansoru_kullanma.mp4
 #      file_path: fabrika/4_sabit_duran_calisan.mp4
       file_path: fabrika/6_forklift_hiz.mp4
+#      file_path: fabrika/7_transpalet_uzerine_binme.mp4
 #      file_path: fabrika/8_baretsiz_calisan.mp4
 #      file_path: fabrika/9_ref.mp4
 #      file_path: fabrika/9_tahliyede_iceride_kalan_calisan.mp4
@@ -128,7 +132,7 @@ instances:
 
 
 #      url: https://youtu.be/TlInDQgg2G4  #mask
-      url: https://youtu.be/eKOf9HyQf1U
+#      url: https://youtu.be/eKOf9HyQf1U
 #      url: https://www.youtube.com/watch?v=RKIPWCWldzE  #plaka tur
 #      url: https://youtu.be/zTSM_oL0Mpc  #plaka tur
 #      url: https://www.youtube.com/watch?v=tFBvVasy-JQ  #plaka tur
@@ -183,6 +187,8 @@ instances:
 #      url: https://www.youtube.com/watch?v=7BUCFyPpCNg&t=52s  #helmet
 #      url: https://www.youtube.com/watch?v=tNMgxQAkn2A  #helmet
 
+      url: https://www.youtube.com/watch?v=eF7-tBzHLWM  #transpalet
+
 
 
 #      motion_kernel: 11
@@ -192,28 +198,70 @@ instances:
 
     runners:
 
+      - name: Forklift Detector
+        type: forklift_detector
+        configuration: forklift_detector.json
+#        roi_configuration: roi_config_fabrika_forklift.json
+        class: ForkliftDetectorRunner
+        priority: 10
 
-#      - name: Forklift Detector
-#        type: forklift_detector
-#        configuration: forklift_detector.json
-##        roi_configuration: roi_config_fabrika_forklift.json
-#        class: ForkliftDetectorRunner
+      - name: Tracker
+        type: tracker
+        configuration: tracker_forklift.json
+        class: TrackerRunner
+        priority: 50
+
+      - name: Intersector
+        type: intersector
+        configuration: intersector_forklift_speed.json
+        class: IntersectorRunner
+        priority: 100
+
+
+
+#      - name: Transpalet Detector
+#        type: transpalet_detector
+#        configuration: transpalet_detector.json
+#        roi_configuration: roi_config_fabrika_transpalet.json
+#        class: TranspaletDetectorRunner
 #        priority: 10
 
 
-
-#      - name: yolov5x - Object detection with 80 classes
+#
+##      - name: yolov5x - Object detection with 80 classes
 ##        type: yolov5x
 ##        configuration: yolov5x.json
-##        roi_configuration: roi_config_fabrika_tahliye.json
 ##        class: Yolov5xRunner
 ##        priority: 10
-      - name: yolov4 - Object detection with 80 classes
-        type: yolov4
-        configuration: yolov4.json
-        roi_configuration: roi_config_fabrika_tahliye.json
-        class: Yolov4Runner
-        priority: 10
+#
+#      - name: yolov4 - Object detection with 80 classes
+#        type: yolov4
+#        configuration: yolov4.json
+#        class: Yolov4Runner
+#        priority: 10
+#
+##      - name: yolov4-tiny - Object detection with 80 classes
+##        type: yolov4-tiny
+##        configuration: yolov4-tiny.json
+##        class: Yolov4TinyRunner
+##        priority: 10
+#
+#      - name: Tracker
+#        type: tracker
+#        configuration: tracker_vehicle.json
+#        class: TrackerRunner
+#        priority: 50
+#
+#      - name: Intersector
+#        type: intersector
+##        configuration: intersector_vehicle_waiting.json
+#        configuration: intersector_vehicle_speed.json
+#        class: IntersectorRunner
+#        priority: 100
+
+
+
+
 
 ##      - name: Objects In Area
 ##        type: objects_in_area
