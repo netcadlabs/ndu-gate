@@ -32,8 +32,9 @@ instances:
 #      preview_show_rect_filter: "*Sosyal*"
 #      preview_show_rect_filter: "*person*"
 #      preview_show_rect_filter: "Hız*"
-      preview_show_rect_filter: ["Hız*", "*speed*"]
+#      preview_show_rect_filter: ["Hız*", "*speed*"]
 #      preview_show_rect_filter: "*Bekleme*"
+      preview_show_rect_filter: "*üzerine*"
 
 #      preview_write: True
       preview_write_file_name: C:/_koray/temp/preview.mp4
@@ -61,8 +62,8 @@ instances:
 #      file_path: fabrika/2_maskesiz_calisan.mp4
 #      file_path: fabrika/3_yuk_asansoru_kullanma.mp4
 #      file_path: fabrika/4_sabit_duran_calisan.mp4
-      file_path: fabrika/6_forklift_hiz.mp4
-#      file_path: fabrika/7_transpalet_uzerine_binme.mp4
+#      file_path: fabrika/6_forklift_hiz.mp4
+      file_path: fabrika/7_transpalet_uzerine_binme.mp4
 #      file_path: fabrika/8_baretsiz_calisan.mp4
 #      file_path: fabrika/9_ref.mp4
 #      file_path: fabrika/9_tahliyede_iceride_kalan_calisan.mp4
@@ -198,36 +199,34 @@ instances:
 
     runners:
 
-      - name: Forklift Detector
-        type: forklift_detector
-        configuration: forklift_detector.json
-#        roi_configuration: roi_config_fabrika_forklift.json
-        class: ForkliftDetectorRunner
+##      - name: yolov5x - Object detection with 80 classes
+##        type: yolov5x
+##        configuration: yolov5x.json
+##        class: Yolov5xRunner
+##        priority: 10
+
+      - name: yolov4 - Object detection with 80 classes
+        type: yolov4
+        configuration: yolov4.json
+        roi_configuration: roi_config_fabrika_transpalet.json
+        class: Yolov4Runner
         priority: 10
 
-      - name: Tracker
-        type: tracker
-        configuration: tracker_forklift.json
-        class: TrackerRunner
-        priority: 50
+      - name: Transpalet Detector
+        type: transpalet_detector
+        configuration: transpalet_detector.json
+        roi_configuration: roi_config_fabrika_transpalet.json
+        class: TranspaletDetectorRunner
+        priority: 10
 
       - name: Intersector
         type: intersector
-        configuration: intersector_forklift_speed.json
+        configuration: intersector_transpalet_person.json
         class: IntersectorRunner
         priority: 100
 
 
 
-#      - name: Transpalet Detector
-#        type: transpalet_detector
-#        configuration: transpalet_detector.json
-#        roi_configuration: roi_config_fabrika_transpalet.json
-#        class: TranspaletDetectorRunner
-#        priority: 10
-
-
-#
 ##      - name: yolov5x - Object detection with 80 classes
 ##        type: yolov5x
 ##        configuration: yolov5x.json

@@ -15,6 +15,8 @@ class ROIManager():
         self._polygons = config.get("polygons", [])
         self._apply_mask = config.get("apply_mask", True)
         self._apply_crop = config.get("apply_crop", True)
+        self._apply_histogram_equalization = config.get("apply_histogram_equalization", False)
+        self._apply_adaptive_histogram_equalization = config.get("apply_adaptive_histogram_equalization", False)
         self._preview = config.get("preview", False)
         self._pyrUp = config.get("pyrUp", 0)
         self._select_polygons_mode = config.get("select_polygons_mode", False)
@@ -69,8 +71,10 @@ class ROIManager():
                 self._rev_div *= 2
                 img = cv2.pyrUp(img, img)
 
-        # img = image_helper.equalize_hist_bgr(img)
-        # img = image_helper.adaptive_equalize_hist_bgr(img)
+        if self._apply_histogram_equalization:
+            img = image_helper.equalize_hist_bgr(img)
+        if self._apply_adaptive_histogram_equalization:
+            img = image_helper.adaptive_equalize_hist_bgr(img)
 
         if self._preview:
             cv2.imshow("ROIManager", img)

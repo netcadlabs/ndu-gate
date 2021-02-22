@@ -427,7 +427,7 @@ class IntersectorRunner(Thread, NDUCameraRunner):
                     _all_ok = True
             return _all_ok
 
-        def _has_interaction(r_, rect_names0_, rects0_, touch_check_func):
+        def _has_interaction(r_, rect_names0_, rects0_, touch_check_func, only_if_different_classes_):
             if has_or(r_, rect_names0_):
                 class RDef:
                     def __init__(self):
@@ -452,18 +452,19 @@ class IntersectorRunner(Thread, NDUCameraRunner):
                 for r1_ in rects_:
                     for r2_ in rects_:
                         if r1_ != r2_:
-                            if touch_check_func(r1_.rect, r2_.rect):
+                            can_check = not only_if_different_classes_ or r1_.name != r2_.name
+                            if can_check and touch_check_func(r1_.rect, r2_.rect):
                                 if self._debug_mode:
                                     cv2.rectangle(frame, (int(r1_.rect[1]), int(r1_.rect[0])), (int(r1_.rect[3]), int(r1_.rect[2])), color=[0, 0, 0], thickness=3)
                                     cv2.rectangle(frame, (int(r2_.rect[1]), int(r2_.rect[0])), (int(r2_.rect[3]), int(r2_.rect[2])), color=[255, 255, 255], thickness=3)
                                 return True, r1_, r2_
             return False, None, None
 
-        def has_touch(r_, rect_names0_, rects0_):
-            return _has_interaction(r_, rect_names0_, rects0_, geometry_helper.rects_intersect)
+        def has_touch(r_, rect_names0_, rects0_, only_if_different_classes_):
+            return _has_interaction(r_, rect_names0_, rects0_, geometry_helper.rects_intersect, only_if_different_classes_)
 
-        def has_dist(gr_, r_, rect_names0_, rects0_):
-            return _has_interaction(r_, rect_names0_, rects0_, gr_.rects_within_dist)
+        def has_dist(gr_, r_, rect_names0_, rects0_, only_if_different_classes_):
+            return _has_interaction(r_, rect_names0_, rects0_, gr_.rects_within_dist, only_if_different_classes_)
 
         def has_classification(gr_, rects0_):
             rects_css = []
@@ -503,12 +504,14 @@ class IntersectorRunner(Thread, NDUCameraRunner):
                             if has_and(r, rect_names0):
                                 count += 1
                         elif r.style == self._ST_TOUCH:
-                            ok, r1, r2 = has_touch(r, rect_names0, rects0)
+                            only_if_different_classes = len(gr.obj_detection.all_rect_names)>1
+                            ok, r1, r2 = has_touch(r, rect_names0, rects0, only_if_different_classes)
                             if ok:
                                 count += 1
                                 rects[gr.name].extend([r1.rect, r2.rect])
                         elif r.style == self._ST_DIST:
-                            ok, r1, r2 = has_dist(gr, r, rect_names0, rects0)
+                            only_if_different_classes = len(gr.obj_detection.all_rect_names) > 1
+                            ok, r1, r2 = has_dist(gr, r, rect_names0, rects0, only_if_different_classes)
                             if ok:
                                 count += 1
                                 rects[gr.name].extend([r1.rect, r2.rect])

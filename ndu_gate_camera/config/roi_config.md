@@ -16,6 +16,8 @@ Bu json diğer runner config json dosyalarının da olduğu config dizininde olm
       "polygons": [[[619, 330], [773, 339], [769, 213], [637, 214]]],
       "apply_mask": true,
       "apply_crop": true,
+      "apply_histogram_equalization": false,
+      "apply_adaptive_histogram_equalization": true,
       "preview": true,
       "pyrUp": 2
     }
@@ -27,6 +29,8 @@ Bu json diğer runner config json dosyalarının da olduğu config dizininde olm
 * **polygons**: Maske yapılacak veya crop için kullanılacak poligonlar. Sadece bu poligonların içi için işlem yapılacaktır.
 * **apply_mask**: Maske yapılsın mı? *Varsayılan değer: true*
 * **apply_crop**: Poligonlara göre imaj kesilsin mi? Poligonların hepsinin min-max koordinatlarına göre oluşturulan bbox kullanılarak imaj kesilir ve küçültülmüş bu imaj üzerinden işlem yapılır. *Varsayılan değer: true* 
+* **apply_histogram_equalization**: *Varsayılan değer: false*
+* **apply_adaptive_histogram_equalization**: *Varsayılan değer: false*
 * **preview**: Debug amaçlıdır. Önizleme yapmak için kullanılır. Varsayılan değer: false
 * **pyrUp**: Piramit büyütme kaç kere yapılsın? Varsayılan değer: 1 (büyütme yapılmasın)
 

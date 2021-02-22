@@ -10,8 +10,8 @@ class TranspaletDetectorRunner(NDUCameraRunner):
     def __init__(self, config, connector_type):
         super().__init__()
 
-        onnx_fn = "/data/transpalet_last.onnx"
-        # onnx_fn = "/data/transpalet_best.onnx"
+        # onnx_fn = "/data/transpalet_last.onnx"
+        onnx_fn = "/data/transpalet_best.onnx"
         self.input_size = 608
 
         if not os.path.isfile(onnx_fn):
