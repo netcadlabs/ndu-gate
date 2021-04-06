@@ -20,7 +20,10 @@ class HardHatDetectorRunner(NDUCameraRunner):
 
         self.average_of_frames = config.get("average_of_frames", 1)
         self.confirm_count = config.get("confirm_count", 1)
+        self.use = config.get("confirm_count", 1)
         self.confirm_val = 0
+
+        self._use_person = config.get("use_person", True)
 
         if not os.path.isfile(onnx_fn):
             onnx_fn = os.path.dirname(os.path.abspath(__file__)) + onnx_fn.replace("/", os.path.sep)
@@ -44,8 +47,59 @@ class HardHatDetectorRunner(NDUCameraRunner):
 
     def process_frame(self, frame, extra_data=None):
         super().process_frame(frame)
-        # res = yolo_helper.predict_v5(self.sess_tuple, self.input_size, self.class_names, frame)
-        res = yolo_helper.predict_v4(self.sess_tuple, self.input_size, self.class_names, frame)
+
+        ###########################
+        handled = False
+        res = []
+        if self._use_person:
+            results = extra_data.get(constants.EXTRA_DATA_KEY_RESULTS, None)
+            if results is not None:
+                for runner_name, result in results.items():
+                    for item in result:
+                        class_name = item.get(constants.RESULT_KEY_CLASS_NAME, None)
+                        if class_name == "person":
+                            rect_person = item.get(constants.RESULT_KEY_RECT, None)
+                            if rect_person is not None:
+                                bbox = rect_person
+                                y1 = max(int(bbox[0]), 0)
+                                x1 = max(int(bbox[1]), 0)
+                                y2 = max(int(bbox[2]), 0)
+                                x2 = max(int(bbox[3]), 0)
+                                w = x2 - x1
+                                h = y2 - y1
+                                dw = int(w * 0.15)
+                                dh = int(h * 0.15)
+                                x1 -= dw
+                                x2 += dw
+                                y1 -= dh
+                                y2 += dh
+                                y1 = max(y1, 0)
+                                x1 = max(x1, 0)
+                                y2 = max(int(y2 - h * 0.75), 0)
+                                x2 = max(x2, 0)
+
+                                image = frame[y1:y2, x1:x2]
+                                image = cv2.pyrUp(image)
+                                image = cv2.pyrUp(image)
+                                image = cv2.pyrUp(image)
+                                image = cv2.pyrUp(image)
+                                cv2.imshow("aaaaaaa", image)
+                                # cv2.waitKey(300)
+                                # self._process(image, res1, 0, 0)
+                                res1 = yolo_helper.predict_v4(self.sess_tuple, self.input_size, self.class_names, image)
+                                if len(res1) > 0:
+                                    for item1 in res1:
+                                        rect_face = item1.get(constants.RESULT_KEY_RECT, None)
+                                        if rect_face is not None:
+                                            item1[constants.RESULT_KEY_RECT] = [y1, x1, y2, x2]
+                                        res.append(item1)
+                                handled = True
+        ###########################
+
+
+        if not handled:
+            # res = yolo_helper.predict_v5(self.sess_tuple, self.input_size, self.class_names, frame)
+            res = yolo_helper.predict_v4(self.sess_tuple, self.input_size, self.class_names, frame)
         no_helmet_count = 0
         helmet_count = 0
         for i in range(len(res)):

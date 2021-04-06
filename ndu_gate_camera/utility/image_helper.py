@@ -14,11 +14,11 @@ def image_h_w(image):
 
 # Boyut değişikliğine en uygun interpolation yöntemi ile resize eder.
 def resize_best_quality(image, size):
+    if image.shape[0] == size[0] and image.shape[1] == size[1]:
+        return image.copy()
     size0 = max(image.shape[0], image.shape[1])
     size1 = max(size[0], size[1])
-    if size0 == size1:
-        return image.copy()
-    elif size0 > size1:
+    if size0 > size1:
         # if size0 > 2 * size1:
         #     image = cv2.pyrDown(image)
         return cv2.resize(image, size, interpolation=cv2.INTER_AREA)

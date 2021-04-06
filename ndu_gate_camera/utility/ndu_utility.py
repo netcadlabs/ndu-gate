@@ -163,6 +163,12 @@ class NDUUtility:
             class_name = "baret takiyor"
         elif class_name == "no helmet":
             class_name = "baret takmiyor"
+
+        elif class_name == "mask":
+            class_name = "maske takiyor"
+        elif class_name == "no_mask":
+            class_name = "maske takmiyor"
+
         elif class_name == "good_speed":
             class_name = "Hız"
 
