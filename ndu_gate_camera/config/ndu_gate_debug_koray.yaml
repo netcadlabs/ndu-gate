@@ -27,7 +27,7 @@ instances:
 #      preview_show_debug_texts: True
       preview_show_runner_info: False
 #      preview_show_score: True
-#      preview_show_rect_name: False
+      preview_show_rect_name: False
       preview_show_track_id: True
 #      preview_show_rect_filter: "*Sosyal*"
 #      preview_show_rect_filter: "*person*"
@@ -39,7 +39,7 @@ instances:
 
 #      preview_write: True
 #      preview_write_file_name: C:/_koray/temp/preview.mp4
-      preview_write_file_name: C:/_koray/temp/2 Sosyal mesafe.mp4
+      preview_write_file_name: C:/_koray/temp/5 Baretsiz çalışan.mp4
 #      sleep: 0.1
 #      skip_frame: 5
 #      skip_frame: 60
@@ -70,12 +70,13 @@ instances:
 #      file_path: fabrika/9_tahliyede_iceride_kalan_calisan.mp4
 #      file_path: fabrika/10_forklift_bicagina_cikma.mp4
 
-#      file_path: fabrika2/1 Yangın söndürücü önüne malzeme bırakma.mp4
-#      file_path: fabrika2/2 Sosyal mesafe.mp4
-      file_path: fabrika2/3 Baretsiz maskesiz çalışan.mp4
-#      file_path: fabrika2/4 Maskesiz çalışan.mp4
-#      file_path: fabrika2/5 Baretsiz çalışan.mp4
-#      file_path: fabrika2/6 Forklift hız.mp4
+      file_path: fabrika3/1 sosyal mesafe ihlali.avi
+#      file_path: fabrika3/2 forklift hız.avi
+#      file_path: fabrika3/3 Baretsiz ve maskesiz çalışan.avi
+#      file_path: fabrika3/4 baretsiz çalışan.avi
+#      file_path: fabrika3/5 maskesiz çalışan.avi
+#      file_path: fabrika3/6 Acil çıkış önüne malzeme konması.avi
+
 
 #      file_path: bakanlik.avi
 #      file_path: lpr/plaka_trafik.mp4
@@ -214,17 +215,53 @@ instances:
         class: Yolov4Runner
         priority: 10
 
-      - name: Hard Hat Detector
-        type: hard_hat_detector
-        configuration: hard_hat_detector.json
-        class: HardHatDetectorRunner
-        priority: 20
 
+#      - name: Intersector
+#        type: intersector
+##        configuration: intersector_transpalet_person.json
+#        configuration: intersector_social_dist.json
+#        class: IntersectorRunner
+#        priority: 100
+
+#      - name: Hard Hat Detector
+#        type: hard_hat_detector
+#        configuration: hard_hat_detector.json
+#        class: HardHatDetectorRunner
+#        priority: 20
+#
 #      - name: Face Mask Detection
 #        type: facemask
 #        configuration: facemask_fabrika.json
 #        class: FaceMaskRunner
 #        priority: 100
+
+      - name: Point Occupied
+        type: point_occupied
+        configuration: point_occupied.json
+        class: PointOccupiedRunner
+        priority: 100
+
+
+#      - name: Forklift Detector
+#        type: forklift_detector
+#        configuration: forklift_detector.json
+##        roi_configuration: roi_config_fabrika_transpalet.json
+#        class: ForkliftDetectorRunner
+#        priority: 10
+#
+#      - name: Intersector
+#        type: intersector
+#        configuration: intersector_forklift_speed.json
+#        class: IntersectorRunner
+#        priority: 100
+
+
+#      - name: Transpalet Detector
+#        type: transpalet_detector
+#        configuration: transpalet_detector.json
+##        roi_configuration: roi_config_fabrika_transpalet.json
+#        class: TranspaletDetectorRunner
+#        priority: 10
 
 
 ##      - name: yolov5x - Object detection with 80 classes
@@ -245,13 +282,7 @@ instances:
 #        roi_configuration: roi_config_fabrika_transpalet.json
 #        class: TranspaletDetectorRunner
 #        priority: 10
-#
-#      - name: Intersector
-#        type: intersector
-##        configuration: intersector_transpalet_person.json
-#        configuration: intersector_social_dist.json
-#        class: IntersectorRunner
-#        priority: 100
+
 
 
 

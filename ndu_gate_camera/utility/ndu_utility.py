@@ -166,7 +166,7 @@ class NDUUtility:
 
         elif class_name == "mask":
             class_name = "maske takiyor"
-        elif class_name == "no_mask":
+        elif class_name == "no mask":
             class_name = "maske takmiyor"
 
         elif class_name == "good_speed":

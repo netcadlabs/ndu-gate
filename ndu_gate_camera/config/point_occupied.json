@@ -1,5 +1,9 @@
 {
+  "debug_mode": true,
+  "selection_mode": false,
+  "points": [[651, 299], [594, 368], [629, 525], [554, 613]],
   "classes": [
+    "person",
     "car",
     "bicycle",
     "motorbike",

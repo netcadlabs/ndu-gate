@@ -1,0 +1,21 @@
+{
+  "fps": 24,
+  "debug_mode": false,
+  "ground_dist_selection_mode": false,
+  "groups": {
+    "Transpalet üzerine binme": {
+      "obj_detection": {
+        "rects": [
+          {
+            "padding": 0,
+            "style": "touch",
+            "class_names": [
+                "transpalet",
+                "person"
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

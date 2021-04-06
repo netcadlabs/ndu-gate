@@ -79,11 +79,11 @@ class HardHatDetectorRunner(NDUCameraRunner):
                                 x2 = max(x2, 0)
 
                                 image = frame[y1:y2, x1:x2]
-                                image = cv2.pyrUp(image)
-                                image = cv2.pyrUp(image)
-                                image = cv2.pyrUp(image)
-                                image = cv2.pyrUp(image)
-                                cv2.imshow("aaaaaaa", image)
+                                # image = cv2.pyrUp(image)
+                                # image = cv2.pyrUp(image)
+                                # image = cv2.pyrUp(image)
+                                # image = cv2.pyrUp(image)
+                                # cv2.imshow("aaaaaaa", image)
                                 # cv2.waitKey(300)
                                 # self._process(image, res1, 0, 0)
                                 res1 = yolo_helper.predict_v4(self.sess_tuple, self.input_size, self.class_names, image)

@@ -1,0 +1,27 @@
+{
+  "fps": 24,
+  "debug_mode": false,
+  "ground_dist_selection_mode": false,
+  "groups": {
+    "Hız İhlali": {
+      "obj_detection": {
+        "ground": [[404, 219], [725, 195], [665, 124], [417, 137]],
+        "dist": [[449, 137], [488, 135]],
+        "_max_dist_per_seconds": 4.6,
+        "_debug_speed_value": 30,
+        "max_dist_per_seconds": 0.76,
+        "debug_speed_value": 5,
+        "debug_speed_suffix": "km/sa.",
+        "rects": [
+          {
+            "padding": 0,
+            "style": "speed",
+            "class_names": [
+                "forklift"
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

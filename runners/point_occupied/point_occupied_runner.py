@@ -12,14 +12,20 @@ class PointOccupiedRunner(Thread, NDUCameraRunner):
         super().__init__()
         self.connector_type = connector_type
         self.__classes = config.get("classes", None)
-        self.__points = []
+        self.__classes = config.get("classes", None)
+
+        self._selection_mode = config.get("selection_mode", False)
+        self.__debug = config.get("debug_mode", False)
+
+        pnts = config.get("points", [])
+        self.__points = np.array(pnts, np.int32)
+
         self.__last_data = {}
         self.__frame_num = 0
         self.__average_len = 10
         self.__average_accept = 1
         self.__average_cur = 10
 
-        self.__debug = False
         self.__debug_color_false = (200, 200, 200)
         self.__debug_color_true = (0, 255, 0)
         self.__debug_thickness_false = 4
@@ -71,19 +77,35 @@ class PointOccupiedRunner(Thread, NDUCameraRunner):
             return res
 
         self.__frame_num += 1
-        if len(self.__points) == 0 and self.__frame_num == 1:
-            pnts = image_helper.select_points(frame, self.get_name())
-            # pnts = [(617, 462), (591, 276), (281, 324), (349, 518), (470, 378), (467, 210)] #vid_short
-            # otopark_trim_8x
-            # pnts = [(266, 638), (446, 643), (580, 648), (694, 649), (821, 654), (954, 657), (1066, 661), (1197, 654), (1274, 636), (1025, 482), (981, 480), (892, 468), (814, 467), (723, 451), (626, 467), (551, 449),
-            #         (436, 431), (334, 425), (240, 411), (164, 406), (69, 391)]
-            # pnts = [(34, 604), (269, 611), (572, 633), (770, 635), (1011, 643), (1216, 623), (48, 375), (160, 372), (286, 373), (400, 392), (519, 415), (629, 433), (714, 433), (807, 440), (911, 446), (971, 452)]
+        # if len(self.__points) == 0 and self.__frame_num == 1:
+        #     pnts = image_helper.select_points(frame, self.get_name())
+        #     # pnts = [(617, 462), (591, 276), (281, 324), (349, 518), (470, 378), (467, 210)] #vid_short
+        #     # otopark_trim_8x
+        #     # pnts = [(266, 638), (446, 643), (580, 648), (694, 649), (821, 654), (954, 657), (1066, 661), (1197, 654), (1274, 636), (1025, 482), (981, 480), (892, 468), (814, 467), (723, 451), (626, 467), (551, 449),
+        #     #         (436, 431), (334, 425), (240, 411), (164, 406), (69, 391)]
+        #     # pnts = [(34, 604), (269, 611), (572, 633), (770, 635), (1011, 643), (1216, 623), (48, 375), (160, 372), (286, 373), (400, 392), (519, 415), (629, 433), (714, 433), (807, 440), (911, 446), (971, 452)]
+        #
+        #     pnt_counter = 0
+        #     for pnt in pnts:
+        #         pnt_counter += 1
+        #         self.__points.append(
+        #             {"name": "{}{}".format(self.pnt_prefix, pnt_counter), "pnt": pnt, "true_count": 0, "is_true": False})
 
+        if self._selection_mode:
+            pnts = image_helper.select_points(frame, "select intersector dist")
+            points = []
+            for p in pnts:
+                points.append(list(p))
+            print('"points": {},'.format(str(points)))
+            exit(1)
+        if self.__frame_num == 1:
+            pnts = self.__points
+            self.__points = []
             pnt_counter = 0
             for pnt in pnts:
                 pnt_counter += 1
                 self.__points.append(
-                    {"name": "{}{}".format(self.pnt_prefix, pnt_counter), "pnt": pnt, "true_count": 0, "is_true": False})
+                    {"name": "{}{}".format(self.pnt_prefix, pnt_counter), "pnt": tuple(pnt), "true_count": 0, "is_true": False})
 
         # if self.__debug:
         #     for item in self.__points:
@@ -164,12 +186,10 @@ class PointOccupiedRunner(Thread, NDUCameraRunner):
                 pnt_name = self.debug_pnt_name(pnt_item.get("name"))
                 pnt = pnt_item.get("pnt")
                 if pnt_item["is_true"]:
-                    cv2.circle(frame, pnt, self.__debug_radius_true, self.__debug_color_true,
-                               self.__debug_thickness_true)
+                    cv2.circle(frame, pnt, self.__debug_radius_true, self.__debug_color_true, self.__debug_thickness_true)
                     image_helper.put_text(frame, pnt_name, pnt, color=self.__debug_color_true, font_scale=0.75)
                 else:
-                    cv2.circle(frame, pnt, self.__debug_radius_false, self.__debug_color_false,
-                               self.__debug_thickness_false)
+                    cv2.circle(frame, pnt, self.__debug_radius_false, self.__debug_color_false, self.__debug_thickness_false)
                     image_helper.put_text(frame, pnt_name, pnt, color=self.__debug_color_false, font_scale=0.75)
 
         return res

@@ -11,4 +11,6 @@ C:\Program Files (x86)\Intel\openvino_2021.2.185\deployment_tools\inference_engi
 C:\Program Files (x86)\Intel\openvino_2021.2.185\deployment_tools\model_optimizer
 C:\Program Files (x86)\Intel\openvino_2021.2.185\bin
 
+pip install openvino
+
 * Windows yeniden başlatılacak!
