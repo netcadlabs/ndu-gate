@@ -33,8 +33,9 @@ class NDUUtility:
                 extensions_paths.append('/var/lib/ndu_gate/runners/'.replace('/', path.sep) + extension_type.lower())
                 extensions_paths.append(path.abspath(file_dir + '/runners/'.replace('/', path.sep) + extension_type.lower()))
 
-            if NDUUtility.is_debug_mode():
-                extensions_paths.append(path.abspath(file_dir + '/../runners/'.replace('/', path.sep) + extension_type.lower()))
+            dev_runner_folder = path.abspath(file_dir + '/../runners/'.replace('/', path.sep) + extension_type.lower())
+            if path.isdir(dev_runner_folder):
+                extensions_paths.append(dev_runner_folder)
             # extensions_paths.append(path.abspath(file_dir + '/../runners/'.replace('/', path.sep) + extension_type.lower()))
 
             if package_uuids and len(package_uuids) > 0:

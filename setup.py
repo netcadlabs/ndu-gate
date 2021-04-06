@@ -6,7 +6,7 @@ this_directory = path.abspath(path.dirname(__file__))
 with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
-VERSION = "0.1.7"
+VERSION = "0.1.9"
 
 setup(
     name='ndu_gate_camera',
