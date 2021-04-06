@@ -1,0 +1,11 @@
+{
+  "select_polygons_mode": false,
+  "_polygons": [[[537, 375], [642, 375], [642, 235], [537, 235]]],
+  "polygons": [[[537, 340], [642, 340], [642, 150], [537, 150]]],
+  "apply_mask": true,
+  "apply_crop": true,
+  "apply_histogram_equalization": false,
+  "apply_adaptive_histogram_equalization": true,
+  "preview": true,
+  "pyrUp": 2
+}
