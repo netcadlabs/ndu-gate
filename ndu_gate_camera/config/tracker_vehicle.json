@@ -6,7 +6,7 @@
   "_tracker_algorithm": "Boosting",
   "_tracker_algorithm": "MedianFlow",
   "classes": {
-    "kisi": [
+    "arac": [
       "car",
       "bicycle",
       "motorbike",

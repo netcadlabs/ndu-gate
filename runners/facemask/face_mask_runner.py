@@ -18,9 +18,12 @@ class FaceMaskRunner(Thread, NDUCameraRunner):
         self.__dont_use_face_rects = config.get("dont_use_face_rects", False)
         self.__upscale_person = config.get("upscale_person", False)
         self.__upscale_person = True  ####################
-        self._debug=True#####
+        self._debug = True  #####
         self._max_rect = config.get("max_rect", 0)  # örneğin 0.5 verilirse, max dim değeri frame'in yarısından büyük olan bbox'lar kabul edilmez.
         self._last_data = None
+
+        self.confirm_count = config.get("confirm_count", 1)
+        self.confirm_val = 0
 
         onnx_fn = path.dirname(path.abspath(__file__)) + "/data/model360.onnx".replace("/", os.path.sep)
         class_names_fn = path.dirname(path.abspath(__file__)) + "/data/face_mask.names".replace("/", os.path.sep)
@@ -330,9 +333,12 @@ class FaceMaskRunner(Thread, NDUCameraRunner):
             rect_face = [ymin, xmin, ymax, xmax]
             res.append({constants.RESULT_KEY_RECT: rect_face, constants.RESULT_KEY_CLASS_NAME: self.class_names[class_id], constants.RESULT_KEY_SCORE: score})
 
-        data = {constants.RESULT_KEY_DATA: {"mask": count_mask, "no_mask": count_no_mask}}
+        data = {constants.RESULT_KEY_DATA: {"mask": count_mask, "no_mask": count_no_mask, "no_mask_exists": count_no_mask > 0}}
         if self._last_data != data:
-            self._last_data = data
-            res.append(data)
-            if self._debug:
-                res.append({constants.RESULT_KEY_DEBUG: "Maske takan: {} - takmayan: {}".format(count_mask, count_no_mask)})
+            self.confirm_val -= 1
+            if self.confirm_val <= 0:
+                self.confirm_val = self.confirm_count
+                self._last_data = data
+                res.append(data)
+                if self._debug:
+                    res.append({constants.RESULT_KEY_DEBUG: "Maske takan: {} - takmayan: {}".format(count_mask, count_no_mask)})

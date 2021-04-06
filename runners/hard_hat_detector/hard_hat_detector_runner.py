@@ -20,7 +20,6 @@ class HardHatDetectorRunner(NDUCameraRunner):
 
         self.average_of_frames = config.get("average_of_frames", 1)
         self.confirm_count = config.get("confirm_count", 1)
-        self.use = config.get("confirm_count", 1)
         self.confirm_val = 0
 
         self._use_person = config.get("use_person", True)
@@ -48,7 +47,6 @@ class HardHatDetectorRunner(NDUCameraRunner):
     def process_frame(self, frame, extra_data=None):
         super().process_frame(frame)
 
-        ###########################
         handled = False
         res = []
         if self._use_person:
@@ -94,8 +92,6 @@ class HardHatDetectorRunner(NDUCameraRunner):
                                             item1[constants.RESULT_KEY_RECT] = [y1, x1, y2, x2]
                                         res.append(item1)
                                 handled = True
-        ###########################
-
 
         if not handled:
             # res = yolo_helper.predict_v5(self.sess_tuple, self.input_size, self.class_names, frame)

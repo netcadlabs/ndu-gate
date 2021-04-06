@@ -125,3 +125,13 @@ def get_dist_sq(p1, p2):
     d1 = p2[0] - p1[0]
     d2 = p2[1] - p1[1]
     return d1 * d1 + d2 * d2
+
+
+def get_center_int(pnts):
+    x = 0
+    y = 0
+    for pnt in pnts:
+        x += pnt[0]
+        y += pnt[1]
+    length = float(len(pnts))
+    return [int(x / length), int(y / length)]

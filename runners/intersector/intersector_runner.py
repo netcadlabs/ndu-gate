@@ -15,6 +15,23 @@ from ndu_gate_camera.utility.ndu_utility import NDUUtility
 
 
 class IntersectorRunner(Thread, NDUCameraRunner):
+    _ST_OR = "or"
+    _ST_AND = "and"
+    _ST_TOUCH = "touch"
+    _ST_DIST = "dist"
+    _ST_STATIONARY = "stationary"
+    _ST_SPEED = "speed"
+
+    def __init__(self, config, _):
+        super().__init__()
+        self._selection_mode = config.get("ground_dist_selection_mode", False)
+        self._fps = config.get("fps", None)
+        self._debug_mode = config.get("debug_mode", False)
+        if not self._selection_mode:
+            self._check_config(config.get("groups", None))
+        self._last_data = {}
+        self._tracks = {}
+        self._frame_index = 0
 
     def _init_classification(self):
         onnx_fn = path.dirname(path.abspath(__file__)) + "/data/googlenet-9.onnx"
@@ -25,13 +42,6 @@ class IntersectorRunner(Thread, NDUCameraRunner):
             raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), class_names_fn)
         self.__onnx_classify_names = onnx_helper.parse_class_names(class_names_fn)
         self.sess_tuple = onnx_helper.get_sess_tuple(onnx_fn)
-
-    _ST_OR = "or"
-    _ST_AND = "and"
-    _ST_TOUCH = "touch"
-    _ST_DIST = "dist"
-    _ST_STATIONARY = "stationary"
-    _ST_SPEED = "speed"
 
     def _check_config(self, config):
 
@@ -236,17 +246,6 @@ class IntersectorRunner(Thread, NDUCameraRunner):
             for name in enumerate_rect_class_names(gr):
                 if name not in self._conf.all_rect_names:
                     self._conf.all_rect_names.append(name)
-
-    def __init__(self, config, _):
-        super().__init__()
-        self._selection_mode = config.get("ground_dist_selection_mode", False)
-        self._fps = config.get("fps", None)
-        self._debug_mode = config.get("debug_mode", False)
-        if not self._selection_mode:
-            self._check_config(config.get("groups", None))
-        self._last_data = {}
-        self._tracks = {}
-        self._frame_index = 0
 
     def get_name(self):
         return "IntersectorRunner"
@@ -504,7 +503,7 @@ class IntersectorRunner(Thread, NDUCameraRunner):
                             if has_and(r, rect_names0):
                                 count += 1
                         elif r.style == self._ST_TOUCH:
-                            only_if_different_classes = len(gr.obj_detection.all_rect_names)>1
+                            only_if_different_classes = len(gr.obj_detection.all_rect_names) > 1
                             ok, r1, r2 = has_touch(r, rect_names0, rects0, only_if_different_classes)
                             if ok:
                                 count += 1

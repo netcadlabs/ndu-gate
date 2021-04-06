@@ -25,17 +25,16 @@ instances:
 #      preview_show_win_pos: [-2150, 0]
 #      preview_show_track_pnt: False
 #      preview_show_debug_texts: True
-      preview_show_runner_info: False
+#      preview_show_runner_info: False
 #      preview_show_score: True
-      preview_show_rect_name: False
-      preview_show_track_id: True
+#      preview_show_rect_name: False
+#      preview_show_track_id: True
 #      preview_show_rect_filter: "*Sosyal*"
 #      preview_show_rect_filter: "*person*"
 #      preview_show_rect_filter: "Hız*"
 #      preview_show_rect_filter: ["Hız*", "*speed*"]
 #      preview_show_rect_filter: ["*mask*", "*helmet*"]
 #      preview_show_rect_filter: "*Bekleme*"
-#      preview_show_rect_filter: "*Sosyal*"
 
 #      preview_write: True
 #      preview_write_file_name: C:/_koray/temp/preview.mp4
@@ -70,15 +69,14 @@ instances:
 #      file_path: fabrika/9_tahliyede_iceride_kalan_calisan.mp4
 #      file_path: fabrika/10_forklift_bicagina_cikma.mp4
 
-      file_path: fabrika3/1 sosyal mesafe ihlali.avi
+#      file_path: fabrika3/1 sosyal mesafe ihlali.avi
 #      file_path: fabrika3/2 forklift hız.avi
 #      file_path: fabrika3/3 Baretsiz ve maskesiz çalışan.avi
 #      file_path: fabrika3/4 baretsiz çalışan.avi
 #      file_path: fabrika3/5 maskesiz çalışan.avi
-#      file_path: fabrika3/6 Acil çıkış önüne malzeme konması.avi
+      file_path: fabrika3/6 Acil çıkış önüne malzeme konması.avi
 
 
-#      file_path: bakanlik.avi
 #      file_path: lpr/plaka_trafik.mp4
 #      file_path: lpr/plaka_tur.mp4
 #      file_path: lpr/canakkale_plaka (1).mp4
@@ -208,13 +206,19 @@ instances:
 
 
     runners:
-      - name: yolov4 - Object detection with 80 classes
-        type: yolov4
-        configuration: yolov4.json
-#        roi_configuration: roi_config_fabrika_transpalet.json
-        class: Yolov4Runner
-        priority: 10
+      - name: Change Detector
+        type: change_detector
+        configuration: change_detector.json
+        class: ChangeDetectorRunner
+        priority: 100
 
+#      - name: yolov4 - Object detection with 80 classes
+#        type: yolov4
+#        configuration: yolov4.json
+##        roi_configuration: roi_config_fabrika3_forklift.json
+##        roi_configuration: roi_config_fabrika3_insan.json
+#        class: Yolov4Runner
+#        priority: 10
 
 #      - name: Intersector
 #        type: intersector
@@ -235,25 +239,33 @@ instances:
 #        class: FaceMaskRunner
 #        priority: 100
 
-      - name: Point Occupied
-        type: point_occupied
-        configuration: point_occupied.json
-        class: PointOccupiedRunner
-        priority: 100
+#      - name: Point Occupied
+#        type: point_occupied
+#        configuration: point_occupied.json
+#        class: PointOccupiedRunner
+#        priority: 100
 
-
+#
 #      - name: Forklift Detector
 #        type: forklift_detector
 #        configuration: forklift_detector.json
-##        roi_configuration: roi_config_fabrika_transpalet.json
+#        roi_configuration: roi_config_fabrika3_forklift.json
 #        class: ForkliftDetectorRunner
 #        priority: 10
 #
 #      - name: Intersector
 #        type: intersector
-#        configuration: intersector_forklift_speed.json
+#        configuration: intersector_forklift_speed2.json
+##        configuration: intersector_vehicle_speed.json
 #        class: IntersectorRunner
 #        priority: 100
+#
+#      - name: Tracker
+#        type: tracker
+#        configuration: tracker_forklift.json
+##        configuration: tracker_vehicle.json
+#        class: TrackerRunner
+#        priority: 50
 
 
 #      - name: Transpalet Detector
@@ -304,11 +316,6 @@ instances:
 ##        class: Yolov4TinyRunner
 ##        priority: 10
 #
-#      - name: Tracker
-#        type: tracker
-#        configuration: tracker_vehicle.json
-#        class: TrackerRunner
-#        priority: 50
 #
 #      - name: Intersector
 #        type: intersector

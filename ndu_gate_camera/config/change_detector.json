@@ -1,0 +1,10 @@
+{
+  "debug_mode": true,
+  "selection_mode": false,
+  "change_kernel": 21,
+  "areas": [[[331, 331], [519, 350], [501, 421], [295, 401]], [[278, 409], [501, 424], [393, 695], [135, 609]]],
+  "areas_info": [
+      {"key":"area1", "name":"Acil Çıkış Önü"},
+      {"key":"area2", "name":"Giriş Kapısı"}
+    ]
+}

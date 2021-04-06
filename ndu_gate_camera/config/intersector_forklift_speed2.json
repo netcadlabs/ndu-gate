@@ -1,15 +1,15 @@
 {
-  "fps": 24,
+  "fps": 25,
   "debug_mode": false,
   "ground_dist_selection_mode": false,
   "groups": {
     "Hız İhlali": {
       "obj_detection": {
-        "ground": [[173, 414], [391, 418], [331, 100], [306, 100]],
-        "dist": [[306, 260], [361, 262]],
+        "ground": [[501, 335], [719, 348], [702, 261], [531, 254]],
+        "dist": [[639, 315], [712, 316]],
         "_max_dist_per_seconds": 4.6,
         "_debug_speed_value": 30,
-        "max_dist_per_seconds": 0.76,
+        "max_dist_per_seconds": 1.0,
         "debug_speed_value": 5,
         "debug_speed_suffix": "km/sa.",
         "rects": [
