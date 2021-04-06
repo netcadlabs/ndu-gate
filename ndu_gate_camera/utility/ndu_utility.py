@@ -50,6 +50,7 @@ class NDUUtility:
                         continue
                     handled.append(extension_path)
                     if path.exists(extension_path):
+                        log.info("Looking for %s in %s", module_name, extension_path)
                         for file in listdir(extension_path):
                             if file.startswith('__') or not file.endswith('.py'):
                                 continue
