@@ -74,7 +74,7 @@ instances:
 #      file_path: fabrika3/3 Baretsiz ve maskesiz çalışan.avi
 #      file_path: fabrika3/4 baretsiz çalışan.avi
 #      file_path: fabrika3/5 maskesiz çalışan.avi
-      file_path: fabrika3/6 Acil çıkış önüne malzeme konması.avi
+#      file_path: fabrika3/6 Acil çıkış önüne malzeme konması.avi
 
 
 #      file_path: lpr/plaka_trafik.mp4
@@ -84,7 +84,7 @@ instances:
 #      file_path: lpr/canakkale_plaka (3).mp4
 #      file_path: lpr/canakkale_plaka (4).mp4
 #      file_path: lpr/canakkale_plaka (5).mp4
-#      file_path: vid_short.mp4 #pedestrians
+      file_path: vid_short.mp4 #pedestrians
 
 #      file_path: highway/highway_320.mp4
 #      file_path: highway/highway_600.mp4
@@ -206,19 +206,595 @@ instances:
 
 
     runners:
-      - name: Change Detector
-        type: change_detector
-        configuration: change_detector.json
-        class: ChangeDetectorRunner
+#      - name: Change Detector
+#        type: change_detector
+#        configuration: change_detector.json
+#        class: ChangeDetectorRunner
+#        priority: 100
+
+      - name: yolov4 - Object detection with 80 classes
+        type: yolov4
+        configuration: yolov4.json
+#        roi_configuration: roi_config_fabrika3_forklift.json
+#        roi_configuration: roi_config_fabrika3_insan.json
+        class: Yolov4Runner
+        priority: 10
+#
+#      - name: Object Counter
+#        type: object_counter
+#        configuration: object_counter.json
+#        class: ObjectCounterRunner
+#        priority: 100
+#
+#      - name: Tracker
+#        type: tracker
+##        configuration: tracker_forklift.json
+##        configuration: tracker_vehicle.json
+#        configuration: tracker_person.json
+#        class: TrackerRunner
+#        priority: 50
+
+      - name: Point Occupied
+        type: point_occupied
+        configuration: point_occupied.json
+        class: PointOccupiedRunner
         priority: 100
 
-#      - name: yolov4 - Object detection with 80 classes
-#        type: yolov4
-#        configuration: yolov4.json
-##        roi_configuration: roi_config_fabrika3_forklift.json
-##        roi_configuration: roi_config_fabrika3_insan.json
-#        class: Yolov4Runner
+
+
+
+
+#
+#  - source:
+#      device: "koray_pc_home1"
+#      preview_show: True
+#      type: VIDEO_FILE
+#      data_folder: C:/_koray/test_data/
+##      file_path: highway/highway_1024.mp4
+#      file_path: highway/highway_1600.mp4
+#      image_path: intersector/*.jpg
+#
+#    runners:
+#      - name: yolov4-tiny - Object detection with 80 classes
+#        type: yolov4-tiny
+#        configuration: yolov4-tiny.json
+#        class: Yolov4TinyRunner
 #        priority: 10
+#      - name: Object Counter
+#        type: object_counter
+#        configuration: object_counter.json
+#        class: ObjectCounterRunner
+#        priority: 100
+#      - name: Tracker
+#        type: tracker
+#        configuration: tracker_vehicle.json
+#        class: TrackerRunner
+#        priority: 50
+#
+#
+#
+#  - source:
+#      device: "koray_pc_home2"
+##      preview_show: True
+#      type: VIDEO_FILE
+#      data_folder: C:/_koray/test_data/
+##      file_path: highway/highway_1024.mp4
+#      file_path: highway/highway_1600.mp4
+#      image_path: intersector/*.jpg
+#
+#    runners:
+#      - name: yolov4-tiny - Object detection with 80 classes
+#        type: yolov4-tiny
+#        configuration: yolov4-tiny.json
+#        class: Yolov4TinyRunner
+#        priority: 10
+#      - name: Object Counter
+#        type: object_counter
+#        configuration: object_counter.json
+#        class: ObjectCounterRunner
+#        priority: 100
+#      - name: Tracker
+#        type: tracker
+#        configuration: tracker_vehicle.json
+#        class: TrackerRunner
+#        priority: 50
+#
+#
+#
+#  - source:
+#      device: "koray_pc_home3"
+##      preview_show: True
+#      type: VIDEO_FILE
+#      data_folder: C:/_koray/test_data/
+##      file_path: highway/highway_1024.mp4
+#      file_path: highway/highway_1600.mp4
+#      image_path: intersector/*.jpg
+#
+#    runners:
+#      - name: yolov4-tiny - Object detection with 80 classes
+#        type: yolov4-tiny
+#        configuration: yolov4-tiny.json
+#        class: Yolov4TinyRunner
+#        priority: 10
+#      - name: Object Counter
+#        type: object_counter
+#        configuration: object_counter.json
+#        class: ObjectCounterRunner
+#        priority: 100
+#      - name: Tracker
+#        type: tracker
+#        configuration: tracker_vehicle.json
+#        class: TrackerRunner
+#        priority: 50
+#
+#
+#
+#  - source:
+#      device: "koray_pc_home4"
+##      preview_show: True
+#      type: VIDEO_FILE
+#      data_folder: C:/_koray/test_data/
+##      file_path: highway/highway_1024.mp4
+#      file_path: highway/highway_1600.mp4
+#      image_path: intersector/*.jpg
+#
+#    runners:
+#      - name: yolov4-tiny - Object detection with 80 classes
+#        type: yolov4-tiny
+#        configuration: yolov4-tiny.json
+#        class: Yolov4TinyRunner
+#        priority: 10
+#      - name: Object Counter
+#        type: object_counter
+#        configuration: object_counter.json
+#        class: ObjectCounterRunner
+#        priority: 100
+#      - name: Tracker
+#        type: tracker
+#        configuration: tracker_vehicle.json
+#        class: TrackerRunner
+#        priority: 50
+#
+#
+#
+#  - source:
+#      device: "koray_pc_home5"
+##      preview_show: True
+#      type: VIDEO_FILE
+#      data_folder: C:/_koray/test_data/
+##      file_path: highway/highway_1024.mp4
+#      file_path: highway/highway_1600.mp4
+#      image_path: intersector/*.jpg
+#
+#    runners:
+#      - name: yolov4-tiny - Object detection with 80 classes
+#        type: yolov4-tiny
+#        configuration: yolov4-tiny.json
+#        class: Yolov4TinyRunner
+#        priority: 10
+#      - name: Object Counter
+#        type: object_counter
+#        configuration: object_counter.json
+#        class: ObjectCounterRunner
+#        priority: 100
+#      - name: Tracker
+#        type: tracker
+#        configuration: tracker_vehicle.json
+#        class: TrackerRunner
+#        priority: 50
+#
+#
+#
+#  - source:
+#      device: "koray_pc_home6"
+##      preview_show: True
+#      type: VIDEO_FILE
+#      data_folder: C:/_koray/test_data/
+##      file_path: highway/highway_1024.mp4
+#      file_path: highway/highway_1600.mp4
+#      image_path: intersector/*.jpg
+#
+#    runners:
+#      - name: yolov4-tiny - Object detection with 80 classes
+#        type: yolov4-tiny
+#        configuration: yolov4-tiny.json
+#        class: Yolov4TinyRunner
+#        priority: 10
+#      - name: Object Counter
+#        type: object_counter
+#        configuration: object_counter.json
+#        class: ObjectCounterRunner
+#        priority: 100
+#      - name: Tracker
+#        type: tracker
+#        configuration: tracker_vehicle.json
+#        class: TrackerRunner
+#        priority: 50
+#
+#
+#  - source:
+#      device: "koray_pc_home7"
+##      preview_show: True
+#      type: VIDEO_FILE
+#      data_folder: C:/_koray/test_data/
+##      file_path: highway/highway_1024.mp4
+#      file_path: highway/highway_1600.mp4
+#      image_path: intersector/*.jpg
+#
+#    runners:
+#      - name: yolov4-tiny - Object detection with 80 classes
+#        type: yolov4-tiny
+#        configuration: yolov4-tiny.json
+#        class: Yolov4TinyRunner
+#        priority: 10
+#      - name: Object Counter
+#        type: object_counter
+#        configuration: object_counter.json
+#        class: ObjectCounterRunner
+#        priority: 100
+#      - name: Tracker
+#        type: tracker
+#        configuration: tracker_vehicle.json
+#        class: TrackerRunner
+#        priority: 50
+#
+#
+#  - source:
+#      device: "koray_pc_home8"
+##      preview_show: True
+#      type: VIDEO_FILE
+#      data_folder: C:/_koray/test_data/
+##      file_path: highway/highway_1024.mp4
+#      file_path: highway/highway_1600.mp4
+#      image_path: intersector/*.jpg
+#
+#    runners:
+#      - name: yolov4-tiny - Object detection with 80 classes
+#        type: yolov4-tiny
+#        configuration: yolov4-tiny.json
+#        class: Yolov4TinyRunner
+#        priority: 10
+#      - name: Object Counter
+#        type: object_counter
+#        configuration: object_counter.json
+#        class: ObjectCounterRunner
+#        priority: 100
+#      - name: Tracker
+#        type: tracker
+#        configuration: tracker_vehicle.json
+#        class: TrackerRunner
+#        priority: 50
+#
+#
+#  - source:
+#      device: "koray_pc_home9"
+##      preview_show: True
+#      type: VIDEO_FILE
+#      data_folder: C:/_koray/test_data/
+##      file_path: highway/highway_1024.mp4
+#      file_path: highway/highway_1600.mp4
+#      image_path: intersector/*.jpg
+#
+#    runners:
+#      - name: yolov4-tiny - Object detection with 80 classes
+#        type: yolov4-tiny
+#        configuration: yolov4-tiny.json
+#        class: Yolov4TinyRunner
+#        priority: 10
+#      - name: Object Counter
+#        type: object_counter
+#        configuration: object_counter.json
+#        class: ObjectCounterRunner
+#        priority: 100
+#      - name: Tracker
+#        type: tracker
+#        configuration: tracker_vehicle.json
+#        class: TrackerRunner
+#        priority: 50
+#
+#
+#
+#  - source:
+#      device: "koray_pc_home10"
+##      preview_show: True
+#      type: VIDEO_FILE
+#      data_folder: C:/_koray/test_data/
+##      file_path: highway/highway_1024.mp4
+#      file_path: highway/highway_1600.mp4
+#      image_path: intersector/*.jpg
+#
+#    runners:
+#      - name: yolov4-tiny - Object detection with 80 classes
+#        type: yolov4-tiny
+#        configuration: yolov4-tiny.json
+#        class: Yolov4TinyRunner
+#        priority: 10
+#      - name: Object Counter
+#        type: object_counter
+#        configuration: object_counter.json
+#        class: ObjectCounterRunner
+#        priority: 100
+#      - name: Tracker
+#        type: tracker
+#        configuration: tracker_vehicle.json
+#        class: TrackerRunner
+#        priority: 50
+
+#
+#  - source:
+#      device: "koray_pc_home11"
+#      preview_show: True
+#      type: VIDEO_FILE
+#      data_folder: C:/_koray/test_data/
+##      file_path: highway/highway_1024.mp4
+#      file_path: highway/highway_1600.mp4
+#      image_path: intersector/*.jpg
+#
+#    runners:
+#      - name: yolov4-tiny - Object detection with 80 classes
+#        type: yolov4-tiny
+#        configuration: yolov4-tiny.json
+#        class: Yolov4TinyRunner
+#        priority: 10
+#      - name: Object Counter
+#        type: object_counter
+#        configuration: object_counter.json
+#        class: ObjectCounterRunner
+#        priority: 100
+#      - name: Tracker
+#        type: tracker
+#        configuration: tracker_vehicle.json
+#        class: TrackerRunner
+#        priority: 50
+#
+#
+#
+#  - source:
+#      device: "koray_pc_home12"
+#      preview_show: True
+#      type: VIDEO_FILE
+#      data_folder: C:/_koray/test_data/
+##      file_path: highway/highway_1024.mp4
+#      file_path: highway/highway_1600.mp4
+#      image_path: intersector/*.jpg
+#
+#    runners:
+#      - name: yolov4-tiny - Object detection with 80 classes
+#        type: yolov4-tiny
+#        configuration: yolov4-tiny.json
+#        class: Yolov4TinyRunner
+#        priority: 10
+#      - name: Object Counter
+#        type: object_counter
+#        configuration: object_counter.json
+#        class: ObjectCounterRunner
+#        priority: 100
+#      - name: Tracker
+#        type: tracker
+#        configuration: tracker_vehicle.json
+#        class: TrackerRunner
+#        priority: 50
+#
+#
+#
+#  - source:
+#      device: "koray_pc_home13"
+#      preview_show: True
+#      type: VIDEO_FILE
+#      data_folder: C:/_koray/test_data/
+##      file_path: highway/highway_1024.mp4
+#      file_path: highway/highway_1600.mp4
+#      image_path: intersector/*.jpg
+#
+#    runners:
+#      - name: yolov4-tiny - Object detection with 80 classes
+#        type: yolov4-tiny
+#        configuration: yolov4-tiny.json
+#        class: Yolov4TinyRunner
+#        priority: 10
+#      - name: Object Counter
+#        type: object_counter
+#        configuration: object_counter.json
+#        class: ObjectCounterRunner
+#        priority: 100
+#      - name: Tracker
+#        type: tracker
+#        configuration: tracker_vehicle.json
+#        class: TrackerRunner
+#        priority: 50
+#
+#
+#  - source:
+#      device: "koray_pc_home14"
+#      preview_show: True
+#      type: VIDEO_FILE
+#      data_folder: C:/_koray/test_data/
+##      file_path: highway/highway_1024.mp4
+#      file_path: highway/highway_1600.mp4
+#      image_path: intersector/*.jpg
+#
+#    runners:
+#      - name: yolov4-tiny - Object detection with 80 classes
+#        type: yolov4-tiny
+#        configuration: yolov4-tiny.json
+#        class: Yolov4TinyRunner
+#        priority: 10
+#      - name: Object Counter
+#        type: object_counter
+#        configuration: object_counter.json
+#        class: ObjectCounterRunner
+#        priority: 100
+#      - name: Tracker
+#        type: tracker
+#        configuration: tracker_vehicle.json
+#        class: TrackerRunner
+#        priority: 50
+#
+#
+#  - source:
+#      device: "koray_pc_home15"
+#      preview_show: True
+#      type: VIDEO_FILE
+#      data_folder: C:/_koray/test_data/
+##      file_path: highway/highway_1024.mp4
+#      file_path: highway/highway_1600.mp4
+#      image_path: intersector/*.jpg
+#
+#    runners:
+#      - name: yolov4-tiny - Object detection with 80 classes
+#        type: yolov4-tiny
+#        configuration: yolov4-tiny.json
+#        class: Yolov4TinyRunner
+#        priority: 10
+#      - name: Object Counter
+#        type: object_counter
+#        configuration: object_counter.json
+#        class: ObjectCounterRunner
+#        priority: 100
+#      - name: Tracker
+#        type: tracker
+#        configuration: tracker_vehicle.json
+#        class: TrackerRunner
+#        priority: 50
+#
+#
+#  - source:
+#      device: "koray_pc_home16"
+#      preview_show: True
+#      type: VIDEO_FILE
+#      data_folder: C:/_koray/test_data/
+##      file_path: highway/highway_1024.mp4
+#      file_path: highway/highway_1600.mp4
+#      image_path: intersector/*.jpg
+#
+#    runners:
+#      - name: yolov4-tiny - Object detection with 80 classes
+#        type: yolov4-tiny
+#        configuration: yolov4-tiny.json
+#        class: Yolov4TinyRunner
+#        priority: 10
+#      - name: Object Counter
+#        type: object_counter
+#        configuration: object_counter.json
+#        class: ObjectCounterRunner
+#        priority: 100
+#      - name: Tracker
+#        type: tracker
+#        configuration: tracker_vehicle.json
+#        class: TrackerRunner
+#        priority: 50
+#
+#
+#  - source:
+#      device: "koray_pc_home17"
+#      preview_show: True
+#      type: VIDEO_FILE
+#      data_folder: C:/_koray/test_data/
+##      file_path: highway/highway_1024.mp4
+#      file_path: highway/highway_1600.mp4
+#      image_path: intersector/*.jpg
+#
+#    runners:
+#      - name: yolov4-tiny - Object detection with 80 classes
+#        type: yolov4-tiny
+#        configuration: yolov4-tiny.json
+#        class: Yolov4TinyRunner
+#        priority: 10
+#      - name: Object Counter
+#        type: object_counter
+#        configuration: object_counter.json
+#        class: ObjectCounterRunner
+#        priority: 100
+#      - name: Tracker
+#        type: tracker
+#        configuration: tracker_vehicle.json
+#        class: TrackerRunner
+#        priority: 50
+#
+#
+#  - source:
+#      device: "koray_pc_home18"
+#      preview_show: True
+#      type: VIDEO_FILE
+#      data_folder: C:/_koray/test_data/
+##      file_path: highway/highway_1024.mp4
+#      file_path: highway/highway_1600.mp4
+#      image_path: intersector/*.jpg
+#
+#    runners:
+#      - name: yolov4-tiny - Object detection with 80 classes
+#        type: yolov4-tiny
+#        configuration: yolov4-tiny.json
+#        class: Yolov4TinyRunner
+#        priority: 10
+#      - name: Object Counter
+#        type: object_counter
+#        configuration: object_counter.json
+#        class: ObjectCounterRunner
+#        priority: 100
+#      - name: Tracker
+#        type: tracker
+#        configuration: tracker_vehicle.json
+#        class: TrackerRunner
+#        priority: 50
+#
+#
+#  - source:
+#      device: "koray_pc_home19"
+#      preview_show: True
+#      type: VIDEO_FILE
+#      data_folder: C:/_koray/test_data/
+##      file_path: highway/highway_1024.mp4
+#      file_path: highway/highway_1600.mp4
+#      image_path: intersector/*.jpg
+#
+#    runners:
+#      - name: yolov4-tiny - Object detection with 80 classes
+#        type: yolov4-tiny
+#        configuration: yolov4-tiny.json
+#        class: Yolov4TinyRunner
+#        priority: 10
+#      - name: Object Counter
+#        type: object_counter
+#        configuration: object_counter.json
+#        class: ObjectCounterRunner
+#        priority: 100
+#      - name: Tracker
+#        type: tracker
+#        configuration: tracker_vehicle.json
+#        class: TrackerRunner
+#        priority: 50
+#
+#
+#  - source:
+#      device: "koray_pc_home20"
+#      preview_show: True
+#      type: VIDEO_FILE
+#      data_folder: C:/_koray/test_data/
+##      file_path: highway/highway_1024.mp4
+#      file_path: highway/highway_1600.mp4
+#      image_path: intersector/*.jpg
+#
+#    runners:
+#      - name: yolov4-tiny - Object detection with 80 classes
+#        type: yolov4-tiny
+#        configuration: yolov4-tiny.json
+#        class: Yolov4TinyRunner
+#        priority: 10
+#      - name: Object Counter
+#        type: object_counter
+#        configuration: object_counter.json
+#        class: ObjectCounterRunner
+#        priority: 100
+#      - name: Tracker
+#        type: tracker
+#        configuration: tracker_vehicle.json
+#        class: TrackerRunner
+#        priority: 50
+#
+
+
+
 
 #      - name: Intersector
 #        type: intersector
@@ -367,11 +943,7 @@ instances:
 ##
 ##
 ##
-##      - name: Object Counter
-##        type: object_counter
-##        configuration: object_counter.json
-##        class: ObjectCounterRunner
-##        priority: 100
+
 ##
 ##
 #####

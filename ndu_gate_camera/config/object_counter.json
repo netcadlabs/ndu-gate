@@ -1,9 +1,10 @@
 {
   "gates":[[[0.63203125, 0.37777777777777777], [0.05078125, 0.5722222222222222]]],
   "track": "center",
-  "result_style" : 1,
+  "_result_style" : 1,
   "classes": {
     "arac": [
+      "person",
       "car",
       "bicycle",
       "motorbike",

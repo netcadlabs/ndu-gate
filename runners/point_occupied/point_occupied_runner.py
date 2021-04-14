@@ -22,9 +22,9 @@ class PointOccupiedRunner(Thread, NDUCameraRunner):
 
         self.__last_data = {}
         self.__frame_num = 0
-        self.__average_len = 10
+        self.__average_len = config.get("change_wait_frame_count", 10)
         self.__average_accept = 1
-        self.__average_cur = 10
+        self.__average_cur = self.__average_len
 
         self.__debug_color_false = (200, 200, 200)
         self.__debug_color_true = (0, 255, 0)

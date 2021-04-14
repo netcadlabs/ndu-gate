@@ -1,7 +1,8 @@
 {
   "debug_mode": true,
   "selection_mode": false,
-  "points": [[651, 299], [594, 368], [629, 525], [554, 613]],
+  "points": [[629, 412], [444, 262], [229, 401], [442, 601]],
+  "change_wait_frame_count": 30,
   "classes": [
     "person",
     "car",
