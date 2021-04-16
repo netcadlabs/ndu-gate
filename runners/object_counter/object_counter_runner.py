@@ -27,7 +27,8 @@ class ObjectCounterRunner(Thread, NDUCameraRunner):
         self.config = config
         self.track = config.get("track", "center")
         self.__gates = []
-        self.__debug = NDUUtility.is_debug_mode()
+        # self.__debug = NDUUtility.is_debug_mode()
+        self.__debug = False
 
         self.__debug_last = {}
         self._result_style = config.get("result_style", 0)  # 0:cumulative - 1:aggregate

@@ -52,6 +52,7 @@ class NDUCameraService(Thread):
 
         self.__frame_send_interval = self.SOURCE_CONFIG.get("frame_send_interval", 1000)
         self.__motion_kernel = self.SOURCE_CONFIG.get("motion_kernel", None)
+        self.__camera_refresh_interval = self.SOURCE_CONFIG.get("camera_refresh_interval", 5000)
         self.__preview_show_motion_kernel = self.SOURCE_CONFIG.get("preview_show_motion_kernel", False)
         self.__preview_show = self.SOURCE_CONFIG.get("preview_show", False)
         if self.__preview_show:
@@ -137,7 +138,8 @@ class NDUCameraService(Thread):
                         continue
 
                     runner_class = NDUUtility.check_and_import(runner_type, class_name,
-                                                               package_uuids=runner.get("uuids", None), extension_folder=self.__extension_folder)
+                                                               package_uuids=runner.get("uuids", None),
+                                                               extension_folder=self.__extension_folder)
                     if runner_class is None:
                         log.warning("class name implementation not found for %s - %s", runner_type, class_name)
                         continue
@@ -339,6 +341,12 @@ class NDUCameraService(Thread):
                 self.__out = None
 
     def run(self):
+        while not self._exit_requested:
+            print("camera refreshing...")
+            log.debug("camera refreshing...")
+            self._run()
+
+    def _run(self):
         self._set_video_source()
         if self.video_source is None:
             log.error("video source is not set!")
@@ -365,6 +373,8 @@ class NDUCameraService(Thread):
                 if self._exit_requested:
                     break
                 i += 1
+                if i > self.__camera_refresh_interval:
+                    break
                 if self.__skip_frame > 1 and i % self.__skip_frame != 0:
                     continue
                 if has_motion_kernel:
@@ -393,8 +403,10 @@ class NDUCameraService(Thread):
                         log.info("CAMERA_CAPTURE size : %s", len(camera_capture_base64))
                         print("CAMERA_CAPTURE size : {}".format(len(camera_capture_base64)))
                         if self.frame_sent:
-                            self.__result_handler.save_result([{"data": {"CAMERA_CAPTURE": camera_capture_base64}}], device=device, data_type='attribute')
-                        self.__result_handler.save_result([{"data": {"FRAME_COUNT": i}}], device=device, data_type='attribute')
+                            self.__result_handler.save_result([{"data": {"CAMERA_CAPTURE": camera_capture_base64}}],
+                                                              device=device, data_type='attribute')
+                        self.__result_handler.save_result([{"data": {"FRAME_COUNT": i}}], device=device,
+                                                          data_type='attribute')
                         self.frame_sent = True
                     except Exception as e:
                         log.exception(e)
@@ -437,10 +449,12 @@ class NDUCameraService(Thread):
                             if "roi_manager" in runner_conf:
                                 roi_manager = runner_conf.get("roi_manager", None)
                                 frame = roi_manager.forward(frame)
-                                results = self.available_runners[runner_unique_key].process_frame(frame, extra_data=extra_data)
+                                results = self.available_runners[runner_unique_key].process_frame(frame,
+                                                                                                  extra_data=extra_data)
                                 frame, results = roi_manager.reverse(frame, results)
                             else:
-                                results = self.available_runners[runner_unique_key].process_frame(frame, extra_data=extra_data)
+                                results = self.available_runners[runner_unique_key].process_frame(frame,
+                                                                                                  extra_data=extra_data)
 
                             if results is not None and len(results) > 0:
                                 extra_data_results[runner_unique_key] = results
@@ -449,13 +463,16 @@ class NDUCameraService(Thread):
                                 empty_resulted_runners.append(runner_unique_key)
                             if self.__preview_show:
                                 elapsed = time.time() - start_time
-                                results_for_preview.append({"elapsed_time": '{}: {:.4f}sn fps:{:.0f}'.format(runner_conf["type"], elapsed, 1.0 / max(elapsed, 0.001))})
+                                results_for_preview.append({"elapsed_time": '{}: {:.4f}sn fps:{:.0f}'.format(
+                                    runner_conf["type"], elapsed, 1.0 / max(elapsed, 0.001))})
 
                         except Exception as e:
                             log.exception(e)
 
                     def check_results(runner_unique_key_, results_, device_, results_for_preview_):
-                        self.__result_handler.save_result(results_, device=device_, runner_name=self.runners_configs_by_key[runner_unique_key_]["name"])
+                        self.__result_handler.save_result(results_, device=device_,
+                                                          runner_name=self.runners_configs_by_key[runner_unique_key_][
+                                                              "name"])
                         if self.__preview_show:
                             results_for_preview_.extend(results_)
 
@@ -486,10 +503,12 @@ class NDUCameraService(Thread):
                         total_elapsed_time = sum(self.__total_elapsed_times) / len_times
                         if len_times > 10000:
                             self.__total_elapsed_times = []
-                        results_for_preview.append({"total_elapsed_time": '{:.0f}msec fps:{:.0f}'.format(total_elapsed_time * 1000, (1.0 / max(total_elapsed_time, 0.001)))})
+                        results_for_preview.append({"total_elapsed_time": '{:.0f}msec fps:{:.0f}'.format(
+                            total_elapsed_time * 1000, (1.0 / max(total_elapsed_time, 0.001)))})
                         preview = self._get_preview(frame, results_for_preview)
                         if self.__preview_show_motion_kernel and last_thresh is not None:
-                            th = image_helper.resize(last_thresh, preview.shape[1], preview.shape[0], interpolation=cv2.INTER_NEAREST)
+                            th = image_helper.resize(last_thresh, preview.shape[1], preview.shape[0],
+                                                     interpolation=cv2.INTER_NEAREST)
                             th = cv2.cvtColor(th, cv2.COLOR_GRAY2BGR)
                             preview = cv2.addWeighted(preview, 1, th, 1, 0)
 
@@ -531,7 +550,8 @@ class NDUCameraService(Thread):
                             score = result.get(constants.RESULT_KEY_SCORE, 0.9)
                             score0 = result0.get(constants.RESULT_KEY_SCORE, 0.9)
                             if score < score0:
-                                for key in [constants.RESULT_KEY_DATA, constants.RESULT_KEY_CLASS_NAME, constants.RESULT_KEY_DEBUG]:
+                                for key in [constants.RESULT_KEY_DATA, constants.RESULT_KEY_CLASS_NAME,
+                                            constants.RESULT_KEY_DEBUG]:
                                     if key in result0:
                                         result[key] = result0[key]
                                 result[constants.RESULT_KEY_SCORE] = score0
@@ -637,16 +657,19 @@ class NDUCameraService(Thread):
                 if show_runner_info:
                     total_elapsed_time = result.get("total_elapsed_time", None)
                     if total_elapsed_time is not None:
-                        image_helper.put_text(image, total_elapsed_time, [w - 150, h - 30], color=[200, 200, 128], font_scale=0.4)
+                        image_helper.put_text(image, total_elapsed_time, [w - 150, h - 30], color=[200, 200, 128],
+                                              font_scale=0.4)
                         continue
 
                 values = {}
                 elapsed_time = values["elapsed_time"] = result.get("elapsed_time", None)
                 class_name = values[constants.RESULT_KEY_CLASS_NAME] = result.get(constants.RESULT_KEY_CLASS_NAME, None)
-                class_preview_key = values[constants.RESULT_KEY_PREVIEW_KEY] = result.get(constants.RESULT_KEY_PREVIEW_KEY, class_name)
+                class_preview_key = values[constants.RESULT_KEY_PREVIEW_KEY] = result.get(
+                    constants.RESULT_KEY_PREVIEW_KEY, class_name)
                 score = values[constants.RESULT_KEY_SCORE] = result.get(constants.RESULT_KEY_SCORE, None)
                 rect = values[constants.RESULT_KEY_RECT] = result.get(constants.RESULT_KEY_RECT, None)
-                rect_debug_text = values[constants.RESULT_KEY_RECT_DEBUG_TEXT] = result.get(constants.RESULT_KEY_RECT_DEBUG_TEXT, None)
+                rect_debug_text = values[constants.RESULT_KEY_RECT_DEBUG_TEXT] = result.get(
+                    constants.RESULT_KEY_RECT_DEBUG_TEXT, None)
                 data = values[constants.RESULT_KEY_DATA] = result.get(constants.RESULT_KEY_DATA, None)
                 debug_text = values[constants.RESULT_KEY_DEBUG] = result.get(constants.RESULT_KEY_DEBUG, None)
 
@@ -750,11 +773,13 @@ class NDUCameraService(Thread):
                         if not has_data:
                             image_helper.put_text(image, text_type, current_line, font_scale=font_scale)
                         else:
-                            image_helper.put_text(image, text_type, current_line, color=[0, 0, 255], font_scale=font_scale)
+                            image_helper.put_text(image, text_type, current_line, color=[0, 0, 255],
+                                                  font_scale=font_scale)
                 if show_debug_texts and len(debug_texts) > 0:
                     for debug_text in debug_texts:
                         current_line_bottom[1] -= line_height * 2
-                        image_helper.put_text(image, debug_text, current_line_bottom, color=[255, 250, 99], font_scale=font_scale * 2.75, thickness=2, back_color=[1, 1, 1])
+                        image_helper.put_text(image, debug_text, current_line_bottom, color=[255, 250, 99],
+                                              font_scale=font_scale * 2.75, thickness=2, back_color=[1, 1, 1])
 
         if show_runner_info:
             if len(data_added) > 0:
@@ -764,7 +789,8 @@ class NDUCameraService(Thread):
                         self.__preview_last_data.append(data)
                         self.__preview_last_data_show_times.append(show_last_data_frame_time)
                     else:
-                        self.__preview_last_data_show_times[self.__preview_last_data.index(data)] = show_last_data_frame_time
+                        self.__preview_last_data_show_times[
+                            self.__preview_last_data.index(data)] = show_last_data_frame_time
             for i in reversed(range(len(self.__preview_last_data))):
                 elapsed = time.time() - self.__preview_last_data_show_times[i]
                 if elapsed > 5:

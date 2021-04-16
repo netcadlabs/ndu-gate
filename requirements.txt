@@ -12,6 +12,7 @@ PyYAML
 simplejson
 # picamera
 ffmpeg-python
+opencv-contrib-python
 
 # macos: brew install libomp
 # linux: sudo apt install libgomp1
