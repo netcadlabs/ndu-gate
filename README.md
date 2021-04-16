@@ -1,6 +1,6 @@
 # ndu-gate - NDU Gate Camera Service
 
-This is project that run on edge devices and servers to consume videos sources(camera, file etc.) and process them.
+This is a service project that run on edge devices and servers to consume videos sources(camera, file etc.) and process them.
 
 ## Installation
 
@@ -20,7 +20,7 @@ sudo ./generate_deb_package.sh
 
 ### Using pip package
 ```
-python3 -m pip install --upgrade ndu_gate_camera
+python3 -m pip install --upgrade ndu-gate-camera
 ```
 
 
@@ -28,7 +28,7 @@ python3 -m pip install --upgrade ndu_gate_camera
 
 
 ```
-python3 -m pip install --upgrade --no-deps ndu_gate_camera
+python3 -m pip install --upgrade --no-deps ndu-gate-camera
 ```
 
 ### Running with cli
