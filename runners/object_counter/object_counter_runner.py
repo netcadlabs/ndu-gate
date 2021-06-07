@@ -27,8 +27,8 @@ class ObjectCounterRunner(Thread, NDUCameraRunner):
         self.config = config
         self.track = config.get("track", "center")
         self.__gates = []
-        # self.__debug = NDUUtility.is_debug_mode()
-        self.__debug = False
+        self.__debug = config.get("debug_mode", False)
+        self.__draw_gates = config.get("draw_gates", False)
 
         self.__debug_last = {}
         self._result_style = config.get("result_style", 0)  # 0:cumulative - 1:aggregate
@@ -113,11 +113,12 @@ class ObjectCounterRunner(Thread, NDUCameraRunner):
         if len(self.__gates) == 0 and self.__frame_num == 1:
             n_lines = image_helper.convert_lines_list2tuple(self.config.get("gates", []))
 
-            # # test
-            # lines0 = image_helper.select_lines(frame, self.get_name())
-            # n_lines = image_helper.normalize_lines(frame, lines0)
-            # n_lines_for_config = image_helper.convert_lines_tuple2list(n_lines)
-            # # test
+            if self.__debug and self.draw_gates:
+                lines0 = image_helper.select_lines(frame, self.get_name())
+                n_lines = image_helper.normalize_lines(frame, lines0)
+                n_lines_for_config = image_helper.convert_lines_tuple2list(n_lines)
+                print(n_lines_for_config)
+                self.__draw_gates = False
 
             lines = image_helper.denormalize_lines(frame, n_lines)
             ln_counter = 0

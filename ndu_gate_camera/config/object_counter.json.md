@@ -8,6 +8,8 @@
   "gates":[[[0.63203125, 0.37777777777777777], [0.05078125, 0.5722222222222222]]],
   "track": "center",
   "result_style" : 1,
+  "debug_mode": false,
+  "draw_gates": false, // ilk frame için kapı çizimi yapımı sağlar, debug_mode değeri de true olmalıdır
   "classes": {
     "arac": [
       "car",
