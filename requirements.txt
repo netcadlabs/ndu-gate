@@ -13,6 +13,7 @@ simplejson
 # picamera
 ffmpeg-python
 opencv-contrib-python
+filterpy==1.4.5
 
 # macos: brew install libomp
 # linux: sudo apt install libgomp1
