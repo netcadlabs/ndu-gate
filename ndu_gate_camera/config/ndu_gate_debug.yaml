@@ -6,6 +6,7 @@ result_handler:
 
 instances:
   - source:
+      ignore: False
       type: IP_CAMERA
       url: rtsp://admin:Catab234@10.10.0.85:554/1
       device: "CANAKKALE-10.10.0.85"

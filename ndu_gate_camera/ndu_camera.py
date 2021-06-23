@@ -106,6 +106,8 @@ def main(ndu_gate_config_file):
             services = []
             preview_exists = False
             for instance in instances:
+                if instance["source"].get("ignore", True):
+                    continue
                 if instance["source"].get("preview_show", False):
                     preview_exists = True
                 camera_service = NDUCameraService(instance=instance, config_dir=ndu_gate_config_dir, handler=result_handler, is_main_thread=False, extension_folder=extension_folder)
@@ -128,7 +130,7 @@ def main(ndu_gate_config_file):
             else:
                 for service in services:
                     service.join()
-        elif len(instances) == 1:
+        elif len(instances) == 1 and instances[0]["source"].get("ignore", True) is False:
             camera_service = NDUCameraService(instance=instances[0], config_dir=ndu_gate_config_dir, handler=result_handler, is_main_thread=True, extension_folder=extension_folder)
             camera_service.run()
         else:

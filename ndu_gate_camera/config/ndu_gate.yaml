@@ -8,6 +8,7 @@ result_handler:
 
 instances:
   - source:
+      ignore: False
       type: CAMERA
       device: "CAMERA-1"
       url: rtsp://admin:Catab234@10.10.0.85:554/1
